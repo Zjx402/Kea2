@@ -1,0 +1,180 @@
+import json
+from typing import Callable, Any, Dict
+from unittest import TextTestRunner, registerResult, TestSuite
+import random
+import warnings
+from xml.etree import ElementTree
+from dataclasses import dataclass
+import requests
+from .absDriver import AbstractScriptDriver, AbstractStaticChecker
+
+PRECONDITIONS_MARKER = "preconds"
+
+
+def precondition(precond: Callable[[Any], bool]) -> Callable:
+    """the decorator @precondition
+
+    The precondition specifies when the property could be executed.
+    A property could have multiple preconditions, each of which is specified by @precondition.
+    """
+
+    def accept(f):
+        def precondition_wrapper(*args, **kwargs):
+            return f(*args, **kwargs)
+
+        preconds = getattr(f, PRECONDITIONS_MARKER, tuple())
+
+        setattr(precondition_wrapper, PRECONDITIONS_MARKER, preconds + (precond,))
+
+        return precondition_wrapper
+
+    return accept
+
+
+@dataclass
+class Options:
+    driverName: str
+    StaticChecker: AbstractStaticChecker
+    ScriptDriver: AbstractScriptDriver
+    maxStep: int = 500
+
+
+class KeaTestRunner(TextTestRunner):
+
+    options: Options = None
+
+    @classmethod
+    def setOptions(cls, options: Options):
+        cls.options = options
+
+    def run(self, test):
+
+        result = self._makeResult()
+        registerResult(result)
+        result.failfast = self.failfast
+        result.buffer = self.buffer
+        result.tb_locals = self.tb_locals
+
+        with warnings.catch_warnings():
+            if self.warnings:
+                # if self.warnings is set, use it to filter all the warnings
+                warnings.simplefilter(self.warnings)
+                # if the filter is 'default' or 'always', special-case the
+                # warnings from the deprecated unittest methods to show them
+                # no more than once per module, because they can be fairly
+                # noisy.  The -Wd and -Wa flags can be used to bypass this
+                # only when self.warnings is None.
+                if self.warnings in ["default", "always"]:
+                    warnings.filterwarnings(
+                        "module",
+                        category=DeprecationWarning,
+                        message=r"Please use assert\w+ instead.",
+                    )
+
+            # setUp for the u2 driver
+            self.scriptDriver = self.options.ScriptDriver().getInstance()
+            self.allProperties = dict()
+            self.collectAllProperties(test)
+
+            if len(self.allProperties) == 0:
+                print("No property has been found, terminated.")
+                return
+
+            for step in range(self.options.maxStep):
+                print("sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
+                validProps = self.getValidProperties()
+                print(f"{len(validProps)} precond satisfied.")
+                if validProps:
+                    if random.choice([True, False]):
+                        print(f"No Property was executed this time.")
+                        continue
+
+                    execPropName = random.choice(list(validProps))
+                    test = validProps[execPropName]
+                    # Dependency Injection. driver when doing scripts
+                    setattr(test, self.options.driverName, self.scriptDriver)
+                    print("execute property %s." % execPropName)
+
+                    try:
+                        test(result)
+                    finally:
+                        result.printErrors()
+            print(f"finish sending {self.options.maxStep} events.")
+
+        # Source code from unittest Runner
+        # process the result
+        expectedFails = unexpectedSuccesses = skipped = 0
+        try:
+            results = map(
+                len,
+                (result.expectedFailures, result.unexpectedSuccesses, result.skipped),
+            )
+        except AttributeError:
+            pass
+        else:
+            expectedFails, unexpectedSuccesses, skipped = results
+
+        infos = []
+        if not result.wasSuccessful():
+            self.stream.write("FAILED")
+            failed, errored = len(result.failures), len(result.errors)
+            if failed:
+                infos.append("failures=%d" % failed)
+            if errored:
+                infos.append("errors=%d" % errored)
+        else:
+            self.stream.write("OK")
+        if skipped:
+            infos.append("skipped=%d" % skipped)
+        if expectedFails:
+            infos.append("expected failures=%d" % expectedFails)
+        if unexpectedSuccesses:
+            infos.append("unexpected successes=%d" % unexpectedSuccesses)
+        if infos:
+            self.stream.writeln(" (%s)" % (", ".join(infos),))
+        else:
+            self.stream.write("\n")
+        self.stream.flush()
+        return result
+    
+    def stepMonkey(self) -> ElementTree:
+        r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")
+
+        res = json.loads(r.content)
+        with open("temp.xml", "w") as fp:
+            fp.write(res["result"])
+        tree = ElementTree.parse("temp.xml")
+        return tree
+
+    def getValidProperties(self) -> Dict[str, TestSuite]:
+
+        xmlTree = self.stepMonkey()
+        staticCheckerDriver = self.options.StaticChecker(xmlTree)
+
+        validProps = dict()
+        for propName, testSuite in self.allProperties.items():
+            valid = True
+            prop = getattr(testSuite, propName)
+            # check if all preconds passed
+            for precond in prop.preconds:
+                # Dependency injection. Static driver checker for precond
+                setattr(testSuite, self.options.driverName, staticCheckerDriver)
+                # excecute the precond
+                if not precond(testSuite):
+                    valid = False
+                    break
+            # if all the precond passed. make it the candidate prop.
+            if valid:
+                validProps[propName] = testSuite
+        return validProps
+
+    def collectAllProperties(self, test: TestSuite):
+        for subtest in test._tests:
+            # subtest._tests: List["TestSuite"]
+            for _testCaseClass in subtest._tests:
+                if isinstance(_testCaseClass, TestSuite):
+                    self.collectAllProperties(_testCaseClass._tests)
+                testMethodName = _testCaseClass._testMethodName
+                testMethod = getattr(_testCaseClass, testMethodName)
+                if hasattr(testMethod, PRECONDITIONS_MARKER):
+                    self.allProperties[testMethodName] = _testCaseClass
