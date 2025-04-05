@@ -7,8 +7,9 @@ from xml.etree import ElementTree
 from dataclasses import dataclass
 import requests
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker
-
+from functools import wraps
 PRECONDITIONS_MARKER = "preconds"
+PROP_MARKER = "prop"
 
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
@@ -17,14 +18,33 @@ def precondition(precond: Callable[[Any], bool]) -> Callable:
     The precondition specifies when the property could be executed.
     A property could have multiple preconditions, each of which is specified by @precondition.
     """
-
     def accept(f):
+        @wraps(f)
         def precondition_wrapper(*args, **kwargs):
             return f(*args, **kwargs)
 
         preconds = getattr(f, PRECONDITIONS_MARKER, tuple())
 
         setattr(precondition_wrapper, PRECONDITIONS_MARKER, preconds + (precond,))
+
+        return precondition_wrapper
+
+    return accept
+
+def prob(p: float):
+    """the decorator @prob
+
+    The prob specify the propbability of execution when a property is satisfied.
+    """
+    p = float(p)
+    if not 0 < p <= 1.0:
+        raise ValueError("The propbability should between 0 and 1")
+    def accept(f):
+        @wraps(f)
+        def precondition_wrapper(*args, **kwargs):
+            return f(*args, **kwargs)
+
+        setattr(precondition_wrapper, PROP_MARKER, p)
 
         return precondition_wrapper
 
@@ -82,15 +102,17 @@ class KeaTestRunner(TextTestRunner):
 
             for step in range(self.options.maxStep):
                 print("sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
-                validProps = self.getValidProperties()
-                print(f"{len(validProps)} precond satisfied.")
-                if validProps:
-                    if random.choice([True, False]):
-                        print(f"No Property was executed this time.")
-                        continue
+                propsSatisfiedPrecond = self.getValidProperties()
+                print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
+                if propsSatisfiedPrecond:
+                    p = random.random()
+                    propsNameFilteredByP = [
+                        propName for propName, func in propsSatisfiedPrecond.items()
+                        if getattr(func, "p", 0.5) >= p
+                    ]
 
-                    execPropName = random.choice(list(validProps))
-                    test = validProps[execPropName]
+                    execPropName = random.choice(propsNameFilteredByP)
+                    test = propsSatisfiedPrecond[execPropName]
                     # Dependency Injection. driver when doing scripts
                     setattr(test, self.options.driverName, self.scriptDriver)
                     print("execute property %s." % execPropName)

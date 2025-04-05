@@ -52,12 +52,21 @@ class StaticU2UiObject(u2.UiObject):
 
     @property
     def exists(self):
+        def filterU2Keys(originKey):
+            filterDict = {
+                "resourceId": "resource-id"
+            }
+            if filterDict.get(originKey, None):
+                return filterDict[originKey]
+            return originKey
+        
         def getXPath(kwargs: Dict[str, str]):
             attrLocs = list()
             SPECIAL_KEY = {"mask", "childOrSibling", "childOrSiblingSelector"}
             for key, val in kwargs.items():
                 if key in SPECIAL_KEY:
                     continue
+                key = filterU2Keys(key)
                 attrLocs.append(f"[@{key}='{val}']")
             xpath = f".//node{''.join(attrLocs)}"
             return xpath
