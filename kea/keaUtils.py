@@ -110,7 +110,10 @@ class KeaTestRunner(TextTestRunner):
                         propName for propName, func in propsSatisfiedPrecond.items()
                         if getattr(func, "p", 0.5) >= p
                     ]
-
+                    
+                    if len(propsNameFilteredByP) == 0:
+                        print("Not executed any property due to probability.")
+                        continue
                     execPropName = random.choice(propsNameFilteredByP)
                     test = propsSatisfiedPrecond[execPropName]
                     # Dependency Injection. driver when doing scripts
