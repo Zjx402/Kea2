@@ -116,7 +116,7 @@ class KeaTestRunner(TextTestRunner):
                     execPropName = random.choice(propsNameFilteredByP)
                     test = propsSatisfiedPrecond[execPropName]
                     # Dependency Injection. driver when doing scripts
-                    setattr(test, self.options.driverName, self.driver.scriptDriver)
+                    setattr(test, self.options.driverName, self.scriptDriver)
                     print("execute property %s." % execPropName)
 
                     try:
