@@ -1,7 +1,7 @@
 import uiautomator2 as u2
 from typing import Dict
 from xml.etree import ElementTree
-from .absDriver import AbstractScriptDriver
+from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
 
 
@@ -17,9 +17,6 @@ class U2ScriptDriver(AbstractScriptDriver):
         self.d = None
 
     def getInstance(self):
-        """
-        Singleton design
-        """
         if self.d is None:
             self.d = (
                 u2.connect() if self.deviceSerial is None
@@ -37,17 +34,11 @@ class U2ScriptDriver(AbstractScriptDriver):
                     self.d.port = forward_local.split(":")[-1]
                     break
         return self.d
-    
-    def getForwardList(self):
-        pass
-    
-    def switchForward(self):
-        pass
 
 
 class StaticU2UiObject(u2.UiObject):
     def __init__(self, session, selector):
-        self.session: U2StaticChecker = session
+        self.session: U2StaticDevice = session
         self.selector = selector
 
     @property
@@ -75,9 +66,42 @@ class StaticU2UiObject(u2.UiObject):
         return self.session.xml.find(xpath) is not None
 
 
-class U2StaticChecker(u2.Device):
-    def __init__(self, xml):
-        self.xml: ElementTree = xml
-
+class U2StaticDevice(u2.Device):
+    def __init__(self):
+        self.xml = None 
+    
     def __call__(self, **kwargs):
         return StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
+    
+class U2StaticChecker(AbstractStaticChecker):
+    
+    def __init__(self):
+        self.d = U2StaticDevice() 
+    
+    def setHierarchy(self, hierarchy: ElementTree):
+        self.d.xml = hierarchy
+    
+    def getInstance(self, hierarchy):
+        self.setHierarchy(hierarchy)
+        return self.d
+
+
+class U2Driver(AbstractDriver):
+    scriptDriver = None
+    staticChecker = None
+    
+    @classmethod
+    def setDeviceSerial(cls, deviceSerial):
+        U2ScriptDriver.setDeviceSerial(deviceSerial)
+
+    @classmethod
+    def getScriptDriver(self):
+        if self.scriptDriver is None:
+            self.scriptDriver = U2ScriptDriver()
+        return self.scriptDriver.getInstance()
+
+    @classmethod
+    def getStaticChecker(self, hierarchy):
+        if self.staticChecker is None:
+            self.staticChecker = U2StaticChecker()
+        return self.staticChecker.getInstance(hierarchy)

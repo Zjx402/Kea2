@@ -1,10 +1,34 @@
 import abc
-from xml.etree import ElementTree
+
 
 class AbstractScriptDriver(abc.ABC):
-    def getInstace(self):
+    @abc.abstractmethod
+    def getInstance(self):
         pass
 
+
 class AbstractStaticChecker(abc.ABC):
-    def __init__(self, xml: ElementTree):
+    @abc.abstractmethod
+    def getInstance(self):
+        pass
+
+    @abc.abstractmethod
+    def setHierarchy(hierarchy):
+        pass
+
+
+class AbstractDriver(abc.ABC):
+    @classmethod
+    @abc.abstractmethod
+    def setDeviceSerial(self):
+        pass
+    
+    @classmethod
+    @abc.abstractmethod
+    def getScriptDriver(self) -> AbstractScriptDriver:
+        pass
+    
+    @classmethod
+    @abc.abstractmethod
+    def getStaticChecker(self, hierarchy) -> AbstractStaticChecker:
         pass

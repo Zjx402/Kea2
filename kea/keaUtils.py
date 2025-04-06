@@ -6,7 +6,7 @@ import warnings
 from xml.etree import ElementTree
 from dataclasses import dataclass
 import requests
-from .absDriver import AbstractScriptDriver, AbstractStaticChecker
+from .absDriver import AbstractDriver
 from functools import wraps
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -54,8 +54,7 @@ def prob(p: float):
 @dataclass
 class Options:
     driverName: str
-    StaticChecker: AbstractStaticChecker
-    ScriptDriver: AbstractScriptDriver
+    Driver: AbstractDriver
     maxStep: int = 500
 
 
@@ -92,7 +91,7 @@ class KeaTestRunner(TextTestRunner):
                     )
 
             # setUp for the u2 driver
-            self.scriptDriver = self.options.ScriptDriver().getInstance()
+            self.scriptDriver = self.options.Driver.getScriptDriver()
             self.allProperties = dict()
             self.collectAllProperties(test)
 
@@ -117,7 +116,7 @@ class KeaTestRunner(TextTestRunner):
                     execPropName = random.choice(propsNameFilteredByP)
                     test = propsSatisfiedPrecond[execPropName]
                     # Dependency Injection. driver when doing scripts
-                    setattr(test, self.options.driverName, self.scriptDriver)
+                    setattr(test, self.options.driverName, self.driver.scriptDriver)
                     print("execute property %s." % execPropName)
 
                     try:
@@ -174,7 +173,7 @@ class KeaTestRunner(TextTestRunner):
     def getValidProperties(self) -> Dict[str, TestSuite]:
 
         xmlTree = self.stepMonkey()
-        staticCheckerDriver = self.options.StaticChecker(xmlTree)
+        staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xmlTree)
 
         validProps = dict()
         for propName, testSuite in self.allProperties.items():
