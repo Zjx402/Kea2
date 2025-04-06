@@ -5,32 +5,45 @@ Take uiautomator2 as ScriptDriver for example.
 ```python
 import unittest
 import uiautomator2 as u2
+
 from kea.keaUtils import precondition, prob, KeaTestRunner, Options
-from kea.u2Driver import U2ScriptDriver, U2StaticChecker
+from kea.u2Driver import U2Driver
+
 
 class Test1(unittest.TestCase):
 
     def setUp(self):
         self.d = u2.connect()
 
-    def test_noPre01(self):
-        print("noPre01")
-        assert "noPre01" == "noPre01"
-    
     @prob(0.7)
-    @precondition(lambda self: self.d(text="Cr").exists)
-    def test_01(self):
-        self.d(text="Cr").click()
-        print("this is from the test")
-        assert self.d(text="Add reminder").exists(timeout=3)
+    @precondition(lambda self: self.d(text="Omni Notes Alpha").exists and self.d(text="Settings").exists)
+    def test_goToPrivacy(self):
+        self.d(text="Settings").click()
+        self.d(text="Privacy").click()
+
+    @precondition(lambda self: self.d(resourceId = "it.feio.android.omninotes.alpha:id/search_src_text").exists)
+    def test_rotation(self):
+        self.d.set_orientation("l")
+        self.d.set_orientation("n")
+        assert self.d(resourceId="it.feio.android.omninotes.alpha:id/search_src_text").exists()
+
+
+class Test2(unittest.TestCase):
+    def test_NoPre02(self):
+        print("NoPre02")
+        assert 1 == 1
+
+    @precondition(lambda self: self.d(text="Am").exists)
+    def test_Pre02(self):
+        print("Pre02")
+        assert 3 == 3
 
 
 KeaTestRunner.setOptions(
     Options(
         driverName="d",
         maxStep=500,
-        StaticChecker=U2StaticChecker,
-        ScriptDriver=U2ScriptDriver,
+        Driver=U2Driver
     )
 )
 
