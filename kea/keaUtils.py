@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 import subprocess
-from typing import Callable, Any, Dict
+from typing import Callable, Any, Dict, List
 from unittest import TextTestRunner, registerResult, TestSuite
 import random
 import warnings
@@ -11,7 +11,6 @@ import requests
 from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
-import os
 from .adbUtils import push_file, run_adb_command
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -60,6 +59,7 @@ def prob(p: float):
 class Options:
     driverName: str
     Driver: AbstractDriver
+    packageNames: List[str]
     maxStep: int = 500
 
 
@@ -69,6 +69,8 @@ class KeaTestRunner(TextTestRunner):
 
     @classmethod
     def setOptions(cls, options: Options):
+        if not isinstance(options.packageNames, list) and len(options.packageNames) > 0:
+            raise ValueError("packageNames should be given in a list.")
         cls.options = options
 
     def run(self, test):
@@ -195,7 +197,7 @@ class KeaTestRunner(TextTestRunner):
             "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
             "exec", "app_process",
             "/system/bin", "com.android.commands.monkey.Monkey",
-            "-p", "it.feio.android.omninotes.alpha",
+            "-p", *self.options.packageNames,
             "--agent-u2", "reuseq", "--running-minutes", "100", "--throttle", "200", "-v", "-v", "-v"
         ]
         

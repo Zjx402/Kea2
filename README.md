@@ -43,7 +43,8 @@ KeaTestRunner.setOptions(
     Options(
         driverName="d",
         maxStep=500,
-        Driver=U2Driver
+        Driver=U2Driver,
+        packageNames=["it.feio.android.omninotes.alpha"]
     )
 )
 
