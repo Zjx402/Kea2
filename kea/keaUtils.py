@@ -1,4 +1,6 @@
 import json
+from pathlib import Path
+import subprocess
 from typing import Callable, Any, Dict
 from unittest import TextTestRunner, registerResult, TestSuite
 import random
@@ -8,6 +10,9 @@ from dataclasses import dataclass
 import requests
 from .absDriver import AbstractDriver
 from functools import wraps
+from time import sleep
+import os
+from .adbUtils import push_file, run_adb_command
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
 
@@ -92,6 +97,7 @@ class KeaTestRunner(TextTestRunner):
 
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
+            self.activateFastbot()
             self.allProperties = dict()
             self.collectAllProperties(test)
 
@@ -160,6 +166,47 @@ class KeaTestRunner(TextTestRunner):
             self.stream.write("\n")
         self.stream.flush()
         return result
+    
+    def activateFastbot(self):
+        cur_dir = Path(__file__).parent
+        push_file(Path.joinpath(cur_dir, "assets/monkeyq.jar"), "/sdcard/monkeyq.jar")
+        push_file(Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"), "/sdcard/fastbot-thirdpart.jar")
+        push_file(Path.joinpath(cur_dir, "assets/framework.jar"), "/sdcard/framework.jar")
+        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"), "/data/local/tmp")
+        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"), "/data/local/tmp")
+        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86"), "/data/local/tmp")
+        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"), "/data/local/tmp")
+
+        self.startFastbotService()
+
+        for i in range(10):
+            sleep(1)
+            try:
+                r=requests.get(f"http://localhost:{self.scriptDriver.port}/ping")
+                return
+            except requests.ConnectionError:
+                pass
+        raise RuntimeError("Failed to connect fastbot")
+    
+    def startFastbotService(self):
+        command = [
+            "adb",
+            "shell",
+            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+            "exec", "app_process",
+            "/system/bin", "com.android.commands.monkey.Monkey",
+            "-p", "it.feio.android.omninotes.alpha",
+            "--agent-u2", "reuseq", "--running-minutes", "100", "--throttle", "200", "-v", "-v", "-v"
+        ]
+        
+        # log file
+        outfile = open("fastbot.log", "w")
+        
+        process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
+        
+        # 如果在程序中后续需要访问进程句柄，可以返回 process 对象
+        return process
+        
     
     def stepMonkey(self) -> ElementTree:
         r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")

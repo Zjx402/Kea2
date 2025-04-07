@@ -100,6 +100,8 @@ def push_file(local_path, remote_path, device=None):
     Returns:
         str: The output from the push command.
     """
+    local_path = str(local_path)
+    remote_path = str(remote_path)
     return run_adb_command(["-s", device, "push", local_path, remote_path])
 
 @ensure_device
