@@ -1,5 +1,8 @@
+import random
+import socket
 import uiautomator2 as u2
-from typing import Dict
+import types
+from typing import Dict, Union
 from xml.etree import ElementTree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
@@ -23,16 +26,34 @@ class U2ScriptDriver(AbstractScriptDriver):
                 else u2.connect(self.deviceSerial)
             )
             
-            forwardLists = list_forwards(device=self.deviceSerial)
-            for forward in forwardLists:
-                if forward["remote"] == "tcp:9008":
-                    forward_local = forward["local"]
-                    print("uiautomator2 server local port %s" % forward_local)
-                    remove_forward(local_spec=forward_local, device=self.deviceSerial)
-                    create_forward(local_spec=forward_local, remote_spec="tcp:8090", device=self.deviceSerial)
-                    print("rewrite the uiautomator2 server remote port to %s" % "tcp:8090")
-                    self.d.port = forward_local.split(":")[-1]
-                    break
+            def rewrite_forward_port():
+                """rewrite forward_port mothod to avoid the relocation of port 
+                """
+                print("Rewriting forward_port method")
+                self.d._dev.forward_port = types.MethodType(
+                                forward_port, self.d._dev)
+                lport = self.d._dev.forward_port(8090)
+                setattr(self.d._dev, "msg", "meta")
+                print(f"local port: {lport}")
+                
+                self.d.port = lport
+            
+            def remove_9008_forward_port():
+                """remove the forward to tcp:9008
+                """
+                forwardLists = list_forwards(device=self.deviceSerial)
+                for forward in forwardLists:
+                    if forward["remote"] == "tcp:9008":
+                        forward_local = forward["local"]
+                        print("uiautomator2 server local port %s" % forward_local)
+                        remove_forward(local_spec=forward_local, device=self.deviceSerial)
+                        create_forward(local_spec=forward_local, remote_spec="tcp:8090", device=self.deviceSerial)
+                        print("rewrite the uiautomator2 server remote port to %s" % "tcp:8090")
+                        self.d.port = forward_local.split(":")[-1]
+            
+            rewrite_forward_port()
+            remove_9008_forward_port()
+
         return self.d
 
 
@@ -105,3 +126,43 @@ class U2Driver(AbstractDriver):
         if self.staticChecker is None:
             self.staticChecker = U2StaticChecker()
         return self.staticChecker.getInstance(hierarchy)
+
+
+def forward_port(self, remote: Union[int, str]) -> int:
+        """forward remote port to local random port"""
+        remote = 8090
+        if isinstance(remote, int):
+            remote = "tcp:" + str(remote)
+        for f in self.forward_list():
+            if (
+                f.serial == self._serial
+                and f.remote == remote
+                and f.local.startswith("tcp:")
+            ):  # yapf: disable
+                return int(f.local[len("tcp:") :])
+        local_port = get_free_port()
+        self.forward("tcp:" + str(local_port), remote)
+        return local_port
+
+
+def is_port_in_use(port: int) -> bool:
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        return s.connect_ex(('127.0.0.1', port)) == 0
+
+
+def get_free_port():
+    try:
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        s.bind(('127.0.0.1', 0))
+        try:
+            return s.getsockname()[1]
+        finally:
+            s.close()
+    except OSError:
+        # bind 0 will fail on Manjaro, fallback to random port
+        # https://github.com/openatx/adbutils/issues/85
+        for _ in range(20):
+            port = random.randint(10000, 20000)
+            if not is_port_in_use(port):
+                return port
+        raise RuntimeError("No free port found")

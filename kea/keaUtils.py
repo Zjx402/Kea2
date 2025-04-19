@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import subprocess
 from typing import Callable, Any, Dict, List
-from unittest import TextTestRunner, registerResult, TestSuite
+from unittest import TextTestRunner, registerResult, TestSuite, TestCase
 import random
 import warnings
 from xml.etree import ElementTree
@@ -12,6 +12,7 @@ from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
 from .adbUtils import push_file, run_adb_command
+import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
 
@@ -99,7 +100,7 @@ class KeaTestRunner(TextTestRunner):
 
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
-            self.activateFastbot()
+            # self.activateFastbot()
             self.allProperties = dict()
             self.collectAllProperties(test)
 
@@ -117,13 +118,14 @@ class KeaTestRunner(TextTestRunner):
                         propName for propName, func in propsSatisfiedPrecond.items()
                         if getattr(func, "p", 0.5) >= p
                     ]
-                    
+
                     if len(propsNameFilteredByP) == 0:
                         print("Not executed any property due to probability.")
                         continue
                     execPropName = random.choice(propsNameFilteredByP)
                     test = propsSatisfiedPrecond[execPropName]
                     # Dependency Injection. driver when doing scripts
+                    self.scriptDriver = self.options.Driver.getScriptDriver()
                     setattr(test, self.options.driverName, self.scriptDriver)
                     print("execute property %s." % execPropName)
 
@@ -168,7 +170,7 @@ class KeaTestRunner(TextTestRunner):
             self.stream.write("\n")
         self.stream.flush()
         return result
-    
+
     def activateFastbot(self):
         cur_dir = Path(__file__).parent
         push_file(Path.joinpath(cur_dir, "assets/monkeyq.jar"), "/sdcard/monkeyq.jar")
@@ -189,7 +191,7 @@ class KeaTestRunner(TextTestRunner):
             except requests.ConnectionError:
                 pass
         raise RuntimeError("Failed to connect fastbot")
-    
+
     def startFastbotService(self):
         command = [
             "adb",
@@ -200,16 +202,15 @@ class KeaTestRunner(TextTestRunner):
             "-p", *self.options.packageNames,
             "--agent-u2", "reuseq", "--running-minutes", "100", "--throttle", "200", "-v", "-v", "-v"
         ]
-        
+
         # log file
         outfile = open("fastbot.log", "w")
-        
+
         process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
-        
+
         # 如果在程序中后续需要访问进程句柄，可以返回 process 对象
         return process
-        
-    
+
     def stepMonkey(self) -> ElementTree:
         r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")
 
@@ -242,6 +243,21 @@ class KeaTestRunner(TextTestRunner):
         return validProps
 
     def collectAllProperties(self, test: TestSuite):
+        """collect all the properties to prepare for PBT
+        """
+
+        def remove_setUp(testCase: TestCase):
+            """remove the setup function in PBT
+            """
+            def setUp(self): ...
+            testCase.setUp = types.MethodType(setUp, testCase)
+            
+        def remove_tearDown(testCase: TestCase):
+            """remove the tearDown function in PBT
+            """
+            def tearDown(self): ...
+            testCase = types.MethodType(tearDown, testCase)
+
         for subtest in test._tests:
             # subtest._tests: List["TestSuite"]
             for _testCaseClass in subtest._tests:
@@ -251,3 +267,5 @@ class KeaTestRunner(TextTestRunner):
                 testMethod = getattr(_testCaseClass, testMethodName)
                 if hasattr(testMethod, PRECONDITIONS_MARKER):
                     self.allProperties[testMethodName] = _testCaseClass
+                    remove_setUp(_testCaseClass)
+                    remove_tearDown(_testCaseClass)
