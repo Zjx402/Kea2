@@ -215,15 +215,13 @@ class KeaTestRunner(TextTestRunner):
         r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")
 
         res = json.loads(r.content)
-        with open("temp.xml", "w") as fp:
-            fp.write(res["result"])
-        tree = ElementTree.parse("temp.xml")
-        return tree
+        xml_raw = res["result"]
+        return xml_raw
 
     def getValidProperties(self) -> Dict[str, TestSuite]:
 
-        xmlTree = self.stepMonkey()
-        staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xmlTree)
+        xml_raw = self.stepMonkey()
+        staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xml_raw)
 
         validProps = dict()
         for propName, testSuite in self.allProperties.items():

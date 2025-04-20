@@ -86,23 +86,39 @@ class StaticU2UiObject(u2.UiObject):
         xpath = getXPath(self.selector)
         return self.session.xml.find(xpath) is not None
 
-
 class U2StaticDevice(u2.Device):
     def __init__(self):
-        self.xml = None 
-    
+        self.xml_raw = None
+        self.xml = None
+
     def __call__(self, **kwargs):
         return StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
-    
+
+    @property
+    def xpath(self) -> u2.xpath.XPathEntry:
+        def get_page_source(self):
+            print("using new get_page_source")
+            return u2.xpath.PageSource.parse(self._d.xml_raw)
+        xpathEntry = u2.xpath.XPathEntry(self)
+        xpathEntry.get_page_source = types.MethodType(
+            get_page_source, xpathEntry
+        )
+        return xpathEntry
+
+
 class U2StaticChecker(AbstractStaticChecker):
-    
+
     def __init__(self):
         self.d = U2StaticDevice() 
-    
-    def setHierarchy(self, hierarchy: ElementTree):
-        self.d.xml = hierarchy
-    
-    def getInstance(self, hierarchy):
+
+    def setHierarchy(self, hierarchy: str):
+        self.d.xml_raw = hierarchy
+        with open("tmp.xml", "w") as fp:
+            fp.write(hierarchy)
+            fp.flush()
+        self.d.xml = ElementTree.parse("tmp.xml")
+
+    def getInstance(self, hierarchy: str):
         self.setHierarchy(hierarchy)
         return self.d
 
