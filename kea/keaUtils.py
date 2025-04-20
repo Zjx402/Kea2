@@ -1,12 +1,12 @@
 import json
 from pathlib import Path
 import subprocess
-from typing import Callable, Any, Dict, List
-from unittest import TextTestRunner, registerResult, TestSuite, TestCase
+from typing import Callable, Any, Dict, List, NewType
+from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
 from xml.etree import ElementTree
-from dataclasses import dataclass
+from dataclasses import dataclass, asdict
 import requests
 from .absDriver import AbstractDriver
 from functools import wraps
@@ -16,6 +16,10 @@ import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
 
+
+# Class Typing
+PropName = NewType("PropName", str)
+PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -63,9 +67,52 @@ class Options:
     packageNames: List[str]
     maxStep: int = 500
 
+@dataclass
+class PropStatistic:
+    precond_satisfied: int = 0
+    executed: int = 0
+    fail: int = 0
+    error: int = 0
+
+class PBTTestResult(dict):
+    def __getitem__(self, key) -> PropStatistic:
+        return super().__getitem__(key)
+
+class JsonResult(TextTestResult):
+    res: PBTTestResult
+
+    @classmethod
+    def setProperties(cls, allProperties: Dict):
+        cls.res = dict()
+        for propName in allProperties.keys():
+            cls.res[propName] = PropStatistic()
+
+    def flushResult(self, outfile):
+        json_res = dict()
+        for propName, propStatitic in self.res.items():
+            json_res[propName] = asdict(propStatitic)
+        with open(outfile, "w") as fp:
+            json.dump(json_res, fp)
+
+    def addExcuted(self, test: TestCase):
+        self.res[test._testMethodName].executed += 1
+
+    def addPrecondSatisfied(self, test: TestCase):
+        self.res[test._testMethodName].precond_satisfied += 1
+
+    def addFailure(self, test, err):
+        super().addFailure(test, err)
+        self.res[test._testMethodName].fail += 1
+
+    def addError(self, test, err):
+        super().addError(test, err)
+        self.res[test._testMethodName].error += 1
+
 
 class KeaTestRunner(TextTestRunner):
 
+    resultclass: JsonResult
+    allProperties: PropertyStore
     options: Options = None
 
     @classmethod
@@ -76,7 +123,16 @@ class KeaTestRunner(TextTestRunner):
 
     def run(self, test):
 
-        result = self._makeResult()
+        self.allProperties = dict()
+        self.collectAllProperties(test)
+
+        if len(self.allProperties) == 0:
+            print("[Warning] No property has been found.")
+        
+        JsonResult.setProperties(self.allProperties)
+        self.resultclass = JsonResult
+        
+        result: JsonResult = self._makeResult()
         registerResult(result)
         result.failfast = self.failfast
         result.buffer = self.buffer
@@ -101,39 +157,45 @@ class KeaTestRunner(TextTestRunner):
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
             # self.activateFastbot()
-            self.allProperties = dict()
-            self.collectAllProperties(test)
-
-            if len(self.allProperties) == 0:
-                print("No property has been found, terminated.")
-                return
 
             for step in range(self.options.maxStep):
-                print("sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
+                print("[INFO] Sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
                 propsSatisfiedPrecond = self.getValidProperties()
                 print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
-                if propsSatisfiedPrecond:
-                    p = random.random()
-                    propsNameFilteredByP = [
-                        propName for propName, func in propsSatisfiedPrecond.items()
-                        if getattr(func, "p", 0.5) >= p
-                    ]
 
-                    if len(propsNameFilteredByP) == 0:
-                        print("Not executed any property due to probability.")
-                        continue
-                    execPropName = random.choice(propsNameFilteredByP)
-                    test = propsSatisfiedPrecond[execPropName]
-                    # Dependency Injection. driver when doing scripts
-                    self.scriptDriver = self.options.Driver.getScriptDriver()
-                    setattr(test, self.options.driverName, self.scriptDriver)
-                    print("execute property %s." % execPropName)
+                # Go to the next round if no precond satisfied
+                if len(propsSatisfiedPrecond) == 0:
+                    continue
+                
+                # get the random probability p
+                p = random.random()
+                propsNameFilteredByP = []
+                # filter the properties according to the given p
+                for propName, test in propsSatisfiedPrecond.items():
+                    result.addPrecondSatisfied(test)
+                    if getattr(test, "p", 0.5) >= p:
+                        propsNameFilteredByP.append(propName)
 
-                    try:
-                        test(result)
-                    finally:
-                        result.printErrors()
+                if len(propsNameFilteredByP) == 0:
+                    print("Not executed any property due to probability.")
+                    continue
+                
+                execPropName = random.choice(propsNameFilteredByP)
+                test = propsSatisfiedPrecond[execPropName]
+                # Dependency Injection. driver when doing scripts
+                self.scriptDriver = self.options.Driver.getScriptDriver()
+                setattr(test, self.options.driverName, self.scriptDriver)
+                print("execute property %s." % execPropName)
+
+                result.addExcuted(test)
+                try:
+                    test(result)
+                finally:
+                    result.printErrors()
+
+                result.flushResult(outfile="result.json")
             print(f"finish sending {self.options.maxStep} events.")
+            result.flushResult(outfile="result.json")
 
         # Source code from unittest Runner
         # process the result
@@ -183,10 +245,10 @@ class KeaTestRunner(TextTestRunner):
 
         self.startFastbotService()
 
-        for i in range(10):
+        for _ in range(10):
             sleep(1)
             try:
-                r=requests.get(f"http://localhost:{self.scriptDriver.port}/ping")
+                requests.get(f"http://localhost:{self.scriptDriver.port}/ping")
                 return
             except requests.ConnectionError:
                 pass
@@ -200,7 +262,9 @@ class KeaTestRunner(TextTestRunner):
             "exec", "app_process",
             "/system/bin", "com.android.commands.monkey.Monkey",
             "-p", *self.options.packageNames,
-            "--agent-u2", "reuseq", "--running-minutes", "100", "--throttle", "200", "-v", "-v", "-v"
+            "--agent-u2", "reuseq", 
+            "--running-minutes", "100", 
+            "--throttle", "200", "-v", "-v", "-v"
         ]
 
         # log file
@@ -208,7 +272,7 @@ class KeaTestRunner(TextTestRunner):
 
         process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
 
-        # 如果在程序中后续需要访问进程句柄，可以返回 process 对象
+        # process handler
         return process
 
     def stepMonkey(self) -> ElementTree:
@@ -218,26 +282,26 @@ class KeaTestRunner(TextTestRunner):
         xml_raw = res["result"]
         return xml_raw
 
-    def getValidProperties(self) -> Dict[str, TestSuite]:
+    def getValidProperties(self) -> PropertyStore:
 
         xml_raw = self.stepMonkey()
         staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xml_raw)
 
-        validProps = dict()
-        for propName, testSuite in self.allProperties.items():
+        validProps: PropertyStore = dict()
+        for propName, test in self.allProperties.items():
             valid = True
-            prop = getattr(testSuite, propName)
+            prop = getattr(test, propName)
             # check if all preconds passed
             for precond in prop.preconds:
                 # Dependency injection. Static driver checker for precond
-                setattr(testSuite, self.options.driverName, staticCheckerDriver)
+                setattr(test, self.options.driverName, staticCheckerDriver)
                 # excecute the precond
-                if not precond(testSuite):
+                if not precond(test):
                     valid = False
                     break
             # if all the precond passed. make it the candidate prop.
             if valid:
-                validProps[propName] = testSuite
+                validProps[propName] = test
         return validProps
 
     def collectAllProperties(self, test: TestSuite):
@@ -249,21 +313,25 @@ class KeaTestRunner(TextTestRunner):
             """
             def setUp(self): ...
             testCase.setUp = types.MethodType(setUp, testCase)
-            
+
         def remove_tearDown(testCase: TestCase):
             """remove the tearDown function in PBT
             """
             def tearDown(self): ...
             testCase = types.MethodType(tearDown, testCase)
 
+        # Traverse the TestCase to get all properties
         for subtest in test._tests:
             # subtest._tests: List["TestSuite"]
             for _testCaseClass in subtest._tests:
                 if isinstance(_testCaseClass, TestSuite):
                     self.collectAllProperties(_testCaseClass._tests)
                 testMethodName = _testCaseClass._testMethodName
+                # get the test method name and check if it's a property
                 testMethod = getattr(_testCaseClass, testMethodName)
                 if hasattr(testMethod, PRECONDITIONS_MARKER):
-                    self.allProperties[testMethodName] = _testCaseClass
+                    # remove the hook func in its TestCase
                     remove_setUp(_testCaseClass)
                     remove_tearDown(_testCaseClass)
+                    # save it into allProperties for PBT
+                    self.allProperties[testMethodName] = _testCaseClass

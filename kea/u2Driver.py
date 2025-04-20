@@ -97,7 +97,7 @@ class U2StaticDevice(u2.Device):
     @property
     def xpath(self) -> u2.xpath.XPathEntry:
         def get_page_source(self):
-            print("using new get_page_source")
+            # print("[Debug] Using static get_page_source method")
             return u2.xpath.PageSource.parse(self._d.xml_raw)
         xpathEntry = u2.xpath.XPathEntry(self)
         xpathEntry.get_page_source = types.MethodType(

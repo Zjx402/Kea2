@@ -1,1 +1,7 @@
-*
+.vscode/*
+unittest/*
+result.json
+**/__pycache__/
+.DS_Store
+*.xml
+*.log
