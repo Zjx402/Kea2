@@ -163,11 +163,18 @@ class KeaTestRunner(TextTestRunner):
 
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
-            # self.activateFastbot()
+
+            self.activateFastbot()
 
             for step in range(self.options.maxStep):
                 print("[INFO] Sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
-                propsSatisfiedPrecond = self.getValidProperties()
+                
+                try:
+                    propsSatisfiedPrecond = self.getValidProperties()
+                except requests.ConnectionError:
+                    print("[INFO] Finsh sendding event")
+                    break
+                
                 print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
 
                 # Go to the next round if no precond satisfied
@@ -279,7 +286,7 @@ class KeaTestRunner(TextTestRunner):
 
         print("[INFO] Options info: {}".format(asdict(self.options)))
         print("[INFO] Launching fastbot with command:\n{}".format(" ".join(command)))
-        print("[INFO] Fastbot log will be saved to {}".format(outfile))
+        print("[INFO] Fastbot log will be saved to {}".format(outfile.name))
         
         process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
 
