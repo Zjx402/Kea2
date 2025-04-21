@@ -1,6 +1,43 @@
 ## Usage
 
-Take uiautomator2 as ScriptDriver for example.
+### Step by step guide
+1. extend the python unittest.TestCase module and write your own script
+
+    ```python
+    from kea.keaUtils import precondition KeaTestRunner, Options
+    from kea.u2Driver import U2Driver
+
+    class MyTest(unittest.TestCase):
+        # [Attention] Only the method starts with test will be found by unittest
+        # [Attention] Only the test method decorated with precond will be loaded as a property
+        @precondition(lambda self: ...)
+        def test_func1(self):...
+    ```
+
+2. Set the Configurations.
+
+    ```python
+    KeaTestRunner.setOptions(
+        Options(
+            # what you written in script
+            # if driver is (self.d), then driverName="d"
+            # if driver is (self.device) then driverName="device"
+            driverName="d",
+            # Use the U2Driver
+            Driver=U2Driver,
+            ...
+        )
+    )
+    ```
+
+3. Use the KeaTestRunner. Save your script and run with `python3 <...>.py`.
+   
+    ```python
+    unittest.main(testRunner=KeaTestRunner)
+    ```
+
+
+### Full example
 
 ```python
 import unittest
@@ -15,28 +52,35 @@ class Test1(unittest.TestCase):
     def setUp(self):
         self.d = u2.connect()
 
-    @prob(0.7)
+    @prob(0.7) # The propbability to exec this proprety when precond statisfied is 0.7
     @precondition(lambda self: self.d(text="Omni Notes Alpha").exists and self.d(text="Settings").exists)
     def test_goToPrivacy(self):
+        """
+        The ability to jump out of the UI tarpits
+
+        precond:
+            The drawer was opened
+        action:
+            go to settings -> privacy
+        """
         self.d(text="Settings").click()
         self.d(text="Privacy").click()
 
     @precondition(lambda self: self.d(resourceId = "it.feio.android.omninotes.alpha:id/search_src_text").exists)
     def test_rotation(self):
+        """
+        The ability to make assertion to find functional bug
+
+        precond:
+            The search input box is opened
+        action:
+            rotate the device (set it to landscape, then back to natural)
+        assertion:
+            The search input box is still being opened
+        """
         self.d.set_orientation("l")
         self.d.set_orientation("n")
         assert self.d(resourceId="it.feio.android.omninotes.alpha:id/search_src_text").exists()
-
-
-class Test2(unittest.TestCase):
-    def test_NoPre02(self):
-        print("NoPre02")
-        assert 1 == 1
-
-    @precondition(lambda self: self.d(text="Am").exists)
-    def test_Pre02(self):
-        print("Pre02")
-        assert 3 == 3
 
 
 KeaTestRunner.setOptions(
