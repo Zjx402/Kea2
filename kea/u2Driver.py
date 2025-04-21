@@ -8,7 +8,21 @@ from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriv
 from .adbUtils import list_forwards, remove_forward, create_forward
 
 
+"""
+The definition of U2ScriptDriver
+"""
 class U2ScriptDriver(AbstractScriptDriver):
+    """
+    This is the ScriptDriver used to send ui automation request in Property
+    When you interact with the mobile in properties. You will use the object here
+    
+    *e.g. the following self.d use U2ScriptDriver*
+    ```
+    @precondition(...)
+    def test_battery(self):
+        self.d(text="battery").click()
+    ```
+    """
 
     deviceSerial: str = None
     
@@ -57,6 +71,9 @@ class U2ScriptDriver(AbstractScriptDriver):
         return self.d
 
 
+"""
+The definition of U2StaticChecker
+"""
 class StaticU2UiObject(u2.UiObject):
     def __init__(self, session, selector):
         self.session: U2StaticDevice = session
@@ -107,7 +124,17 @@ class U2StaticDevice(u2.Device):
 
 
 class U2StaticChecker(AbstractStaticChecker):
-
+    """
+    This is the StaticChecker used to check the precondition.
+    We use the static checker due to the performing issues when runing multi-properties.
+    
+    *e.g. the following self.d use U2StaticChecker*
+    ```
+    @precondition(lambda self: self.d("battery").exists)
+    def test_battery(self):
+        ...
+    ```
+    """
     def __init__(self):
         self.d = U2StaticDevice() 
 
@@ -123,6 +150,9 @@ class U2StaticChecker(AbstractStaticChecker):
         return self.d
 
 
+"""
+The definition of U2Driver
+"""
 class U2Driver(AbstractDriver):
     scriptDriver = None
     staticChecker = None
@@ -144,6 +174,9 @@ class U2Driver(AbstractDriver):
         return self.staticChecker.getInstance(hierarchy)
 
 
+"""
+Other Utils
+"""
 def forward_port(self, remote: Union[int, str]) -> int:
         """forward remote port to local random port"""
         remote = 8090

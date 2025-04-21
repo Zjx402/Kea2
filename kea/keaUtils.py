@@ -62,10 +62,17 @@ def prob(p: float):
 
 @dataclass
 class Options:
+    """
+    Kea and Fastbot configurations
+    """
     driverName: str
     Driver: AbstractDriver
     packageNames: List[str]
     maxStep: int = 500
+    running_mins: int = 10
+    throttle: int = 200
+
+
 
 @dataclass
 class PropStatistic:
@@ -263,19 +270,26 @@ class KeaTestRunner(TextTestRunner):
             "/system/bin", "com.android.commands.monkey.Monkey",
             "-p", *self.options.packageNames,
             "--agent-u2", "reuseq", 
-            "--running-minutes", "100", 
-            "--throttle", "200", "-v", "-v", "-v"
+            "--running-minutes", f"{self.options.running_mins}", 
+            "--throttle", f"{self.options.throttle}", "-v", "-v", "-v"
         ]
 
         # log file
         outfile = open("fastbot.log", "w")
 
+        print("[INFO] Options info: {}".format(asdict(self.options)))
+        print("[INFO] Launching fastbot with command:\n{}".format(" ".join(command)))
+        print("[INFO] Fastbot log will be saved to {}".format(outfile))
+        
         process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
 
         # process handler
         return process
 
-    def stepMonkey(self) -> ElementTree:
+    def stepMonkey(self) -> str:
+        """
+        send a step monkey request to the server and get the xml string.
+        """
         r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")
 
         res = json.loads(r.content)
