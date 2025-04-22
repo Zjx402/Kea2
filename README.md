@@ -1,7 +1,34 @@
 ## Usage
 
-### Step by step guide
-1. extend the python unittest.TestCase module and write your own script
+### Installation
+
+Requirement `python 3.8+`, Recommand: `python 3.11`
+
+1. Create a workspace using mkdir. Clone this repo into the workspace.
+
+```bash
+mkdir FastbotKea && cd FastbotKea
+git clone https://github.com/XixianLiang/KeaPlus.git
+```
+
+2. Setup python envirnment
+```bash
+python -m venv env
+source env/bin/activate
+```
+
+3. Install requirnment (Android)
+```bash
+python -m pip install --upgrade pip
+python -m pip install uiautomator2
+``` 
+
+4. Create a unittest script `mytest.py` in the workspace.
+
+
+### How to write the unittest script `mytest.py` ? - Step by step guide.
+
+1. Extend the python unittest.TestCase module and write your own script
 
     ```python
     from kea.keaUtils import precondition KeaTestRunner, Options
@@ -37,7 +64,7 @@
     ```
 
 
-### Full example
+### `mytest.py` Full example
 
 ```python
 import unittest
