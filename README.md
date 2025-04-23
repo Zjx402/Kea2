@@ -25,6 +25,15 @@ python -m pip install uiautomator2
 
 4. Create a unittest script `mytest.py` in the workspace.
 
+### Quick Start
+
+We have a one-key start script `quickstart.py`. With this script,
+You can download our sample app omninotes and try our tool.
+
+```python
+python3 quickstart.py
+```
+
 
 ### How to write the unittest script `mytest.py` ? - Step by step guide.
 
