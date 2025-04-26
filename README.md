@@ -39,8 +39,8 @@ emulator -avd Android12 -port 5554 &
 ```
 
 
-We have a one-key start script `quickstart.py`. With this script,
-You can download our sample app omninotes and try our tool.
+2. run `quickstart.py` to fuzz a sample app `omninotes`.
+The script will automatically download the sample app `omninotes` and run.
 
 ```python
 cd KeaPlus
