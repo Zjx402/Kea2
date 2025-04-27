@@ -3,7 +3,7 @@
 ### Installation
 
 Requirement:
--  `python 3.8+`, Recommand: `python 3.11`
+-  `python 3.8+`
 
 - Android environment is installed
 
@@ -19,15 +19,7 @@ cd KeaPlus
 pip install --upgrade pip
 pip install uv
 uv sync
-``` 
-
-3. Install requirnment (Android)
-```bash
-python -m pip install --upgrade pip
-python -m pip install uiautomator2
-``` 
-
-4. Create a unittest script `mytest.py` in the workspace.
+```
 
 ### Quick Start
 
@@ -44,9 +36,10 @@ emulator -avd Android12 -port 5554 &
 The script will automatically download the sample app `omninotes` and run.
 
 ```python
-python3 quickstart.py
+uv run quickstart.py
 ```
 
+> [Introduction to python package manager uv](https://docs.astral.sh/uv/)
 
 ### How to write the unittest script `mytest.py` ? - Step by step guide.
 
