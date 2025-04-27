@@ -11,11 +11,12 @@ mkdir FastbotKea && cd FastbotKea
 git clone https://github.com/XixianLiang/KeaPlus.git
 ```
 
-2. Setup python envirnment
+2. Setup python envirnment with uv
 ```bash
-python -m venv env
-source env/bin/activate
-```
+pip install --upgrade pip
+pip install uv
+uv sync
+``` 
 
 3. Install requirnment (Android)
 ```bash
@@ -31,7 +32,7 @@ We have a one-key start script `quickstart.py`. With this script,
 You can download our sample app omninotes and try our tool.
 
 ```python
-python3 quickstart.py
+python quickstart.py
 ```
 
 
