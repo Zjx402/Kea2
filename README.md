@@ -2,13 +2,16 @@
 
 ### Installation
 
-Requirement `python 3.8+`, Recommand: `python 3.11`
+Requirement:
+-  `python 3.8+`, Recommand: `python 3.11`
+
+- Android environment is installed
 
 1. Create a workspace using mkdir. Clone this repo into the workspace.
 
 ```bash
-mkdir FastbotKea && cd FastbotKea
 git clone https://github.com/XixianLiang/KeaPlus.git
+cd KeaPlus
 ```
 
 2. Setup python envirnment with uv
@@ -28,11 +31,20 @@ python -m pip install uiautomator2
 
 ### Quick Start
 
-We have a one-key start script `quickstart.py`. With this script,
-You can download our sample app omninotes and try our tool.
+1. Create and start an Android emulator (Android 12 -- API version 31).
+
+```bash
+sdkmanager "system-images;android-31;google_apis;x86_64"
+avdmanager create avd --force --name Android12 --package 'system-images;android-31;google_apis;x86_64' --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
+emulator -avd Android12 -port 5554 &
+```
+
+
+2. run `quickstart.py` to fuzz a sample app `omninotes`.
+The script will automatically download the sample app `omninotes` and run.
 
 ```python
-python quickstart.py
+python3 quickstart.py
 ```
 
 
