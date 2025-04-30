@@ -1,3 +1,26 @@
+### Intro 
+
+Kea4Fastbot is an automated GUI fuzzing tool which is able to fuse *scripted tests* and *automated GUI testing*. It aims to combine the strengths of both human knowledge (encoded by the scripted tests) and random fuzzing (powered by automated GUI testing tools).
+
+Kea4Fastbot is released as a Python library
+and works with:
+
+- [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework
+- [uiautomator2]() as the UI test driver
+- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the GUI testing tool (running at backend).
+
+In the future Kea4Fastbot would be able to support
+
+- [pytest]()
+- [Appium](), [Hypium]()
+- Any GUI testing tools
+
+> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons shared by several experienced industrial practitioners. 
+Kea itself is a GUI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
+Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
+supports Android and HarmonyOS.
+Note that Kea4Fastbot also supports but is not limited to property-based testing. 
+
 ## Usage
 
 ### Installation
