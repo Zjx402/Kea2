@@ -3,30 +3,23 @@
 ### Installation
 
 Requirement:
--  `python 3.8+`, Recommand: `python 3.11`
+-  `python 3.8+`
 
 - Android environment is installed
 
 1. Create a workspace using mkdir. Clone this repo into the workspace.
 
 ```bash
-mkdir FastbotKea && cd FastbotKea
 git clone https://github.com/XixianLiang/KeaPlus.git
+cd KeaPlus
 ```
 
-2. Setup python envirnment
+2. Setup python envirnment with uv
 ```bash
-python -m venv env
-source env/bin/activate
+pip install --upgrade pip
+pip install uv
+uv sync
 ```
-
-3. Install requirnment (Android)
-```bash
-python -m pip install --upgrade pip
-python -m pip install uiautomator2
-``` 
-
-4. Create a unittest script `mytest.py` in the workspace.
 
 ### Quick Start
 
@@ -43,10 +36,10 @@ emulator -avd Android12 -port 5554 &
 The script will automatically download the sample app `omninotes` and run.
 
 ```python
-cd KeaPlus
-python3 quickstart.py
+uv run quickstart.py
 ```
 
+> [Introduction to python package manager uv](https://docs.astral.sh/uv/)
 
 ### How to write the unittest script `mytest.py` ? - Step by step guide.
 
