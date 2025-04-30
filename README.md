@@ -6,7 +6,7 @@ Kea4Fastbot is released as a Python library
 and works with:
 
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
-- [uiautomator2]() as the UI test driver; 
+- [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the automated GUI testing tool (running at the backend).
 
 In the future, Kea4Fastbot is planned to support
@@ -14,7 +14,7 @@ In the future, Kea4Fastbot is planned to support
 - [Appium](), [Hypium]()
 - Any GUI testing tools
 
-> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons shared by several experienced industrial practitioners. 
+> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
 Kea itself is a GUI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
 Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
 supports Android and HarmonyOS.
