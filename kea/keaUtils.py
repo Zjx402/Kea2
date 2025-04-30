@@ -68,10 +68,10 @@ class Options:
     driverName: str
     Driver: AbstractDriver
     packageNames: List[str]
-    maxStep: int = 500
+    serial: str = None
+    maxStep: int | float = float("inf")
     running_mins: int = 10
     throttle: int = 200
-
 
 
 @dataclass
@@ -116,6 +116,54 @@ class JsonResult(TextTestResult):
         self.res[test._testMethodName].error += 1
 
 
+def activateFastbot(options: Options, port):
+    cur_dir = Path(__file__).parent
+    push_file(Path.joinpath(cur_dir, "assets/monkeyq.jar"), "/sdcard/monkeyq.jar")
+    push_file(Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"), "/sdcard/fastbot-thirdpart.jar")
+    push_file(Path.joinpath(cur_dir, "assets/framework.jar"), "/sdcard/framework.jar")
+    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"), "/data/local/tmp")
+    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"), "/data/local/tmp")
+    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86"), "/data/local/tmp")
+    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"), "/data/local/tmp")
+
+    startFastbotService(options)
+
+    for _ in range(10):
+        sleep(1)
+        try:
+            requests.get(f"http://localhost:{port}/ping")
+            return
+        except requests.ConnectionError:
+            pass
+    raise RuntimeError("Failed to connect fastbot")
+
+
+def startFastbotService(options: Options):
+    command = [
+        "adb", "shell",
+        "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+        "exec", "app_process",
+        "/system/bin", "com.android.commands.monkey.Monkey",
+        "-p", *options.packageNames,
+        "--agent-u2", "reuseq",
+        "--running-minutes", f"{options.running_mins}",
+        "--throttle", f"{options.throttle}",
+        "-v", "-v", "-v"
+    ]
+
+    # log file
+    outfile = open("fastbot.log", "w")
+
+    print("[INFO] Options info: {}".format(asdict(options)))
+    print("[INFO] Launching fastbot with command:\n{}".format(" ".join(command)))
+    print("[INFO] Fastbot log will be saved to {}".format(outfile.name))
+
+    process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
+
+    # process handler
+    return process
+
+
 class KeaTestRunner(TextTestRunner):
 
     resultclass: JsonResult
@@ -135,10 +183,10 @@ class KeaTestRunner(TextTestRunner):
 
         if len(self.allProperties) == 0:
             print("[Warning] No property has been found.")
-        
+
         JsonResult.setProperties(self.allProperties)
         self.resultclass = JsonResult
-        
+
         result: JsonResult = self._makeResult()
         registerResult(result)
         result.failfast = self.failfast
@@ -164,23 +212,31 @@ class KeaTestRunner(TextTestRunner):
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
 
-            self.activateFastbot()
+            activateFastbot(options=self.options, port=self.scriptDriver.port)
+            
+            end_by_remote = False
+            step = 0
+            while step < self.options.maxStep:
+                step += 1
+                print("[INFO] Sending monkeyEvent {}".format(
+                       f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
+                       else f"({step})"
+                    )
+                )
 
-            for step in range(self.options.maxStep):
-                print("[INFO] Sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
-                
                 try:
                     propsSatisfiedPrecond = self.getValidProperties()
                 except requests.ConnectionError:
                     print("[INFO] Finsh sendding event")
+                    end_by_remote = True
                     break
-                
+
                 print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
 
                 # Go to the next round if no precond satisfied
                 if len(propsSatisfiedPrecond) == 0:
                     continue
-                
+
                 # get the random probability p
                 p = random.random()
                 propsNameFilteredByP = []
@@ -193,7 +249,7 @@ class KeaTestRunner(TextTestRunner):
                 if len(propsNameFilteredByP) == 0:
                     print("Not executed any property due to probability.")
                     continue
-                
+
                 execPropName = random.choice(propsNameFilteredByP)
                 test = propsSatisfiedPrecond[execPropName]
                 # Dependency Injection. driver when doing scripts
@@ -208,7 +264,11 @@ class KeaTestRunner(TextTestRunner):
                     result.printErrors()
 
                 result.flushResult(outfile="result.json")
-            print(f"finish sending {self.options.maxStep} events.")
+                
+            if not end_by_remote:
+                self.stopMonkey()
+                
+            print(f"finish sending monkey events.")
             result.flushResult(outfile="result.json")
 
         # Source code from unittest Runner
@@ -247,52 +307,6 @@ class KeaTestRunner(TextTestRunner):
         self.stream.flush()
         return result
 
-    def activateFastbot(self):
-        cur_dir = Path(__file__).parent
-        push_file(Path.joinpath(cur_dir, "assets/monkeyq.jar"), "/sdcard/monkeyq.jar")
-        push_file(Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"), "/sdcard/fastbot-thirdpart.jar")
-        push_file(Path.joinpath(cur_dir, "assets/framework.jar"), "/sdcard/framework.jar")
-        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"), "/data/local/tmp")
-        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"), "/data/local/tmp")
-        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86"), "/data/local/tmp")
-        push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"), "/data/local/tmp")
-
-        self.startFastbotService()
-
-        for _ in range(10):
-            sleep(1)
-            try:
-                requests.get(f"http://localhost:{self.scriptDriver.port}/ping")
-                return
-            except requests.ConnectionError:
-                pass
-        raise RuntimeError("Failed to connect fastbot")
-
-    def startFastbotService(self):
-        command = [
-            "adb",
-            "shell",
-            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
-            "exec", "app_process",
-            "/system/bin", "com.android.commands.monkey.Monkey",
-            "-p", *self.options.packageNames,
-            "--agent-u2", "reuseq", 
-            "--running-minutes", f"{self.options.running_mins}", 
-            "--throttle", f"{self.options.throttle}", "-v", "-v", "-v"
-        ]
-
-        # log file
-        outfile = open("fastbot.log", "w")
-
-        print("[INFO] Options info: {}".format(asdict(self.options)))
-        print("[INFO] Launching fastbot with command:\n{}".format(" ".join(command)))
-        print("[INFO] Fastbot log will be saved to {}".format(outfile.name))
-        
-        process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
-
-        # process handler
-        return process
-
     def stepMonkey(self) -> str:
         """
         send a step monkey request to the server and get the xml string.
@@ -302,6 +316,15 @@ class KeaTestRunner(TextTestRunner):
         res = json.loads(r.content)
         xml_raw = res["result"]
         return xml_raw
+    
+    def stopMonkey(self) -> str:
+        """
+        send a stop monkey request to the server and get the xml string.
+        """
+        r = requests.get(f"http://localhost:{self.scriptDriver.port}/stopMonkey")
+
+        res = r.content.decode(encoding="utf-8")
+        print(f"[Server INFO] {res}")
 
     def getValidProperties(self) -> PropertyStore:
 
