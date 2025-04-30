@@ -1,8 +1,14 @@
 ### Intro 
 
-Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge (encoded and customized by the scripted tests) and random fuzzing (powered by automated GUI testing tools).
+Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge (encoded and customized by the scripted tests) and random fuzzing (powered by automated UI testing tools).
 
-Kea4Fastbot is released as a Python library
+> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
+Kea itself is a UI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
+Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
+supports Android and HarmonyOS.
+Note that Kea4Fastbot also supports but is not limited to property-based testing. 
+
+Kea4Fastbot is released as an easy-to-use Python library
 and works with:
 
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
@@ -12,13 +18,9 @@ and works with:
 In the future, Kea4Fastbot is planned to support
 - [pytest]()
 - [Appium](), [Hypium]()
-- Any GUI testing tools
+- Any UI testing tools
 
-> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
-Kea itself is a GUI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
-Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
-supports Android and HarmonyOS.
-Note that Kea4Fastbot also supports but is not limited to property-based testing. 
+
 
 ## Usage
 
