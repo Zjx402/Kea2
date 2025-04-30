@@ -68,10 +68,10 @@ class Options:
     driverName: str
     Driver: AbstractDriver
     packageNames: List[str]
-    maxStep: int = 500
+    serial: str = None
+    maxStep: int | float = float("inf")
     running_mins: int = 10
     throttle: int = 200
-
 
 
 @dataclass
@@ -135,10 +135,10 @@ class KeaTestRunner(TextTestRunner):
 
         if len(self.allProperties) == 0:
             print("[Warning] No property has been found.")
-        
+
         JsonResult.setProperties(self.allProperties)
         self.resultclass = JsonResult
-        
+
         result: JsonResult = self._makeResult()
         registerResult(result)
         result.failfast = self.failfast
@@ -164,23 +164,31 @@ class KeaTestRunner(TextTestRunner):
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
 
-            self.activateFastbot()
+            # self.activateFastbot()
+            
+            end_by_remote = False
+            step = 0
+            while step < self.options.maxStep:
+                step += 1
+                print("[INFO] Sending monkeyEvent {}".format(
+                       f"( {step} / {self.options.maxStep} )" if self.options.maxStep != float("inf")
+                       else f"( {step} )"
+                    )
+                )
 
-            for step in range(self.options.maxStep):
-                print("[INFO] Sending monkeyEvent (%d/%d)" % (step+1, self.options.maxStep))
-                
                 try:
                     propsSatisfiedPrecond = self.getValidProperties()
                 except requests.ConnectionError:
                     print("[INFO] Finsh sendding event")
+                    end_by_remote = True
                     break
-                
+
                 print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
 
                 # Go to the next round if no precond satisfied
                 if len(propsSatisfiedPrecond) == 0:
                     continue
-                
+
                 # get the random probability p
                 p = random.random()
                 propsNameFilteredByP = []
@@ -193,7 +201,7 @@ class KeaTestRunner(TextTestRunner):
                 if len(propsNameFilteredByP) == 0:
                     print("Not executed any property due to probability.")
                     continue
-                
+
                 execPropName = random.choice(propsNameFilteredByP)
                 test = propsSatisfiedPrecond[execPropName]
                 # Dependency Injection. driver when doing scripts
@@ -208,6 +216,10 @@ class KeaTestRunner(TextTestRunner):
                     result.printErrors()
 
                 result.flushResult(outfile="result.json")
+                
+            if not end_by_remote:
+                self.stopMonkey()
+                
             print(f"finish sending {self.options.maxStep} events.")
             result.flushResult(outfile="result.json")
 
@@ -302,6 +314,15 @@ class KeaTestRunner(TextTestRunner):
         res = json.loads(r.content)
         xml_raw = res["result"]
         return xml_raw
+    
+    def stopMonkey(self) -> str:
+        """
+        send a stop monkey request to the server and get the xml string.
+        """
+        r = requests.get(f"http://localhost:{self.scriptDriver.port}/stopMonkey")
+
+        res = r.content.decode(encoding="utf-8")
+        print(f"[Server INFO] {res}")
 
     def getValidProperties(self) -> PropertyStore:
 
