@@ -49,7 +49,7 @@ uv sync
 
 ## Quick Start
 
-1. Create and start an Android emulator (Android 12 -- API version 31).
+1. Create and start an Android emulator (e.g., Android 12 -- API version 31).
 
 ```bash
 sdkmanager "system-images;android-31;google_apis;x86_64"
@@ -57,6 +57,7 @@ avdmanager create avd --force --name Android12 --package 'system-images;android-
 emulator -avd Android12 -port 5554 &
 ```
 
+or, prepare one real Android device (not two) with `Developer Options` enabled, connect this device to your machine, and make sure you can see the connected device by running `adb devices`.
 
 2. run `quickstart.py` to fuzz a sample app `omninotes`.
 The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.

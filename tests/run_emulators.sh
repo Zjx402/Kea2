@@ -1,9 +1,12 @@
 #!/bin/bash
-# compatibility tests for Kea4Fastbot against different Android versions
+# Compatibility tests for Kea4Fastbot against different Android versions
+### Example: ./run_emulators.sh "system-images;android-32;google_apis;x86_64"
 
 # Obtain all android versions which are compatible with intel chips
 # sdkmanager --list | grep -E "system-images;android-[0-9]+;(google_apis).*(x86|x86_64)"
 ###  
+###  system-images;android-36;google_apis;x86_64    => Android 16
+###  system-images;android-35;google_apis;x86_64    => Android 15
 ###  system-images;android-34;google_apis;x86_64    => Android 14
 ###  system-images;android-33;google_apis;x86_64    => Android 13
 ###  system-images;android-32;google_apis;x86_64    => Android 12
@@ -19,10 +22,6 @@
 ###  system-images;android-22;google_apis;x86_64    => Android 5
 ###  system-images;android-21;google_apis;x86_64    => Android 5
 ###  system-images;android-19;google_apis;x86       => Android 4
-###  system-images;android-18;google_apis;x86       => Android 4
-###  system-images;android-17;google_apis;x86       => Android 4
-###  system-images;android-16;google_apis;x86       => Android 4
-###  system-images;android-15;google_apis;x86       => Android 4
 
 # Obtain all android versions which are compatible with Apple Silicon (M1, M2, M3 chips)
 # sdkmanager --list | grep -E "system-images;android-[0-9]+;google_apis;arm64-v8a"
@@ -170,12 +169,21 @@ if is_emulator_created "$AVD_NAME"; then
 else
     # Create a new emulator
     echo "Creating a new emulator: $AVD_NAME"
+
+    if [[ $ANDROID_VERSION == *"arm64-v8a"* ]]; then
+        ABI="google_apis/arm64-v8a"
+    elif [[ $ANDROID_VERSION == *"x86_64"* ]]; then
+        ABI="google_apis/x86_64"
+    else 
+        ABI="google_apis/x86"
+    fi
+
     case "$OS_TYPE" in
         windows)
             echo "no" | avdmanager.bat create avd -n "$AVD_NAME" -k "$ANDROID_VERSION"
             ;;
         *)
-        echo "no" | avdmanager create avd --force --name "$AVD_NAME" --package "$ANDROID_VERSION" --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
+        echo "no" | avdmanager create avd --force --name "$AVD_NAME" --package "$ANDROID_VERSION" --abi "$ABI" --sdcard 1024M --device 'Nexus 7'
         ;;
     esac
 
