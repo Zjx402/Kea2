@@ -157,11 +157,12 @@ def activateFastbot(options: Options, port):
     startFastbotService(options)
 
     for _ in range(10):
-        sleep(1)
+        sleep(2)
         try:
             requests.get(f"http://localhost:{port}/ping")
             return
         except requests.ConnectionError:
+            print("[INFO] waiting for connection.")
             pass
     raise RuntimeError("Failed to connect fastbot")
 
@@ -399,23 +400,26 @@ class KeaTestRunner(TextTestRunner):
             """
             def tearDown(self): ...
             testCase = types.MethodType(tearDown, testCase)
+        
+        def iter_tests(suite):
+            for test in suite:
+                if isinstance(test, TestSuite):
+                    yield from iter_tests(test)
+                else:
+                    yield test
 
         # Traverse the TestCase to get all properties
-        for subtest in test._tests:
-            # subtest._tests: List["TestSuite"]
-            for _testCaseClass in subtest._tests:
-                if isinstance(_testCaseClass, TestSuite):
-                    self.collectAllProperties(_testCaseClass._tests)
-                testMethodName = _testCaseClass._testMethodName
-                # get the test method name and check if it's a property
-                testMethod = getattr(_testCaseClass, testMethodName)
-                if hasattr(testMethod, PRECONDITIONS_MARKER):
-                    # remove the hook func in its TestCase
-                    remove_setUp(_testCaseClass)
-                    remove_tearDown(_testCaseClass)
-                    # save it into allProperties for PBT
-                    self.allProperties[testMethodName] = _testCaseClass
-    
+        for t in iter_tests(test):
+            testMethodName = t._testMethodName
+            # get the test method name and check if it's a property
+            testMethod = getattr(t, testMethodName)
+            if hasattr(testMethod, PRECONDITIONS_MARKER):
+                # remove the hook func in its TestCase
+                remove_setUp(t)
+                remove_tearDown(t)
+                # save it into allProperties for PBT
+                self.allProperties[testMethodName] = t
+
     def tearDown(self):
         # TODO Add tearDown method (remove local port, etc.)
         pass
