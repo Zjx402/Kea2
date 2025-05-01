@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import subprocess
 import threading
-from typing import IO, Callable, Any, Dict, List, NewType
+from typing import IO, Callable, Any, Dict, List, NewType, Optional, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -70,7 +70,7 @@ class Options:
     Driver: AbstractDriver
     packageNames: List[str]
     serial: str = None
-    maxStep: int | float = float("inf")
+    maxStep: Union[str, float] = float("inf")
     running_mins: int = 10
     throttle: int = 200
 
