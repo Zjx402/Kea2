@@ -1,6 +1,6 @@
 ## Intro 
 
-Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge (encoded and customized by the scripted tests) and random fuzzing (powered by automated UI testing tools).
+Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge on app business logics (encoded and customized by the scripted tests) and random fuzzing (powered by automated UI testing tools).
 
 > Kea4Fastbot, a successor of [Kea](https://github.com/ecnusse/Kea), is inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
 Kea itself is a UI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
@@ -65,9 +65,9 @@ The script will automatically download the sample app `omninotes`'s apk `omninot
 uv run quickstart.py
 ```
 
+> [quickstart.py](https://docs.astral.sh/uv/) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
 
-
-### How to write the unittest script `mytest.py` ? - Step by step guide.
+### How to understand and customize the script test `quickstart.py` ? - Step by step guide.
 
 1. Extend the python unittest.TestCase module and write your own script
 
