@@ -73,7 +73,7 @@ uv run quickstart.py
 1. Extend the python unittest.TestCase module and write your own script
 
     ```python
-    from kea.keaUtils import precondition KeaTestRunner, Options
+    from kea.keaUtils import precondition, KeaTestRunner, Options
     from kea.u2Driver import U2Driver
 
     class MyTest(unittest.TestCase):
