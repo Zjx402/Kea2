@@ -1,7 +1,7 @@
 #!/bin/bash
 # compatibility tests for Kea4Fastbot against different Android versions
 
-# Obtain all android versions which are compatible with macos with intel chips
+# Obtain all android versions which are compatible with intel chips
 # sdkmanager --list | grep -E "system-images;android-[0-9]+;(google_apis).*(x86|x86_64)"
 ###  
 ###  system-images;android-34;google_apis;x86_64    => Android 14
@@ -23,6 +23,23 @@
 ###  system-images;android-17;google_apis;x86       => Android 4
 ###  system-images;android-16;google_apis;x86       => Android 4
 ###  system-images;android-15;google_apis;x86       => Android 4
+
+# Obtain all android versions which are compatible with Apple Silicon (M1, M2, M3 chips)
+# sdkmanager --list | grep -E "system-images;android-[0-9]+;google_apis;arm64-v8a"
+###  system-images;android-34;google_apis;arm64-v8a    => Android 14
+###  system-images;android-33;google_apis;arm64-v8a    => Android 13
+###  system-images;android-32;google_apis;arm64-v8a    => Android 12
+###  system-images;android-31;google_apis;arm64-v8a   => Android 12
+###  system-images;android-30;google_apis;arm64-v8a   => Android 11
+###  system-images;android-29;google_apis;arm64-v8a    => Android 10
+###  system-images;android-28;google_apis;arm64-v8a    => Android 9
+###  system-images;android-27;google_apis;arm64-v8a      => Android 8
+###  system-images;android-26;google_apis;arm64-v8a   => Android 8
+###  system-images;android-25;google_apis;arm64-v8a   => Android 7
+###  system-images;android-24;google_apis;arm64-v8a    => Android 7
+###  system-images;android-23;google_apis;arm64-v8a    => Android 6
+###  system-images;android-22;google_apis;arm64-v8a    => Android 5
+###  system-images;android-21;google_apis;arm64-v8a   => Android 5
 
 QUICKSTART=../quickstart.py
 
