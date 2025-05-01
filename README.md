@@ -1,39 +1,39 @@
-### Intro 
+## Intro 
 
 Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge (encoded and customized by the scripted tests) and random fuzzing (powered by automated UI testing tools).
 
-> Kea4Fastbot is a successor of [Kea](https://github.com/ecnusse/Kea) inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
+> Kea4Fastbot, a successor of [Kea](https://github.com/ecnusse/Kea), is inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
 Kea itself is a UI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
 Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
 supports Android and HarmonyOS.
-Note that Kea4Fastbot also supports but is not limited to property-based testing. 
+Note that Kea4Fastbot also fully supports but is not limited to property-based testing. 
 
 Kea4Fastbot is released as an easy-to-use Python library
 and works with:
 
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
-- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the automated GUI testing tool (running at the backend).
+- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
 
 In the future, Kea4Fastbot is planned to support
-- [pytest]()
-- [Appium](), [Hypium]()
-- Any UI testing tools
+- [pytest](https://docs.pytest.org/en/stable/)
+- [Appium](https://github.com/appium/appium), [Hypium]()
+- Any UI testing tools (not limited to Fastbot)
 
 
 
-## Usage
+## Installation
 
-### Installation
+Running requirements or environment:
+- support Windows, MacOS and Linux
+- python 3.8+
+- Android SDK installed
+- VPN disabled
 
-Requirement:
--  `python 3.8+`
-
-- Android environment is installed
-
-1. Create a workspace using mkdir. Clone this repo into the workspace.
+1. Create a workspace and clone this repository into the workspace.
 
 ```bash
+mkdir Kea4Fastbot && cd Kea4Fastbot
 git clone https://github.com/XixianLiang/KeaPlus.git
 cd KeaPlus
 ```
@@ -45,7 +45,7 @@ pip install uv
 uv sync
 ```
 
-### Quick Start
+## Quick Start
 
 1. Create and start an Android emulator (Android 12 -- API version 31).
 
