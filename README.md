@@ -65,7 +65,7 @@ The script will automatically download the sample app `omninotes`'s apk `omninot
 uv run quickstart.py
 ```
 
-> [quickstart.py](https://docs.astral.sh/uv/) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
+> [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
 
 ### How to understand and customize the script test `quickstart.py` ? - Step by step guide.
 
