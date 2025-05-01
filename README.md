@@ -45,6 +45,8 @@ pip install uv
 uv sync
 ```
 
+> [uv](https://docs.astral.sh/uv/) is a python package manager.
+
 ## Quick Start
 
 1. Create and start an Android emulator (Android 12 -- API version 31).
@@ -57,13 +59,13 @@ emulator -avd Android12 -port 5554 &
 
 
 2. run `quickstart.py` to fuzz a sample app `omninotes`.
-The script will automatically download the sample app `omninotes` and run.
+The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.
 
 ```python
 uv run quickstart.py
 ```
 
-> [Introduction to python package manager uv](https://docs.astral.sh/uv/)
+
 
 ### How to write the unittest script `mytest.py` ? - Step by step guide.
 
@@ -161,3 +163,18 @@ KeaTestRunner.setOptions(
 if __name__ == "__main__":
     unittest.main(testRunner=KeaTestRunner)
 ```
+
+## Contributors/Maintainers
+
+Kea4Fastbot has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
+
+### Open-source projects used by Kea4Fastbot
+
+- [Fastbot](https://github.com/bytedance/Fastbot_Android)
+- [uiautomator2](https://github.com/openatx/uiautomator2)
+- [hypothesis](https://github.com/HypothesisWorks/hypothesis)
+
+### Relevant projects
+
+- [Kea](https://github.com/ecnusse/Kea)
+- [appcrawler](https://github.com/seveniruby/AppCrawler)
