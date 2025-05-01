@@ -10,8 +10,9 @@ FILE_NAME = "omninotes.apk"
 
 KeaTestRunner.setOptions(
     Options(
+        ## serial="...",   # specify the serial
         driverName="d",
-        maxStep=50000,
+        maxStep=500,
         Driver=U2Driver,
         packageNames=[PACKAGE_NAME],
     )
