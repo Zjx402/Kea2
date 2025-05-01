@@ -1,7 +1,8 @@
 import json
 from pathlib import Path
 import subprocess
-from typing import Callable, Any, Dict, List, NewType
+import threading
+from typing import IO, Callable, Any, Dict, List, NewType
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -11,7 +12,7 @@ import requests
 from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
-from .adbUtils import push_file, run_adb_command
+from .adbUtils import push_file
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -118,13 +119,40 @@ class JsonResult(TextTestResult):
 
 def activateFastbot(options: Options, port):
     cur_dir = Path(__file__).parent
-    push_file(Path.joinpath(cur_dir, "assets/monkeyq.jar"), "/sdcard/monkeyq.jar")
-    push_file(Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"), "/sdcard/fastbot-thirdpart.jar")
-    push_file(Path.joinpath(cur_dir, "assets/framework.jar"), "/sdcard/framework.jar")
-    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"), "/data/local/tmp")
-    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"), "/data/local/tmp")
-    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86"), "/data/local/tmp")
-    push_file(Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"), "/data/local/tmp")
+    push_file(
+        Path.joinpath(cur_dir, "assets/monkeyq.jar"),
+        "/sdcard/monkeyq.jar",
+        device=options.serial
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"),
+        "/sdcard/fastbot-thirdpart.jar",
+        device=options.serial,
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/framework.jar"), 
+        "/sdcard/framework.jar",
+        device=options.serial
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
+        "/data/local/tmp"
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
+        "/data/local/tmp",
+        device=options.serial
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/fastbot_libs/x86"),
+        "/data/local/tmp",
+        device=options.serial
+    )
+    push_file(
+        Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"),
+        "/data/local/tmp",
+        device=options.serial
+    )
 
     startFastbotService(options)
 
@@ -139,8 +167,7 @@ def activateFastbot(options: Options, port):
 
 
 def startFastbotService(options: Options):
-    command = [
-        "adb", "shell",
+    shell_command = [
         "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
         "exec", "app_process",
         "/system/bin", "com.android.commands.monkey.Monkey",
@@ -151,17 +178,23 @@ def startFastbotService(options: Options):
         "-v", "-v", "-v"
     ]
 
+    full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
+
     # log file
     outfile = open("fastbot.log", "w")
 
     print("[INFO] Options info: {}".format(asdict(options)))
-    print("[INFO] Launching fastbot with command:\n{}".format(" ".join(command)))
+    print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
     print("[INFO] Fastbot log will be saved to {}".format(outfile.name))
 
-    process = subprocess.Popen(command, stdout=outfile, stderr=outfile)
-
     # process handler
-    return process
+    proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
+    t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
+    t.start()
+
+def close_on_exit(proc: subprocess.Popen, f: IO):
+    proc.wait()
+    f.close()
 
 
 class KeaTestRunner(TextTestRunner):
@@ -212,7 +245,7 @@ class KeaTestRunner(TextTestRunner):
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
 
-            activateFastbot(options=self.options, port=self.scriptDriver.port)
+            activateFastbot(options=self.options, port=self.scriptDriver.lport)
 
             end_by_remote = False
             step = 0
@@ -272,6 +305,7 @@ class KeaTestRunner(TextTestRunner):
 
             print(f"Finish sending monkey events.")
             result.flushResult(outfile="result.json")
+            self.tearDown()
 
         # Source code from unittest Runner
         # process the result
@@ -313,7 +347,7 @@ class KeaTestRunner(TextTestRunner):
         """
         send a step monkey request to the server and get the xml string.
         """
-        r = requests.get(f"http://localhost:{self.scriptDriver.port}/stepMonkey")
+        r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stepMonkey")
 
         res = json.loads(r.content)
         xml_raw = res["result"]
@@ -323,7 +357,7 @@ class KeaTestRunner(TextTestRunner):
         """
         send a stop monkey request to the server and get the xml string.
         """
-        r = requests.get(f"http://localhost:{self.scriptDriver.port}/stopMonkey")
+        r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stopMonkey")
 
         res = r.content.decode(encoding="utf-8")
         print(f"[Server INFO] {res}")
@@ -381,3 +415,7 @@ class KeaTestRunner(TextTestRunner):
                     remove_tearDown(_testCaseClass)
                     # save it into allProperties for PBT
                     self.allProperties[testMethodName] = _testCaseClass
+    
+    def tearDown(self):
+        # TODO Add tearDown method (remove local port, etc.)
+        pass

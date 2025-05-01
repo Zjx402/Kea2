@@ -40,36 +40,33 @@ class U2ScriptDriver(AbstractScriptDriver):
                 else u2.connect(self.deviceSerial)
             )
             
-            def rewrite_forward_port():
-                """rewrite forward_port mothod to avoid the relocation of port 
+            def get_u2_forward_port() -> int:
+                """rewrite forward_port mothod to avoid the relocation of port
+                :return: the new forward port
                 """
                 print("Rewriting forward_port method")
                 self.d._dev.forward_port = types.MethodType(
                                 forward_port, self.d._dev)
                 lport = self.d._dev.forward_port(8090)
                 setattr(self.d._dev, "msg", "meta")
-                print(f"local port: {lport}")
-                
-                self.d.port = lport
+                print(f"[U2] local port: {lport}")
+                return lport
             
-            def remove_9008_forward_port():
-                """remove the forward to tcp:9008
-                """
-                forwardLists = list_forwards(device=self.deviceSerial)
-                for forward in forwardLists:
-                    if forward["remote"] == "tcp:9008":
-                        forward_local = forward["local"]
-                        print("uiautomator2 server local port %s" % forward_local)
-                        remove_forward(local_spec=forward_local, device=self.deviceSerial)
-                        create_forward(local_spec=forward_local, remote_spec="tcp:8090", device=self.deviceSerial)
-                        print("rewrite the uiautomator2 server remote port to %s" % "tcp:8090")
-                        self.d.port = forward_local.split(":")[-1]
-            
-            rewrite_forward_port()
-            remove_9008_forward_port()
+            self._remove_remote_port(8090)
+            self.d.lport = get_u2_forward_port()
+            self._remove_remote_port(9008)
 
         return self.d
-
+    
+    def _remove_remote_port(self, port:int):
+        """remove the forward port
+        """
+        forwardLists = list_forwards(device=self.deviceSerial)
+        for forward in forwardLists:
+            if forward["remote"] == f"tcp:{port}":
+                forward_local = forward["local"]
+                remove_forward(local_spec=forward_local, device=self.deviceSerial)
+        
 
 """
 The definition of U2StaticChecker
