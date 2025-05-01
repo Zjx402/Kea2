@@ -213,7 +213,7 @@ class KeaTestRunner(TextTestRunner):
             self.scriptDriver = self.options.Driver.getScriptDriver()
 
             activateFastbot(options=self.options, port=self.scriptDriver.port)
-            
+
             end_by_remote = False
             step = 0
             while step < self.options.maxStep:
@@ -227,7 +227,9 @@ class KeaTestRunner(TextTestRunner):
                 try:
                     propsSatisfiedPrecond = self.getValidProperties()
                 except requests.ConnectionError:
-                    print("[INFO] Finsh sendding event")
+                    print(
+                        "[INFO] Exploration times up (--running-minutes)."
+                    )
                     end_by_remote = True
                     break
 
@@ -264,11 +266,11 @@ class KeaTestRunner(TextTestRunner):
                     result.printErrors()
 
                 result.flushResult(outfile="result.json")
-                
+
             if not end_by_remote:
                 self.stopMonkey()
-                
-            print(f"finish sending monkey events.")
+
+            print(f"Finish sending monkey events.")
             result.flushResult(outfile="result.json")
 
         # Source code from unittest Runner
@@ -316,7 +318,7 @@ class KeaTestRunner(TextTestRunner):
         res = json.loads(r.content)
         xml_raw = res["result"]
         return xml_raw
-    
+
     def stopMonkey(self) -> str:
         """
         send a stop monkey request to the server and get the xml string.
