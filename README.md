@@ -175,6 +175,11 @@ You will have the following two sub-commands.
 - **driver** : Settings of kea options.
 - **unittest** : Settings of unittest.
 
+Launch kea with 
+```
+python3 kea_launcher.py driver <fastbot cmds> unittest <unittest cmds> 
+```
+
 Sample command:
 
 ```bash
