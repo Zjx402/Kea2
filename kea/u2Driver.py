@@ -2,7 +2,9 @@ import random
 import socket
 import uiautomator2 as u2
 import types
-from typing import Dict, Union
+import rtree
+import re
+from typing import Dict, List, Union
 from xml.etree import ElementTree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
@@ -97,8 +99,85 @@ class StaticU2UiObject(u2.UiObject):
             xpath = f".//node{''.join(attrLocs)}"
             return xpath
 
+        def getXMLCoveredINFO(xml):
+            """
+            Algorithm: Filter the hidden widgets.
+            Set `covered` xml info according to drawing orders.
+            """
+            pass
+        
         xpath = getXPath(self.selector)
         return self.session.xml.find(xpath) is not None
+
+
+def _get_bounds(raw_bounds):
+    pattern = re.compile(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]")
+    m = re.match(pattern, raw_bounds)
+    bounds = list(map(int, [m.group(_) for _ in range(1, 5)]))
+    # return [int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))]
+    return bounds
+
+
+class _HindenWidgetFilter:
+    def __init__(self, hierarchy):
+        self.global_drawing_order = 0
+        self._nodes = []
+        
+        self.idx = rtree.index.Index()
+        self.set_covered_attr(hierarchy)
+    
+    def _iter_by_drawing_order(self, ele: ElementTree.Element):
+        """
+        iter by drawing order (DFS)
+        """
+        if ele.tag == "node":
+            yield ele
+
+        children = list(ele)
+        try:
+            children.sort(key=lambda e: int(e.get("drawing-order", 0)))
+        except (TypeError, ValueError):
+            pass
+
+        for child in children:
+            yield from self._iter_by_drawing_order(child)
+   
+    def set_covered_attr(self, tree: ElementTree):
+        root: ElementTree.Element = tree.getroot()
+        self._nodes: List[ElementTree.Element] = list()
+        for e in self._iter_by_drawing_order(root):
+            
+            # skip the "covered" widgets
+            if e.get("covered", "false") == "true":
+                continue
+            
+            e.set("covered", "false")
+
+            # algorithm: filter by "clickable"
+            clickable = (e.get("clickable", "false") == "true")
+            if clickable:
+                bounds = _get_bounds(e.get("bounds"))
+                covered_widget_ids = list(self.idx.contains(bounds))
+                if covered_widget_ids:
+                    for covered_widget_id in covered_widget_ids:
+                        node = self._nodes[covered_widget_id]
+                        # update all its decedents to "covered"
+                        for n in node.iter():
+                            n.set("covered", "true")
+                        self.idx.delete(
+                            covered_widget_id,
+                            self._nodes[covered_widget_id].get("bounds")
+                        )
+
+                    center = [
+                        (bounds[0] + bounds[2]) / 2,
+                        (bounds[1] + bounds[3]) / 2
+                    ]
+                    self.idx.insert(
+                        self.global_drawing_order, 
+                        (center[0], center[1], center[0], center[1])
+                    )
+
 
 class U2StaticDevice(u2.Device):
     def __init__(self):
@@ -141,6 +220,8 @@ class U2StaticChecker(AbstractStaticChecker):
             fp.write(hierarchy)
             fp.flush()
         self.d.xml = ElementTree.parse("tmp.xml")
+        # filter the hidden widget
+        _HindenWidgetFilter(self.d.xml)
 
     def getInstance(self, hierarchy: str):
         self.setHierarchy(hierarchy)
