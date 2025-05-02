@@ -152,17 +152,34 @@ class Test1(unittest.TestCase):
         assert self.d(resourceId="it.feio.android.omninotes.alpha:id/search_src_text").exists()
 
 
-KeaTestRunner.setOptions(
-    Options(
-        driverName="d",
-        maxStep=500,
-        Driver=U2Driver,
-        packageNames=["it.feio.android.omninotes.alpha"]
-    )
-)
-
 if __name__ == "__main__":
+    KeaTestRunner.setOptions(
+        Options(
+            driverName="d",
+            maxStep=500,
+            Driver=U2Driver,
+            packageNames=["it.feio.android.omninotes.alpha"]
+        )
+    )
     unittest.main(testRunner=KeaTestRunner)
+```
+
+### Run mutiple properties with unittest.
+
+Kea is compatible with `unittest` framework. You can manage your test cases in unittest style.
+
+To do so, launch Kea4Fastbot with `kea_launcher.py`. And set the args in `unittest` sub-commands.
+
+You will have the following two sub-commands.
+
+- **driver** : Settings of kea options.
+- **unittest** : Settings of unittest.
+
+Sample command:
+
+```bash
+# Launch fastbot with command followed by driver (Same in `options`). Load the properties (testCases) from directory mytests/omni_notes
+python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha:id --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
 ```
 
 ## Contributors/Maintainers

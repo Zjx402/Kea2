@@ -96,6 +96,8 @@ class StaticU2UiObject(u2.UiObject):
                     continue
                 key = filterU2Keys(key)
                 attrLocs.append(f"[@{key}='{val}']")
+            # filter the covered widgets
+            attrLocs.append("[@covered='false']")
             xpath = f".//node{''.join(attrLocs)}"
             return xpath
 

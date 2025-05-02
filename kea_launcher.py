@@ -65,7 +65,7 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
     parser.add_argument(
         "extra",
         nargs=argparse.REMAINDER,
-        help="Extra args, e.g. unittest <args>",
+        help="Extra args for unittest <args>",
     )
 
     # driver_subparsers = parser.add_subparsers(dest="driver_subcommand", required=False)
