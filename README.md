@@ -180,11 +180,14 @@ Launch kea with
 python3 kea_launcher.py driver <fastbot cmds> unittest <unittest cmds> 
 ```
 
-Sample command:
+Sample commands:
 
 ```bash
 # Launch fastbot with command followed by driver (Same in `options`). Load the properties (testCases) from directory mytests/omni_notes
-python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha:id --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
+python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
+
+# Launch fastbot and load properties from quickstart2.py.
+python3 kea_launcher.py driver <...> unittest quickstart2.py
 ```
 
 ## Contributors/Maintainers

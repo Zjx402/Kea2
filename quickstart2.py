@@ -55,15 +55,6 @@ class Omni_Notes_Sample(unittest.TestCase):
 PACKAGE_NAME = "it.feio.android.omninotes.alpha"
 FILE_NAME = "omninotes.apk"
 
-KeaTestRunner.setOptions(
-    Options(
-        driverName="d",
-        maxStep=50000,
-        Driver=U2Driver,
-        packageNames=[PACKAGE_NAME],
-    )
-)
-
 def check_installation():
     d = u2.connect()
     # automatically install omni-notes
@@ -85,4 +76,12 @@ def check_installation():
 
 if __name__ == "__main__":
     check_installation()
+    KeaTestRunner.setOptions(
+        Options(
+            driverName="d",
+            maxStep=50000,
+            Driver=U2Driver,
+            packageNames=[PACKAGE_NAME],
+        )
+    )
     unittest.main(testRunner=KeaTestRunner)

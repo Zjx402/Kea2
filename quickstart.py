@@ -8,16 +8,6 @@ from kea.u2Driver import U2Driver
 PACKAGE_NAME = "it.feio.android.omninotes.alpha"
 FILE_NAME = "omninotes.apk"
 
-KeaTestRunner.setOptions(
-    Options(
-        ## serial="...",   # specify the serial
-        driverName="d",
-        maxStep=500,
-        Driver=U2Driver,
-        packageNames=[PACKAGE_NAME],
-    )
-)
-
 def check_installation():
     d = u2.connect()
     # automatically install omni-notes
@@ -39,4 +29,13 @@ def check_installation():
 
 if __name__ == "__main__":
     check_installation()
+    KeaTestRunner.setOptions(
+        Options(
+            # serial="...",   # specify the serial
+            driverName="d",
+            maxStep=500,
+            Driver=U2Driver,
+            packageNames=[PACKAGE_NAME],
+        )
+    )
     unittest.main(testRunner=KeaTestRunner)
