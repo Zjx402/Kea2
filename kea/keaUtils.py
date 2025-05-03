@@ -136,7 +136,8 @@ def activateFastbot(options: Options, port):
     )
     push_file(
         Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
-        "/data/local/tmp"
+        "/data/local/tmp",
+        device=options.serial
     )
     push_file(
         Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
