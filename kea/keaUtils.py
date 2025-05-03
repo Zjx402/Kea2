@@ -13,6 +13,7 @@ from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
 from .adbUtils import push_file
+from .logWatcher import LogWatcher
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -247,6 +248,7 @@ class KeaTestRunner(TextTestRunner):
             # setUp for the u2 driver
             self.scriptDriver = self.options.Driver.getScriptDriver()
 
+            LogWatcher()
             activateFastbot(options=self.options, port=self.scriptDriver.lport)
 
             end_by_remote = False
