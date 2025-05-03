@@ -190,6 +190,8 @@ python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.a
 python3 kea_launcher.py driver <...> unittest quickstart2.py
 ```
 
+> Hint: All commands in unittest is compatible in kea_launcher's sub-commands. See `python3 -m unittest -h` for details.
+
 ## Contributors/Maintainers
 
 Kea4Fastbot has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
