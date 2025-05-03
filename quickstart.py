@@ -1,8 +1,7 @@
 import unittest
 import uiautomator2 as u2
 
-from time import sleep
-from kea.keaUtils import precondition, prob, KeaTestRunner, Options
+from kea.keaUtils import KeaTestRunner, Options
 from kea.u2Driver import U2Driver
 
 PACKAGE_NAME = "it.feio.android.omninotes.alpha"
@@ -10,11 +9,13 @@ FILE_NAME = "omninotes.apk"
 
 KeaTestRunner.setOptions(
     Options(
-        ## serial="...",   # specify the serial
         driverName="d",
-        maxStep=500,
         Driver=U2Driver,
         packageNames=[PACKAGE_NAME],
+        # serial="emulator-5554",   # specify the serial
+        maxStep=500,
+        # running_mins=10,  # specify the maximal running time in minutes, default value is 10m
+        # throttle=200,   # specify the throttle in milliseconds, default value is 200ms
     )
 )
 
@@ -22,19 +23,6 @@ def check_installation():
     d = u2.connect()
     # automatically install omni-notes
     if PACKAGE_NAME not in d.app_list():
-        from pathlib import Path
-        # If omninotes.apk not find, download it.
-        if not list(Path(".").glob(FILE_NAME)):
-            import requests
-            URL = "https://raw.githubusercontent.com/ecnusse/Kea/refs/heads/main/example/omninotes.apk"
-
-            resp = requests.get(URL)
-            resp.raise_for_status()
-
-            with open(FILE_NAME, "wb") as f:
-                f.write(resp.content)
-                f.flush()
-
         d.app_install(FILE_NAME)
 
 if __name__ == "__main__":
