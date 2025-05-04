@@ -1,8 +1,8 @@
 ## Intro 
 
-Kea4Fastbot is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2). 
+Kea4Fastbot is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
-Kea4Fastbot is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. It has these important features:
+It has these important features:
 - coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for finding *stability problems* (i.e., *crashing bugs*); 
 - customizing specific testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering difficult-to-reach areas, creating specific app states) with the full capability and flexibility by using *python* language and [uiautomator2](https://github.com/openatx/uiautomator2)[^1];
 - supporting [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing), inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs*[^2] (i.e., *non-crashing bugs*)
@@ -19,6 +19,7 @@ In the future, Kea4Fastbot is planned to additionally support
 - [Appium](https://github.com/appium/appium), [Hypium]()
 - other automated UI testing tools (not limited to Fastbot)
 
+> Kea4Fastbot is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. Kudos!
 
 ## Installation
 
