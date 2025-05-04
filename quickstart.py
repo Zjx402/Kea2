@@ -12,6 +12,7 @@ def check_installation():
     # automatically install omni-notes
     if PACKAGE_NAME not in d.app_list():
         d.app_install(FILE_NAME)
+    d.stop_uiautomator()
 
 if __name__ == "__main__":
     check_installation()
