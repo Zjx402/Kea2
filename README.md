@@ -7,7 +7,7 @@ Kea4Fastbot is inspired by many valuable insights, advices and lessons shared by
 - customizing specific testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering difficult-to-reach areas, creating specific app states) with the full capability and flexibility by using *python* language and [uiautomator2](https://github.com/openatx/uiautomator2)[^1];
 - supporting [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing), inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs*[^2] (i.e., *non-crashing bugs*)
 
-> In essence, Kea4Fastbot is capable of fusing the *scripted tests* written in [uiautomator2](https://github.com/openatx/uiautomator2) with automated UI testing tools like Fastbot --- combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features can be extended based on such a capability.
+> In essence, Kea4Fastbot is capable of fusing the *scripted tests* (e.g., written in [uiautomator2](https://github.com/openatx/uiautomator2)) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features can be implemented based on such a capability.
  
 Kea4Fastbot, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
