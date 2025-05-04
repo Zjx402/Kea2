@@ -1,25 +1,23 @@
 ## Intro 
 
-Kea4Fastbot is a novel, automated UI testing tool for mobile apps which is able to fuse *scripted tests* and *fully automated GUI fuzzing*. It aims to combine the strengths of human knowledge on app business logics (encoded and customized by the scripted tests) and random fuzzing (powered by automated UI testing tools).
+Kea4Fastbot is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2). 
 
-> Kea4Fastbot, a successor of [Kea](https://github.com/ecnusse/Kea), is inspired by many valuable insights, advices and lessons from experienced industrial practitioners. 
-Kea itself is a UI testing tool based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) for finding functional (logic) bugs in mobile apps, in addition to crashing bugs.
-Kea is built on top of [DroidBot](https://github.com/honeynet/droidbot) and 
-supports Android and HarmonyOS.
-Note that Kea4Fastbot also fully supports but is not limited to property-based testing. 
+Kea4Fastbot is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. It has these important features:
+- coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for finding *stability problems* (i.e., *crashing bugs*); 
+- customizing specific testing scenarios (e.g., testing specific app functionalities, entering difficult-to-reach areas) with the full capability and flexibility by using *python* language and [uiautomator2](https://github.com/openatx/uiautomator2)[^1];
+- supporting [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing), inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
-Kea4Fastbot is released as an easy-to-use Python library
-and works with:
-
+> In essence, Kea4Fastbot is capable of fusing the *scripted tests* written in [uiautomator2](https://github.com/openatx/uiautomator2) with automated UI testing tools like Fastbot --- combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. We are extending the features of Kea4Fastbot based on such a capability.
+ 
+Kea4Fastbot, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
 
-In the future, Kea4Fastbot is planned to support
+In the future, Kea4Fastbot is planned to additionally support
 - [pytest](https://docs.pytest.org/en/stable/)
 - [Appium](https://github.com/appium/appium), [Hypium]()
-- Any UI testing tools (not limited to Fastbot)
-
+- other automated UI testing tools (not limited to Fastbot)
 
 
 ## Installation
@@ -206,3 +204,5 @@ Kea4Fastbot has been actively developed and maintained by the people in [ecnusse
 
 - [Kea](https://github.com/ecnusse/Kea)
 - [appcrawler](https://github.com/seveniruby/AppCrawler)
+
+[^1]: 这个功能是为了替代在不少UI自动化测试工具中很有用但却很难用的“自定义事件序列”功能，如[Fastbot](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BA%8B%E4%BB%B6%E5%BA%8F%E5%88%97) 和[AppCrawler](https://github.com/seveniruby/AppCrawler).
