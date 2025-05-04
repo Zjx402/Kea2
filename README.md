@@ -4,8 +4,8 @@ Kea4Fastbot is an easy-to-use Python library for supporting and customizing auto
 
 It has these important features:
 - coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for finding *stability problems* (i.e., *crashing bugs*); 
-- customizing specific testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering difficult-to-reach areas, creating specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2)[^1];
-- supporting [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing), inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs*[^2] (i.e., *non-crashing bugs*)
+- customizing specific testing scenarios (自定义测试场景或事件序列, e.g., testing specific app functionalities, executing specific event traces, entering difficult-to-reach areas, creating specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2)[^1];
+- supporting assertions (断言机制), based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs*[^2] (i.e., *non-crashing bugs*)
 
 > In essence, Kea4Fastbot is capable of fusing the *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
  
