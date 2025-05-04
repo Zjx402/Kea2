@@ -52,14 +52,9 @@ class LogWatcher:
                     statistic_body
                 )
 
-    def _init_log_file(self, log_file):
-        with open(log_file, "w") as fp:
-            pass
-
     def __init__(self):
         log_file = "fastbot.log"
 
-        self._init_log_file(log_file)
         threading.excepthook = thread_excepthook
         t = threading.Thread(target=self.watcher, args=(log_file,), daemon=True)
         t.start()

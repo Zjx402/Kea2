@@ -120,15 +120,11 @@ if __name__ == "__main__":
         maxStep=args.max_step if args.max_step else 500,
         throttle=args.throttle_ms if args.throttle_ms else 200
     )
-    
-    if args.agent == "native":
-        from kea.keaUtils import activateFastbot
-        activateFastbot(options)
-    elif args.agent == "u2":
-        KeaTestRunner.setOptions(options)
-        unittest_args = []
-        if args.extra and args.extra[0] == "unittest":
-            unittest_args = args.extra[1:]
-        sys.argv = ["python3 -m unittest"] + unittest_args
 
-        unittest.main(module=None, testRunner=KeaTestRunner)
+    KeaTestRunner.setOptions(options)
+    unittest_args = []
+    if args.extra and args.extra[0] == "unittest":
+        unittest_args = args.extra[1:]
+    sys.argv = ["python3 -m unittest"] + unittest_args
+
+    unittest.main(module=None, testRunner=KeaTestRunner)

@@ -60,6 +60,9 @@ class U2ScriptDriver(AbstractScriptDriver):
 
         return self.d
     
+    def tearDown(self):
+        self.d.stop_uiautomator()
+    
     def _remove_remote_port(self, port:int):
         """remove the forward port
         """
