@@ -2,7 +2,7 @@ import json
 from pathlib import Path
 import subprocess
 import threading
-from typing import IO, Callable, Any, Dict, List, NewType, Optional, Union
+from typing import IO, Callable, Any, Dict, List, Literal, NewType, Optional, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -71,6 +71,7 @@ class Options:
     Driver: AbstractDriver
     packageNames: List[str]
     serial: str = None
+    agent: Literal["u2", "native"] = "u2"
     maxStep: Union[str, float] = float("inf")
     running_mins: int = 10
     throttle: int = 200
@@ -118,7 +119,7 @@ class JsonResult(TextTestResult):
         self.res[test._testMethodName].error += 1
 
 
-def activateFastbot(options: Options, port):
+def activateFastbot(options: Options, port=None):
     cur_dir = Path(__file__).parent
     push_file(
         Path.joinpath(cur_dir, "assets/monkeyq.jar"),
@@ -156,8 +157,14 @@ def activateFastbot(options: Options, port):
         device=options.serial
     )
 
-    startFastbotService(options)
-
+    t = startFastbotService(options)
+    if options.agent == "native":
+        l = LogWatcher()
+        t.join()
+        l.join()
+        return
+        
+    
     for _ in range(10):
         sleep(2)
         try:
@@ -169,13 +176,14 @@ def activateFastbot(options: Options, port):
     raise RuntimeError("Failed to connect fastbot")
 
 
-def startFastbotService(options: Options):
+def startFastbotService(options: Options) -> threading.Thread:
     shell_command = [
         "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
         "exec", "app_process",
         "/system/bin", "com.android.commands.monkey.Monkey",
         "-p", *options.packageNames,
-        "--agent-u2", "reuseq",
+        "--agent-u2" if options.agent == "u2" else "--agent", 
+        "reuseq",
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
         "-v", "-v", "-v"
@@ -194,6 +202,8 @@ def startFastbotService(options: Options):
     proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
     t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
     t.start()
+
+    return t
 
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()

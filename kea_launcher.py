@@ -27,7 +27,7 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         type=str,
         default="u2",
         choices=["native", "u2"],
-        help="",
+        help="Running native fastbot or u2-fastbot. (Only u2-fastbot support PBT)",
     )
 
     parser.add_argument(
@@ -72,13 +72,13 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
     # _set_unittest_parser(driver_subparsers)
 
 
-def _set_unittest_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
-    parser = subparsers.add_parser("unittest", help="Unittest Settings")
-    parser.add_argument(
-        "unittest_args",
-        nargs=argparse.REMAINDER,
-        help="Arguments forwarded to unittest",
-    )
+# def _set_unittest_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
+#     parser = subparsers.add_parser("unittest", help="Unittest Settings")
+#     parser.add_argument(
+#         "unittest_args",
+#         nargs=argparse.REMAINDER,
+#         help="Arguments forwarded to unittest",
+#     )
 
 
 def unittest_info_logger(args):
@@ -120,20 +120,25 @@ if __name__ == "__main__":
 
     from kea.keaUtils import KeaTestRunner, Options
     from kea.u2Driver import U2Driver
-    KeaTestRunner.setOptions(
-        Options(
-            driverName=args.driver_name,
-            Driver=U2Driver,
-            packageNames=args.package_names,
-            serial=args.serial,
-            running_mins=args.running_minutes if args.running_minutes else 10,
-            maxStep=args.max_step if args.max_step else 500,
-            throttle=args.throttle_ms if args.throttle_ms else 200
-        )
+    options = Options(
+        agent=args.agent,
+        driverName=args.driver_name,
+        Driver=U2Driver,
+        packageNames=args.package_names,
+        serial=args.serial,
+        running_mins=args.running_minutes if args.running_minutes else 10,
+        maxStep=args.max_step if args.max_step else 500,
+        throttle=args.throttle_ms if args.throttle_ms else 200
     )
-    unittest_args = []
-    if args.extra and args.extra[0] == "unittest":
-        unittest_args = args.extra[1:]
-    sys.argv = ["python3 -m unittest"] + unittest_args
+    
+    if args.agent == "native":
+        from kea.keaUtils import activateFastbot
+        activateFastbot(options)
+    elif args.agent == "u2":
+        KeaTestRunner.setOptions(options)
+        unittest_args = []
+        if args.extra and args.extra[0] == "unittest":
+            unittest_args = args.extra[1:]
+        sys.argv = ["python3 -m unittest"] + unittest_args
 
-    unittest.main(module=None, testRunner=KeaTestRunner)
+        unittest.main(module=None, testRunner=KeaTestRunner)

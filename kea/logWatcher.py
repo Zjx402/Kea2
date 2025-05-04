@@ -3,7 +3,10 @@ import os
 import threading
 import time
 
-PATTERN = re.compile(r"\[Fastbot\].+Internal\serror\n([\s\S]*)")
+
+PATTERN_EXCEPTION = re.compile(r"\[Fastbot\].+Internal\serror\n([\s\S]*)")
+PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+)\n.+Monkey\sfinished")
+
 
 def thread_excepthook(args):
     print(args.exc_value)
@@ -25,29 +28,43 @@ class LogWatcher:
 
             if new_data:
                 buffer += new_data
-                match = PATTERN.search(buffer)
-                if match:
-                    exception_body = match.group(1).strip()
+                exception_match = PATTERN_EXCEPTION.search(buffer)
+                if exception_match:
+                    exception_body = exception_match.group(1).strip()
                     if exception_body:
                         raise RuntimeError(
                             "[Error] Execption while running fastbot:\n" + 
                             exception_body + 
                             "\nSee fastbot.log for details."
                         )
+                statistic_match = PATTERN_STATISTIC.search(buffer)
+                if statistic_match:
+                    statistic_body = statistic_match.group(1).strip()
+                    if statistic_body:
+                        print(
+                            "[INFO] Fastbot exit:\n" + 
+                            statistic_body
+                        )
 
             time.sleep(poll_interval)
-    
+
     def _init_log_file(self, log_file):
         with open(log_file, "w") as fp:
             pass
 
     def __init__(self):
         log_file = "fastbot.log"
-        
+
+        self._init_log_file(log_file)
         threading.excepthook = thread_excepthook
         t = threading.Thread(target=self.watcher, args=(log_file,), daemon=False)
         t.start()
-        # self.watcher(log_file)
+        
+        self.t = t
+    
+    def join(self):
+        self.t.join()
+
 
 if __name__ == "__main__":
     LogWatcher()
