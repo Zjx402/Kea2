@@ -206,4 +206,4 @@ Kea4Fastbot has been actively developed and maintained by the people in [ecnusse
 
 [^1]: 替代在不少UI自动化测试工具中很有用但却很难用的“自定义事件序列”功能（如[Fastbot](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BA%8B%E4%BB%B6%E5%BA%8F%E5%88%97) 和[AppCrawler](https://github.com/seveniruby/AppCrawler)）。此前不少Fastbot用户抱怨过其自定义事件功能，如[#209](https://github.com/bytedance/Fastbot_Android/issues/209), [#225](https://github.com/bytedance/Fastbot_Android/issues/225), [#286](https://github.com/bytedance/Fastbot_Android/issues/286)等。
 
-[^2]：支持自动断言，提供[AppCrawler](https://ceshiren.com/t/topic/15801/5)用户从21年就开始催更、期待已有的断言能力。
+[^2]: 支持自动断言，提供[AppCrawler](https://ceshiren.com/t/topic/15801/5)用户从21年就开始催更、期待已有的断言能力。
