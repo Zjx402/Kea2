@@ -158,10 +158,13 @@ def activateFastbot(options: Options, port=None):
     )
 
     t = startFastbotService(options)
+
+    print("[INFO] Running Fastbot...")
+    
     if options.agent == "native":
-        l = LogWatcher()
+        log_watcher = LogWatcher()
         t.join()
-        l.join()
+        log_watcher.close()
         return
         
     

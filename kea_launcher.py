@@ -68,20 +68,10 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         help="Extra args for unittest <args>",
     )
 
-    # driver_subparsers = parser.add_subparsers(dest="driver_subcommand", required=False)
-    # _set_unittest_parser(driver_subparsers)
-
-
-# def _set_unittest_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
-#     parser = subparsers.add_parser("unittest", help="Unittest Settings")
-#     parser.add_argument(
-#         "unittest_args",
-#         nargs=argparse.REMAINDER,
-#         help="Arguments forwarded to unittest",
-#     )
-
 
 def unittest_info_logger(args):
+    if args.agent == "native":
+        print("[Warning] Property not availble in native agent.")
     if args.extra and args.extra[0] == "unittest":
         print("Captured unittest args:", args.extra)
 

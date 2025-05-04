@@ -5,7 +5,7 @@ import time
 
 
 PATTERN_EXCEPTION = re.compile(r"\[Fastbot\].+Internal\serror\n([\s\S]*)")
-PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+)\n.+Monkey\sfinished")
+PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+Dropped.+)")
 
 
 def thread_excepthook(args):
@@ -17,7 +17,7 @@ def thread_excepthook(args):
 class LogWatcher:
 
     def watcher(self, log_path, poll_interval=1):
-        buffer = ""
+        self.buffer = ""
         last_pos = 0
 
         while True:
@@ -27,26 +27,30 @@ class LogWatcher:
                 last_pos = f.tell()
 
             if new_data:
-                buffer += new_data
-                exception_match = PATTERN_EXCEPTION.search(buffer)
-                if exception_match:
-                    exception_body = exception_match.group(1).strip()
-                    if exception_body:
-                        raise RuntimeError(
-                            "[Error] Execption while running fastbot:\n" + 
-                            exception_body + 
-                            "\nSee fastbot.log for details."
-                        )
-                statistic_match = PATTERN_STATISTIC.search(buffer)
-                if statistic_match:
-                    statistic_body = statistic_match.group(1).strip()
-                    if statistic_body:
-                        print(
-                            "[INFO] Fastbot exit:\n" + 
-                            statistic_body
-                        )
+                self.buffer += new_data
+                self.parse_log()
 
             time.sleep(poll_interval)
+
+    def parse_log(self):
+        buffer = self.buffer
+        exception_match = PATTERN_EXCEPTION.search(buffer)
+        if exception_match:
+            exception_body = exception_match.group(1).strip()
+            if exception_body:
+                raise RuntimeError(
+                    "[Error] Execption while running fastbot:\n" + 
+                    exception_body + 
+                    "\nSee fastbot.log for details."
+                )
+        statistic_match = PATTERN_STATISTIC.search(buffer)
+        if statistic_match:
+            statistic_body = statistic_match.group(1).strip()
+            if statistic_body:
+                print(
+                    "[INFO] Fastbot exit:\n" + 
+                    statistic_body
+                )
 
     def _init_log_file(self, log_file):
         with open(log_file, "w") as fp:
@@ -57,13 +61,11 @@ class LogWatcher:
 
         self._init_log_file(log_file)
         threading.excepthook = thread_excepthook
-        t = threading.Thread(target=self.watcher, args=(log_file,), daemon=False)
+        t = threading.Thread(target=self.watcher, args=(log_file,), daemon=True)
         t.start()
-        
-        self.t = t
     
-    def join(self):
-        self.t.join()
+    def close(self):
+        self.parse_log()
 
 
 if __name__ == "__main__":
