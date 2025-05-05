@@ -119,7 +119,13 @@ class JsonResult(TextTestResult):
         self.res[test._testMethodName].error += 1
 
 
-def activateFastbot(options: Options, port=None):
+def activateFastbot(options: Options, port=None) -> threading.Thread:
+    """
+    activate fastbot.
+    :params: options: the running setting for fastbot
+    :params: port: the listening port for script driver
+    :return: the fastbot daemon thread
+    """
     cur_dir = Path(__file__).parent
     push_file(
         Path.joinpath(cur_dir, "assets/monkeyq.jar"),
@@ -158,16 +164,14 @@ def activateFastbot(options: Options, port=None):
     )
 
     t = startFastbotService(options)
-
     print("[INFO] Running Fastbot...")
-    
-    if options.agent == "native":
-        log_watcher = LogWatcher()
-        t.join()
-        log_watcher.close()
-        return
-        
-    
+
+    return t
+
+def check_alive(port):
+    """
+    check if the script driver and proxy server are alive.
+    """
     for _ in range(10):
         sleep(2)
         try:
@@ -177,7 +181,6 @@ def activateFastbot(options: Options, port=None):
             print("[INFO] waiting for connection.")
             pass
     raise RuntimeError("Failed to connect fastbot")
-
 
 def startFastbotService(options: Options) -> threading.Thread:
     shell_command = [
@@ -193,6 +196,9 @@ def startFastbotService(options: Options) -> threading.Thread:
     ]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
+
+    with open("fastbot.log", "w"):
+        pass
 
     # log file
     outfile = open("fastbot.log", "w")
@@ -211,7 +217,7 @@ def startFastbotService(options: Options) -> threading.Thread:
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()
     f.close()
-
+    
 
 class KeaTestRunner(TextTestRunner):
 
@@ -223,6 +229,9 @@ class KeaTestRunner(TextTestRunner):
     def setOptions(cls, options: Options):
         if not isinstance(options.packageNames, list) and len(options.packageNames) > 0:
             raise ValueError("packageNames should be given in a list.")
+        if options.Driver is not None and options.agent == "native":
+            print("[Warning] Can not use any Driver when runing native mode.")
+            options.Driver = None
         cls.options = options
 
     def run(self, test):
@@ -258,70 +267,74 @@ class KeaTestRunner(TextTestRunner):
                         message=r"Please use assert\w+ instead.",
                     )
 
-            # setUp for the u2 driver
-            self.scriptDriver = self.options.Driver.getScriptDriver()
-
-            LogWatcher()
-            activateFastbot(options=self.options, port=self.scriptDriver.lport)
-
-            end_by_remote = False
-            step = 0
-            while step < self.options.maxStep:
-                step += 1
-                print("[INFO] Sending monkeyEvent {}".format(
-                       f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
-                       else f"({step})"
-                    )
-                )
-
-                try:
-                    propsSatisfiedPrecond = self.getValidProperties()
-                except requests.ConnectionError:
-                    print(
-                        "[INFO] Exploration times up (--running-minutes)."
-                    )
-                    end_by_remote = True
-                    break
-
-                print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
-
-                # Go to the next round if no precond satisfied
-                if len(propsSatisfiedPrecond) == 0:
-                    continue
-
-                # get the random probability p
-                p = random.random()
-                propsNameFilteredByP = []
-                # filter the properties according to the given p
-                for propName, test in propsSatisfiedPrecond.items():
-                    result.addPrecondSatisfied(test)
-                    if getattr(test, "p", 0.5) >= p:
-                        propsNameFilteredByP.append(propName)
-
-                if len(propsNameFilteredByP) == 0:
-                    print("Not executed any property due to probability.")
-                    continue
-
-                execPropName = random.choice(propsNameFilteredByP)
-                test = propsSatisfiedPrecond[execPropName]
-                # Dependency Injection. driver when doing scripts
+            t = activateFastbot(options=self.options)
+            log_watcher = LogWatcher()
+            if self.options.agent == "native":
+                t.join()
+            else:
+                # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
-                setattr(test, self.options.driverName, self.scriptDriver)
-                print("execute property %s." % execPropName)
+                check_alive(port=self.scriptDriver.lport)
+                
+                end_by_remote = False
+                step = 0
+                while step < self.options.maxStep:
+                    step += 1
+                    print("[INFO] Sending monkeyEvent {}".format(
+                        f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
+                        else f"({step})"
+                        )
+                    )
 
-                result.addExcuted(test)
-                try:
-                    test(result)
-                finally:
-                    result.printErrors()
+                    try:
+                        propsSatisfiedPrecond = self.getValidProperties()
+                    except requests.ConnectionError:
+                        print(
+                            "[INFO] Exploration times up (--running-minutes)."
+                        )
+                        end_by_remote = True
+                        break
 
+                    print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
+
+                    # Go to the next round if no precond satisfied
+                    if len(propsSatisfiedPrecond) == 0:
+                        continue
+
+                    # get the random probability p
+                    p = random.random()
+                    propsNameFilteredByP = []
+                    # filter the properties according to the given p
+                    for propName, test in propsSatisfiedPrecond.items():
+                        result.addPrecondSatisfied(test)
+                        if getattr(test, "p", 0.5) >= p:
+                            propsNameFilteredByP.append(propName)
+
+                    if len(propsNameFilteredByP) == 0:
+                        print("Not executed any property due to probability.")
+                        continue
+
+                    execPropName = random.choice(propsNameFilteredByP)
+                    test = propsSatisfiedPrecond[execPropName]
+                    # Dependency Injection. driver when doing scripts
+                    self.scriptDriver = self.options.Driver.getScriptDriver()
+                    setattr(test, self.options.driverName, self.scriptDriver)
+                    print("execute property %s." % execPropName)
+
+                    result.addExcuted(test)
+                    try:
+                        test(result)
+                    finally:
+                        result.printErrors()
+
+                    result.flushResult(outfile="result.json")
+
+                if not end_by_remote:
+                    self.stopMonkey()
                 result.flushResult(outfile="result.json")
 
-            if not end_by_remote:
-                self.stopMonkey()
-
             print(f"Finish sending monkey events.")
-            result.flushResult(outfile="result.json")
+            log_watcher.close()
             self.tearDown()
 
         # Source code from unittest Runner
@@ -439,3 +452,4 @@ class KeaTestRunner(TextTestRunner):
     def tearDown(self):
         # TODO Add tearDown method (remove local port, etc.)
         pass
+        
