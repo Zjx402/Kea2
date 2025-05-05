@@ -125,12 +125,14 @@ def _get_bounds(raw_bounds):
 
 class _HindenWidgetFilter:
     def __init__(self, hierarchy):
-        self.global_drawing_order = 0
+        # self.global_drawing_order = 0
         self._nodes = []
-        
+
         self.idx = rtree.index.Index()
         self.set_covered_attr(hierarchy)
-    
+        # hierarchy.write("filterd_tree.xml", xml_declaration=True, encoding="utf-8")
+        # pass
+
     def _iter_by_drawing_order(self, ele: ElementTree.Element):
         """
         iter by drawing order (DFS)
@@ -151,38 +153,34 @@ class _HindenWidgetFilter:
         root: ElementTree.Element = tree.getroot()
         self._nodes: List[ElementTree.Element] = list()
         for e in self._iter_by_drawing_order(root):
-            
-            # skip the "covered" widgets
-            if e.get("covered", "false") == "true":
-                continue
-            
+            # e.set("global-order", str(self.global_drawing_order))
+            # self.global_drawing_order += 1
             e.set("covered", "false")
 
             # algorithm: filter by "clickable"
             clickable = (e.get("clickable", "false") == "true")
+            bounds = _get_bounds(e.get("bounds"))
             if clickable:
-                bounds = _get_bounds(e.get("bounds"))
                 covered_widget_ids = list(self.idx.contains(bounds))
                 if covered_widget_ids:
                     for covered_widget_id in covered_widget_ids:
                         node = self._nodes[covered_widget_id]
-                        # update all its decedents to "covered"
-                        for n in node.iter():
-                            n.set("covered", "true")
+                        node.set("covered", "true")
                         self.idx.delete(
                             covered_widget_id,
-                            self._nodes[covered_widget_id].get("bounds")
+                            _get_bounds(self._nodes[covered_widget_id].get("bounds"))
                         )
 
-                    center = [
-                        (bounds[0] + bounds[2]) / 2,
-                        (bounds[1] + bounds[3]) / 2
-                    ]
-                    self.idx.insert(
-                        self.global_drawing_order, 
-                        (center[0], center[1], center[0], center[1])
-                    )
-
+            cur_id = len(self._nodes)
+            center = [
+                (bounds[0] + bounds[2]) / 2,
+                (bounds[1] + bounds[3]) / 2
+            ]
+            self.idx.insert(
+                cur_id,
+                (center[0], center[1], center[0], center[1])
+            )
+            self._nodes.append(e)
 
 class U2StaticDevice(u2.Device):
     def __init__(self):
