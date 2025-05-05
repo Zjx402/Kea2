@@ -1,25 +1,25 @@
 ## Intro 
 
-Kea4Fastbot is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
+Kea2 is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
 It has these important features:
 - coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for finding *stability problems* (i.e., *crashing bugs*); 
 - customizing specific testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 - supporting auto-assertions (断言机制[^2]) during automated GUI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
-> In essence, Kea4Fastbot is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
+> In essence, Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
  
-Kea4Fastbot, released as a Python library, currently works with:
+Kea2, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
 
-In the future, Kea4Fastbot is planned to additionally support
+In the future, Kea2 is planned to additionally support
 - [pytest](https://docs.pytest.org/en/stable/)
 - [Appium](https://github.com/appium/appium), [Hypium]()
 - other automated UI testing tools (not limited to Fastbot)
 
-> Kea4Fastbot is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. Kudos!
+> Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. Kudos!
 
 ## Installation
 
@@ -32,9 +32,8 @@ Running requirements or environment:
 1. Create a workspace and clone this repository into the workspace.
 
 ```bash
-mkdir Kea4Fastbot && cd Kea4Fastbot
-git clone https://github.com/XixianLiang/KeaPlus.git
-cd KeaPlus
+git clone git@github.com:ecnusse/Kea2.git
+cd Kea2
 ```
 
 2. Setup python envirnment with uv
@@ -167,7 +166,7 @@ if __name__ == "__main__":
 
 Kea is compatible with `unittest` framework. You can manage your test cases in unittest style.
 
-To do so, launch Kea4Fastbot with `kea_launcher.py`. And set the args in `unittest` sub-commands.
+To do so, launch Kea2 with `kea_launcher.py`. And set the args in `unittest` sub-commands.
 
 You will have the following two sub-commands.
 
@@ -193,9 +192,9 @@ python3 kea_launcher.py driver <...> unittest quickstart2.py
 
 ## Contributors/Maintainers
 
-Kea4Fastbot has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
+Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
 
-### Open-source projects used by Kea4Fastbot
+### Open-source projects used by Kea2
 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android)
 - [uiautomator2](https://github.com/openatx/uiautomator2)
