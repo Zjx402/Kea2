@@ -5,7 +5,7 @@ import time
 
 
 PATTERN_EXCEPTION = re.compile(r"\[Fastbot\].+Internal\serror\n([\s\S]*)")
-PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+Dropped.+)")
+PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+)")
 
 
 def thread_excepthook(args):
@@ -16,21 +16,23 @@ def thread_excepthook(args):
 
 class LogWatcher:
 
-    def watcher(self, log_path, poll_interval=1):
+    def watcher(self, poll_interval=1):
         self.buffer = ""
-        last_pos = 0
+        self.last_pos = 0
 
         while True:
-            with open(log_path, 'r', encoding='utf-8') as f:
-                f.seek(last_pos)
-                new_data = f.read()
-                last_pos = f.tell()
+            self.read_log()
+            time.sleep(poll_interval)
+        
+    def read_log(self):
+        with open(self.log_path, 'r', encoding='utf-8') as f:
+            f.seek(self.last_pos)
+            new_data = f.read()
+            self.last_pos = f.tell()
 
             if new_data:
                 self.buffer += new_data
-                self.parse_log()
-
-            time.sleep(poll_interval)
+            self.parse_log()
 
     def parse_log(self):
         buffer = self.buffer
@@ -53,14 +55,15 @@ class LogWatcher:
                 )
 
     def __init__(self):
-        log_file = "fastbot.log"
+        self.log_path = "fastbot.log"
 
         threading.excepthook = thread_excepthook
-        t = threading.Thread(target=self.watcher, args=(log_file,), daemon=True)
+        t = threading.Thread(target=self.watcher, daemon=True)
         t.start()
     
     def close(self):
-        self.parse_log()
+        time.sleep(0.2) # wait for the written logfile close
+        self.read_log()
 
 
 if __name__ == "__main__":
