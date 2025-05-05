@@ -2,8 +2,8 @@ import unittest
 import uiautomator2 as u2
 
 from time import sleep
-from kea.keaUtils import precondition, prob, KeaTestRunner, Options
-from kea.u2Driver import U2Driver
+from kea2 import precondition, prob, KeaTestRunner, Options
+from kea2.u2Driver import U2Driver
 
 
 class Omni_Notes_Sample(unittest.TestCase):

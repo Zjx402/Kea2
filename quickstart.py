@@ -1,8 +1,8 @@
 import unittest
 import uiautomator2 as u2
 
-from kea.keaUtils import KeaTestRunner, Options
-from kea.u2Driver import U2Driver
+from kea2 import KeaTestRunner, Options
+from kea2.u2Driver import U2Driver
 
 PACKAGE_NAME = "it.feio.android.omninotes.alpha"
 FILE_NAME = "omninotes.apk"

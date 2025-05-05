@@ -108,8 +108,8 @@ if __name__ == "__main__":
     import sys
     argv = sys.argv
 
-    from kea.keaUtils import KeaTestRunner, Options
-    from kea.u2Driver import U2Driver
+    from kea2 import KeaTestRunner, Options
+    from kea2.u2Driver import U2Driver
     options = Options(
         agent=args.agent,
         driverName=args.driver_name,
