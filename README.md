@@ -16,7 +16,7 @@ Kea2, released as a Python library, currently works with:
 
 In the future, Kea2 is planned to additionally support
 - [pytest](https://docs.pytest.org/en/stable/)
-- [Appium](https://github.com/appium/appium), [Hypium]()
+- [Appium](https://github.com/appium/appium), [Hypium]() (for HarmonyOS)
 - other automated UI testing tools (not limited to Fastbot)
 
 > Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. Kudos!
