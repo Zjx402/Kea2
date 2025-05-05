@@ -24,6 +24,7 @@ if __name__ == "__main__":
             maxStep=500,
             # running_mins=10,  # specify the maximal running time in minutes, default value is 10m
             # throttle=200,   # specify the throttle in milliseconds, default value is 200ms
+            # agent='native'  # 'native' for running the vanilla Fastbot
         )
     )
     unittest.main(testRunner=KeaTestRunner)
