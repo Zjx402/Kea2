@@ -76,7 +76,7 @@ uv run quickstart.py
 
 [As shown in the introduction part](#Intro), We have 3 stages in Kea2.
 
-### Stage 1: Automated UI Testing
+## Stage 1: Automated UI Testing
 
 During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
@@ -92,7 +92,7 @@ Here's a sample shell command. See more options with `python kea_launcher.py dri
 python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
 ```
 
-### Stage 2: Automated UI Testing with rechability scripts
+## Stage 2: Automated UI Testing with rechability scripts
 
 As described in stage 1, we have some hard-to-reach states because the path to these states require human knowledge.
 
@@ -165,7 +165,7 @@ With the use of script, we can, but not limit to, compliting the following tasks
 - **Guide the testing tool to a particular scenario to do stress test**
 - More to explore...
 
-### Stage 3: Find functional bugs with assertions in scripts.
+## Stage 3: Find functional bugs with assertions in scripts.
 
 In fact. We can do more when we have scripts. Previously, we find crashed bugs with automated testing tool like fastbot. And find functional bugs in scipt testing with the use of assertion.
 
