@@ -159,7 +159,10 @@ class _HindenWidgetFilter:
 
             # algorithm: filter by "clickable"
             clickable = (e.get("clickable", "false") == "true")
-            bounds = _get_bounds(e.get("bounds"))
+            _raw_bounds = e.get("bounds")
+            if _raw_bounds is None:
+                continue
+            bounds = _get_bounds(_raw_bounds)
             if clickable:
                 covered_widget_ids = list(self.idx.contains(bounds))
                 if covered_widget_ids:
