@@ -27,7 +27,7 @@ Running requirements or environment:
 - support Windows, MacOS and Linux
 - python 3.8+
 - Android SDK installed
-- VPN disabled
+- **VPN disabled** (u2 mode requires local network access. VPN will lead to error)
 
 1. Create a workspace and clone this repository into the workspace.
 
@@ -189,6 +189,34 @@ python3 kea_launcher.py driver <...> unittest quickstart2.py
 ```
 
 > Hint: All commands in unittest is compatible in kea_launcher's sub-commands. See `python3 -m unittest -h` for details.
+
+### Quick Report on script execution statistics.
+
+Now we have a quick report on property execution statistics. If you want to know whether your script is executed during testing. Open the `result.json` file.
+
+Here's an example.
+
+```json
+{
+    "test_goToPrivacy": {
+        "precond_satisfied": 8,
+        "executed": 2,
+        "fail": 0,
+        "error": 1
+    },
+    ...
+}
+```
+
+**How to read `result.json`**
+
+Item | Description | Meaning
+--- | --- | --- |
+precond_satisfied | During exploration, how many times does the script satisfy it's precond? (executable) | Dose we reach the state during exploration? 
+executed | During exploration, how many times the script is executed? | Has the script been used?
+fail | (PBT) How many times dose the script failed the assertion during execution? (When you have assertion in your script) | When failed, the script found an suspected error. (Assertion clause is the expected behaviour)
+error | How many times dose the script abort during excution due to error (e.g. UI not found.) | When error, the script needs to be fix (script leads to an unexpected state.)
+
 
 ## Contributors/Maintainers
 
