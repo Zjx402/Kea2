@@ -118,8 +118,14 @@ class StaticU2UiObject(u2.UiObject):
 def _get_bounds(raw_bounds):
     pattern = re.compile(r"\[(\d+),(\d+)\]\[(\d+),(\d+)\]")
     m = re.match(pattern, raw_bounds)
-    bounds = list(map(int, [m.group(_) for _ in range(1, 5)]))
-    # return [int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))]
+    try:
+        bounds = list(map(int, [m.group(_) for _ in range(1, 5)]))
+    except Exception as e:
+        print(f"raw_bounds: {raw_bounds}")
+        print(f"Please report this bug to Kea2")
+        raise RuntimeError(e)
+        
+    # bounds = [int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))]
     return bounds
 
 

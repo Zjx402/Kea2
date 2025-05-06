@@ -102,7 +102,7 @@ class JsonResult(TextTestResult):
         for propName, propStatitic in self.res.items():
             json_res[propName] = asdict(propStatitic)
         with open(outfile, "w") as fp:
-            json.dump(json_res, fp)
+            json.dump(json_res, fp, indent=4)
 
     def addExcuted(self, test: TestCase):
         self.res[test._testMethodName].executed += 1
