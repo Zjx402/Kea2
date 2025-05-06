@@ -67,13 +67,21 @@ class Options:
     """
     Kea and Fastbot configurations
     """
+    # the driver_name in script (if self.d, then d.) 
     driverName: str
+    # the driver (only U2Driver available now)
     Driver: AbstractDriver
+    # list of package names. Specify the apps under test
     packageNames: List[str]
+    # target device
     serial: str = None
+    # test agent. "native" for stage 1 and "u2" for stage 1~3
     agent: Literal["u2", "native"] = "u2"
+    # max step in exploration (availble in stage 2~3)
     maxStep: Union[str, float] = float("inf")
+    # time(mins) for exploration
     running_mins: int = 10
+    # time(ms) to wait when exploring the app
     throttle: int = 200
 
 
