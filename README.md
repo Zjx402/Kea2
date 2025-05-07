@@ -13,7 +13,7 @@ These 3 features can be combined and correspond to 3 stages of automated UI test
     <img src="docs/intro.png" style="border-radius: 14px"/> 
 </div>
 
-|  | **stage 1 (feat. 1)** | **stage 2 (feat. 1+2)** | **stage 3 (feat. 1+2+3)** |
+|  | **stage 1 (feat. 1)** | **stage 2 (feat. 1&2)** | **stage 3 (feat. 1&2&3)** |
 | --- | --- | --- | ---- |
 | **Find crash** | :+1: | :+1: | :+1: |
 | **Find crash in deep state** |  | :+1: | :+1: |
