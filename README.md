@@ -11,7 +11,7 @@ These 3 features can be combined and correspond to 3 stages of automated UI test
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
-    <img src="docs/intro.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
@@ -111,8 +111,8 @@ During automated UI testing. We can find crashed bugs with automated UI testing 
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
 
 <div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage1.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    <div>
+    <img src="docs/stage1.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
@@ -137,9 +137,7 @@ However, this is the strength of script testing. By writing scripts. We can guid
 
 
 <div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage2.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
-    </div>
+    <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
 
@@ -186,9 +184,7 @@ Howerver, in script testing. We make use of human knowledge to specify functiona
 Apparently, we can make assertion in stage 2's scripts. And here comes stage 3: Find functional bugs with assertions in scripts.
 
 <div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage3.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
-    </div>
+    <img src="docs/stage3.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
 **How to use stage 3**
@@ -202,8 +198,8 @@ We make assrtions to make full use of the capability of script and find function
 Here's an statement example. In social app, the `send button` should exists when the input box is not empty.
 
 <div align="center" >
-    <div style="max-width:70%; max-height:70%">
-        <img src="docs/socialAppBug.png" style="border-radius: 14px "/>
+    <div >
+        <img src="docs/socialAppBug.png" style="border-radius: 14px; width:60%; height:70%;"/>
     </div>
     <p>An inputbox bug: Expected (Upper.) Bug (Lower.)
 <p/>
