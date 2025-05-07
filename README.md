@@ -143,7 +143,7 @@ However, this is the strength of script testing. In Feature 2, Kea2 can support 
     <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
-Test your app by customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
+In Kea2, you can test your app by customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
 In Kea2, a script is composed of two elements:
 -  **Precondition:** When to execute the script.
@@ -151,16 +151,18 @@ In Kea2, a script is composed of two elements:
 
 ### Example
 
-Assuming `Privacy Settings` is a hard-to-reach page, we can guide Fastbot to reach this page when we are at the `Home` page.
+Assuming `Privacy` is a hard-to-reach page, we can guide Fastbot to reach this page when we are at the `Home` page.
 
 ```python
-    # Precond: When we are at home page
+    @prob(0.5)
+    # precondition: when we are at the page `Home`
     @precondition(lambda self: 
         self.d(text="Home").exists
     )
     def test_goToPrivacy(self):
         """
-        Guide Fastbot to the page `Privacy Settings` by opening `Drawer`, clicking the option `Setting` and clicking `Privacy`.
+        Guide Fastbot to the page `Privacy` by opening `Drawer`, 
+        clicking the option `Setting` and clicking `Privacy`.
         """
         self.d(description="Drawer").click()
         self.d(text="Settings").click()
@@ -169,7 +171,8 @@ Assuming `Privacy Settings` is a hard-to-reach page, we can guide Fastbot to rea
 
 - By the decorator `@precondition`, we specify the precondition --- when we are at the `Home` page. 
 > In this case, the script will be invoked when we are at `Home` page by checking whether the widget `Home` exists.
-- In script body, we specify the interaction logic to guide Fastbot to reach the page `Privacy` by using UI test driver [uiautomator2](https://github.com/openatx/uiautomator2).
+- In script body, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the page `Privacy`.
+- By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. 
 
 Just change the script in `quickstart2.py` to experience feat 2.
 
