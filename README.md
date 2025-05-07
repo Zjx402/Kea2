@@ -35,7 +35,7 @@ In the future, Kea2 is planned to additionally support
 > Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners. Kudos!
 
 
-# Deploy Kea2 in virtual environment and understand how Kea2 works.
+# Deploy Kea2
 
 ## Installation
 
@@ -52,7 +52,11 @@ git clone git@github.com:ecnusse/Kea2.git
 cd Kea2
 ```
 
-2. Setup python envirnment with uv
+2. Setup python envirnment with uv (virtual environment).
+
+> [uv](https://github.com/astral-sh/uv) is a python package manager. It creates a python virtual environment. Aallows you to isolate dependencies for each project, preventing dependency conflicts.
+
+> You can also [install Kea2 in your global environment](#appendix-install-kea-to-global-environment). But this may lead to confits.
 
 ```bash
 pip install --upgrade pip
@@ -68,35 +72,7 @@ brew install uv
 uv sync
 ```
 
-> [uv](https://github.com/astral-sh/uv) is a python package manager.
-
-### Quick Start and quick test.
-
-1. Create and start an Android emulator (e.g., Android 12 -- API version 31).
-
-```bash
-sdkmanager "system-images;android-31;google_apis;x86_64"
-avdmanager create avd --force --name Android12 --package 'system-images;android-31;google_apis;x86_64' --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
-emulator -avd Android12 -port 5554 &
-```
-
-or, prepare one real Android device (not two) with `Developer Options` enabled, connect this device to your machine, and make sure you can see the connected device by running `adb devices`.
-
-2. run `quickstart.py` to fuzz a sample app `omninotes`.
-The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.
-
-```python
-uv run quickstart.py
-```
-
-There you go. You can now experience **feature 1: Automated testing with fastbot.**
-
-> [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
-
-
-### activate virtual environment
-
-Before further development, you need to activate the virtual environment.
+3. **Activate virtual environment**
 
 - Linux and macOS
 ```bash
@@ -113,7 +89,22 @@ source .venv/bin/activate
 \.venv\Scripts\activate.ps1
 ```
 
-## Stage 1: Automated UI Testing
+### Quick Start and test.
+
+Connect to an Android devices, and make sure you can see the connected device by running `adb devices`. If you don't have an android device, [you can use an emulator](#appendix-create-and-start-an-android-emulator)
+
+1. run `quickstart.py` to fuzz a sample app `omninotes`.
+The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.
+
+```python
+python3 quickstart.py
+```
+
+There you go. You can now experience **feature 1: Automated testing with fastbot.**
+
+> [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
+
+## Feature 1: Automated UI Testing
 
 During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
@@ -129,7 +120,7 @@ Here's a sample shell command. See more options with `python kea_launcher.py dri
 python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
 ```
 
-## Stage 2: Automated UI Testing with customizing scripts
+## Feature 2: Automated UI Testing with customizing scripts
 
 As described in stage 1, we have some hard-to-reach states because the path to these states require human knowledge.
 
@@ -173,7 +164,7 @@ Currently, we support app driver [uiautomator2](https://github.com/openatx/uiaut
 
 Just change the script in `quickstart2.py` to experience feat 2.
 
-## Stage 3: Find functional bugs with assertions in scripts.
+## Feature 3: Find functional bugs with assertions in scripts.
 
 In fact. We can do more when we have scripts. Previously, we find crashed bugs with automated testing tool like fastbot. And find functional bugs in scipt testing with the use of assertion.
 
@@ -224,20 +215,9 @@ So, we can write the following script to check this bug. When there is an `input
 
 We call the stage 3 script **property**, and the stage 3 method **Property Based Testing (PBT)**. [Click this link to learn more about PBT](https://github.com/ecnusse/Kea).
 
-# Deploy Kea2 in production envirnment. 
+# Documentation
 
-### Installation
-> Warning: This will change your local package envirnment
-
-```bash
-git clone git@github.com:ecnusse/Kea2.git
-cd Kea2
-
-python3 -m pip install --upgrade pip
-python3 -m pip install .
-```
-
-## Write your own scripts
+## Write scripts
 
 ### Prerequisites
 
@@ -277,11 +257,11 @@ class MyFirstTest(unittest.TestCase):
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
 
-## Shell command and script command.
+## Launch Kea2
 
 Just like unittest, we have 2 ways to launch Kea2.
 
-### 1. Shell command
+### 1. Launch by shell
 
 Kea is compatible with `unittest` framework. You can manage your test cases in unittest style.
 
@@ -320,7 +300,7 @@ python3 kea_launcher.py driver <...> unittest quickstart2.py
 | unittest | Only available in `--agent u2`. Use to specify where to load the scripts. All commands in kea_launcher's unittest sub-commands is compatible with unittest. See `python3 -m unittest -h` for details.
 
 
-### 2. unittest.main in script
+### 2. Launch by `unittest.main`
 
 Just like unittest. We can launch the test through the method `unittest.main`.
 
@@ -374,6 +354,8 @@ running_mins: int = 10
 throttle: int = 200
 ```
 
+Then we can directly run the python file to launch Kea2.
+
 ## Quick Report on script execution statistics.
 
 Now we have a quick report on property execution statistics. If you want to know whether your script is executed during testing. Open the `result.json` file.
@@ -404,6 +386,24 @@ error | How many times dose the script abort during excution due to error (e.g. 
 ## Contributors/Maintainers
 
 Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
+
+### Appendix: Create and start an Android emulator
+
+You can use the following command to start an Android 12 emulator.
+
+```bash
+sdkmanager "system-images;android-31;google_apis;x86_64"
+avdmanager create avd --force --name Android12 --package 'system-images;android-31;google_apis;x86_64' --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
+emulator -avd Android12 -port 5554 &
+```
+
+### Appendix: Install kea in global environment
+
+```bash
+# In the Kea2 working directory
+python3 -m pip install --upgrade pip
+python3 -m pip install .
+```
 
 ### Open-source projects used by Kea2
 
