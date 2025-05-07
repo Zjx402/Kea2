@@ -2,12 +2,12 @@
 
 Kea2 is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
-### Kea2 has 3 important features:
-- **Feature 1**: coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
+### Kea2 has three important features:
+- **Feature 1**: coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
 - **Feature 2**: customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
-- **Feature 3**: supporting auto-assertions (断言机制[^2]) during automated GUI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
+- **Feature 3**: supporting auto-assertions (支持断言机制[^2]) during automated GUI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
-These 3 features can be combined and correspond to 3 stages of automated UI testing. By spending time building with features in Kea2, your automated testing tool will be much more powerful.
+These three features can be combined to customize and improve automated GUI testing.
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
@@ -15,21 +15,21 @@ These 3 features can be combined and correspond to 3 stages of automated UI test
     </div>
 </div>
 
-**The ability of the 3 features in Kea2**
-|  | **feature 1** | **feature 2** | **feature 3** |
-| --- | --- | --- | ---- |
-| **Find crash** | :+1: | :+1: | :+1: |
-| **Find crash in deep state** |  | :+1: | :+1: |
-| **Find functional bug** |  |  | :+1: |
+> Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
 
-> In essence, Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
+**The ability of the three features in Kea2**
+|  | **Feature 1** | **Feature 2** | **Feature 3** |
+| --- | --- | --- | ---- |
+| **Finding crashes** | :+1: | :+1: | :+1: |
+| **Finding crashes in deep states** |  | :+1: | :+1: |
+| **Finding non-crashing functional bugs** |  |  | :+1: |
  
 Kea2, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
 
-In the future, Kea2 is planned to additionally support
+In the future, Kea2 will be extended to support
 - [pytest](https://docs.pytest.org/en/stable/)
 - [Appium](https://github.com/appium/appium), [Hypium]() (for HarmonyOS)
 - other automated UI testing tools (not limited to Fastbot)
