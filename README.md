@@ -95,7 +95,7 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 
 1. Connect to an Android device and make sure you can see the connected device by running `adb devices`. 
 
-2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2). The script `quickstart.py` will automatically install and test this sample app `omninotes`.
+2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quickstart.py` will automatically install and test this sample app.
 
 ```python
 python3 quickstart.py
@@ -103,9 +103,7 @@ python3 quickstart.py
 
 If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help report the error messages to us.
 
-If you do not have an android device at hand, you can use an Android emulator to run Kea2. (#appendix-create-and-start-an-android-emulator)
-
-The following commands can create an Android emulator (Android version 12, API level 31) on a x86 machine (of course, you can create emulators by Android Studio):
+If you do not have an Android device at hand, you can use an Android emulator to run Kea2. The following commands can help create and start an Android emulator (Android version 12, API level 31) on a x86 machine (of course, you can create emulators by Android Studio):
 ```bash
 sdkmanager "system-images;android-31;google_apis;x86_64"
 
@@ -118,8 +116,20 @@ emulator -avd Android12 -port 5554 &
 
 ## Feature 1: run Fastbot for automated UI Testing
 
-During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
-But we have some states that's hard to reach for testing tools because these states requires human knowledge.
+Test your app with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
+
+
+```bash
+python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
+```
+
+The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command). 
+See more options by `python kea_launcher.py driver -h`
+
+
+## Feature 2: Customizing automated UI testing with scripts
+
+When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The key reason is that the tool lacks knowledge of your apps. 
 
 <div align="center">
     <div>
@@ -127,44 +137,21 @@ But we have some states that's hard to reach for testing tools because these sta
     </div>
 </div>
 
-**How to use stage 1**
-
-Most of the command is similar to [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)
-
-Here's a sample shell command. See more options with `python kea_launcher.py driver -h`
-```bash
-python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
-```
-
-## Feature 2: Automated UI Testing with customizing scripts
-
-As described in stage 1, we have some hard-to-reach states because the path to these states require human knowledge.
-
-Here's some examples:
-- **The action requires human knowledge:** Filling a form
-- **The state is too deep:** Entering the target state requires multiple steps and complicated conditions.
-
-However, this is the strength of script testing. By writing scripts. We can guide the testing tool to wherever we want.
-
+However, this is the strength of script testing. In Feature 2, Kea2 can support writing small scripts to guide Fastbot to explore wherever we want.
 
 <div align="center">
     <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
+Test your app by customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
-**How to use stage 2**
+In Kea2, a script is composed of two elements:
+-  **Precondition:** When to execute the script.
+- **Script body:** The interaction logic to reach where we want.
 
-In high level, A script in UI automated testing is composed by 2 parts.
+### Example
 
-1. **Precondition:** When to execute the script.
-2. **Script body:** The interaction logic to reach where we want.
-
-Here's an example. Given the `Privacy Settings` is a hard-to-reach page, we can guide the automated testing tool to this page when we are at `Home` page.
-
-In precondition, we specify when do we want to execute this script. 
-In this case, we want to execute the script when we are at `Home` page. The way we specify `Home` is the widget `Home` exists.
-
-In script body, we write the interaction logic to guide the tools to Privacy page. (Same as scipt testing)
+Assuming `Privacy Settings` is a hard-to-reach page, we can guide Fastbot to reach this page when we are at the `Home` page.
 
 ```python
     # Precond: When we are at home page
@@ -173,14 +160,16 @@ In script body, we write the interaction logic to guide the tools to Privacy pag
     )
     def test_goToPrivacy(self):
         """
-        Guide automated testing tool to Privacy Settings.
+        Guide Fastbot to the page `Privacy Settings` by opening `Drawer`, clicking the option `Setting` and clicking `Privacy`.
         """
         self.d(description="Drawer").click()
         self.d(text="Settings").click()
         self.d(text="Privacy").click()
 ```
 
-Currently, we support app driver [uiautomator2](https://github.com/openatx/uiautomator2). You can read its docs to learn how to write script.
+- By the decorator `@precondition`, we specify the precondition --- when we are at the `Home` page. 
+> In this case, the script will be invoked when we are at `Home` page by checking whether the widget `Home` exists.
+- In script body, we specify the interaction logic to guide Fastbot to reach the page `Privacy` by using UI test driver [uiautomator2](https://github.com/openatx/uiautomator2).
 
 Just change the script in `quickstart2.py` to experience feat 2.
 
