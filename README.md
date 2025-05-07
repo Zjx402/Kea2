@@ -72,7 +72,7 @@ brew install uv
 uv sync
 ```
 
-3. **Activate virtual environment**
+3. Activate virtual environment
 
 - Linux and macOS
 ```bash
@@ -89,21 +89,34 @@ source .venv/bin/activate
 \.venv\Scripts\activate.ps1
 ```
 
-### Quick Start and test.
+## Quick Test
 
-Connect to an Android devices, and make sure you can see the connected device by running `adb devices`. If you don't have an android device, [you can use an emulator](#appendix-create-and-start-an-android-emulator)
-1. run `quickstart.py` to fuzz a sample app `omninotes`.
-The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.
+Kea2 connects to and runs on Android devices. We recommend you to do a quick test to ensure that Kea2 is compatible with your devices.
+
+1. Connect to an Android device and make sure you can see the connected device by running `adb devices`. 
+
+2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2). The script `quickstart.py` will automatically install and test this sample app `omninotes`.
 
 ```python
 python3 quickstart.py
 ```
 
-There you go. You can now experience **feature 1: Automated testing with fastbot.**
+If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help report the error messages to us.
+
+If you do not have an android device at hand, you can use an Android emulator to run Kea2. (#appendix-create-and-start-an-android-emulator)
+
+The following commands can create an Android emulator (Android version 12, API level 31) on a x86 machine (of course, you can create emulators by Android Studio):
+```bash
+sdkmanager "system-images;android-31;google_apis;x86_64"
+
+avdmanager create avd --force --name Android12 --package 'system-images;android-31;google_apis;x86_64' --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
+
+emulator -avd Android12 -port 5554 &
+```
 
 > [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
 
-## Feature 1: Automated UI Testing
+## Feature 1: run Fastbot for automated UI Testing
 
 During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
