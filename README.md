@@ -96,7 +96,7 @@ There you go. You can now experience **feature 1: Automated testing with fastbot
 
 ### activate virtual environment
 
-For **feature 2: Custom scripts** and **feature 3: assertions**. You need to activate the virtual environment
+Before further development, you need to activate the virtual environment.
 
 - Linux and macOS
 ```bash
@@ -129,7 +129,7 @@ Here's a sample shell command. See more options with `python kea_launcher.py dri
 python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
 ```
 
-## Stage 2: Automated UI Testing with rechability scripts
+## Stage 2: Automated UI Testing with customizing scripts
 
 As described in stage 1, we have some hard-to-reach states because the path to these states require human knowledge.
 
@@ -171,16 +171,7 @@ In script body, we write the interaction logic to guide the tools to Privacy pag
 
 Currently, we support app driver [uiautomator2](https://github.com/openatx/uiautomator2). You can read its docs to learn how to write script.
 
-:smile: Just change the script in `quickstart2.py` to  experience feat 2.
-
-**What we can do in stage2?**
-
-With the use of script, we can, but not limit to, compliting the following tasks.
-- **Take actions that require human knowledge**
-- **Entering a hard-to-reach state**
-- **Cooperate with other apps (share, payment...)**
-- **Guide the testing tool to a particular scenario to do stress test**
-- More to explore...
+Just change the script in `quickstart2.py` to experience feat 2.
 
 ## Stage 3: Find functional bugs with assertions in scripts.
 
@@ -208,8 +199,8 @@ Here's an statement example. In social app, the `send button` should exists when
     <div style="width:70%;">
         <img src="docs/socialAppBug.png" style="border-radius: 14px"/>
     </div>
-    <p>An inputbox bug<p/>
-    <p>Expected (Upper.) Bug (Lower.)<p/>
+    <p>An inputbox bug: Expected (Upper.) Bug (Lower.)
+<p/>
 </div>
 
 So, we can write the following script to check this bug. When there is an `input_box`. We type random words into the box and assert `send_button` exists.
@@ -231,7 +222,7 @@ So, we can write the following script to check this bug. When there is an `input
 ```
 > [hypothesis](https://github.com/HypothesisWorks/hypothesis) is a property-based testing library for Python. It can generate various input according to the given rules.
 
-We call these scripts **property** and The stage 3 method **Property based testing (PBT)**. [Click this link to learn more about PBT](https://github.com/ecnusse/Kea).
+We call the stage 3 script **property**, and the stage 3 method **Property Based Testing (PBT)**. [Click this link to learn more about PBT](https://github.com/ecnusse/Kea).
 
 # Deploy Kea2 in production envirnment. 
 
