@@ -10,9 +10,12 @@ Kea2 is an easy-to-use Python library for supporting and customizing automated U
 These 3 features can be combined and correspond to 3 stages of automated UI testing. By spending time building with features in Kea2, your automated testing tool will be much more powerful.
 
 <div align="center">
+    <div style="max-width:80%; max-height:80%">
     <img src="docs/intro.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    </div>
 </div>
 
+**The ability of the 3 features in Kea2**
 |  | **feature 1** | **feature 2** | **feature 3** |
 | --- | --- | --- | ---- |
 | **Find crash** | :+1: | :+1: | :+1: |
@@ -108,7 +111,9 @@ During automated UI testing. We can find crashed bugs with automated UI testing 
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
 
 <div align="center">
+    <div style="max-width:80%; max-height:80%">
     <img src="docs/stage1.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    </div>
 </div>
 
 **How to use stage 1**
@@ -132,7 +137,9 @@ However, this is the strength of script testing. By writing scripts. We can guid
 
 
 <div align="center">
+    <div style="max-width:80%; max-height:80%">
     <img src="docs/stage2.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    </div>
 </div>
 
 
@@ -179,7 +186,9 @@ Howerver, in script testing. We make use of human knowledge to specify functiona
 Apparently, we can make assertion in stage 2's scripts. And here comes stage 3: Find functional bugs with assertions in scripts.
 
 <div align="center">
+    <div style="max-width:80%; max-height:80%">
     <img src="docs/stage3.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    </div>
 </div>
 
 **How to use stage 3**
@@ -192,7 +201,7 @@ We make assrtions to make full use of the capability of script and find function
 
 Here's an statement example. In social app, the `send button` should exists when the input box is not empty.
 
-<div align="center">
+<div align="center" >
     <div style="max-width:70%; max-height:70%">
         <img src="docs/socialAppBug.png" style="border-radius: 14px "/>
     </div>
