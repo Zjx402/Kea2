@@ -41,24 +41,23 @@ In the future, Kea2 will be extended to support
 
 ## Installation
 
-Running requirements or environment:
+Running requirements/environment:
 - support Windows, MacOS and Linux
 - python 3.8+
 - Android SDK installed
-- **VPN disabled** (u2 mode requires local network access. VPN will lead to error)
+- **VPN closed** (Features 2 and 3 required)
 
-1. Create a workspace and clone this repository into the workspace.
+1. Clone `Kea2` into your workspace.
 
 ```bash
 git clone git@github.com:ecnusse/Kea2.git
 cd Kea2
 ```
 
-2. Setup python envirnment with uv (virtual environment).
+2. Setup the python virtual environment with `uv`.
 
-> [uv](https://github.com/astral-sh/uv) is a python package manager. It creates a python virtual environment. Aallows you to isolate dependencies for each project, preventing dependency conflicts.
-
-> You can also [install Kea2 in your global environment](#appendix-install-kea-to-global-environment). But this may lead to confits.
+> [uv](https://github.com/astral-sh/uv) is a extremely fast python package and project manager. It creates a python virtual environment like `virtualenv` to avoid any dependency issues or conflicts with your existing python environment.
+Of course, you can also setup Kea2 in your [global environment](#appendix-install-kea-to-global-environment).
 
 ```bash
 pip install --upgrade pip
@@ -66,10 +65,9 @@ pip install uv
 uv sync
 ```
 
-Some macOS users will have trouble with global pip insatll. Use brew instead.
-
+> MacOS users may have trouble with global pip install. In such cases, they can use `brew`.
 ```bash
-# for macOS user
+# For macOS users
 brew install uv
 uv sync
 ```
