@@ -108,7 +108,11 @@ There you go. You can now experience **feature 1: Automated testing with fastbot
 During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
 But we have some states that's hard to reach for testing tools because these states requires human knowledge.
 
-![Stage 1](docs/stage1.png)
+<div align="center">
+    <div  style="max-width: 80%;"">
+        <img src="docs/stage1.png" style="border-radius: 14px;"/> 
+    </div>
+</div>
 
 **How to use stage 1**
 
@@ -129,7 +133,11 @@ Here's some examples:
 
 However, this is the strength of script testing. By writing scripts. We can guide the testing tool to wherever we want.
 
-![Stage 2](docs/stage2.png)
+
+<div align="center">
+    <img src="docs/stage2.png" style="border-radius: 14px; max-width: 80%;"/> 
+</div>
+
 
 **How to use stage 2**
 
@@ -173,7 +181,10 @@ Howerver, in script testing. We make use of human knowledge to specify functiona
 
 Apparently, we can make assertion in stage 2's scripts. And here comes stage 3: Find functional bugs with assertions in scripts.
 
-![Stage 3](docs/stage3.png)
+
+<div align="center">
+    <img src="docs/stage3.png" style="border-radius: 14px; max-width: 80%;"/> 
+</div>
 
 **How to use stage 3**
 
