@@ -10,15 +10,14 @@ Kea2 is an easy-to-use Python library for supporting and customizing automated U
 These 3 features can be combined and correspond to 3 stages of automated UI testing. By spending time building with features in Kea2, your automated testing tool will be much more powerful.
 
 <div align="center">
-    <img src="docs/intro.png" style="border-radius: 14px"/> 
+    <img src="docs/intro.png" style="border-radius: 14px; max-width: 80%;"/> 
 </div>
 
-|  | **stage 1 (feat. 1)** | **stage 2 (feat. 1&2)** | **stage 3 (feat. 1&2&3)** |
+|  | **feature 1** | **feature 2** | **feature 3** |
 | --- | --- | --- | ---- |
 | **Find crash** | :+1: | :+1: | :+1: |
 | **Find crash in deep state** |  | :+1: | :+1: |
 | **Find functional bug** |  |  | :+1: |
-
 
 > In essence, Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
  
