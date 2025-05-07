@@ -129,7 +129,7 @@ See more options by `python kea_launcher.py driver -h`
 
 ## Feature 2: Customizing automated UI testing with scripts
 
-When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The key reason is that the tool lacks knowledge of your apps. 
+When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The reason is that Fastbot lacks knowledge of your apps. 
 
 <div align="center">
     <div>
