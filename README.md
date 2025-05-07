@@ -5,9 +5,9 @@ Kea2 is an easy-to-use Python library for supporting and customizing automated U
 ### Kea2 has three important features:
 - **Feature 1**: coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
 - **Feature 2**: customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
-- **Feature 3**: supporting auto-assertions (支持断言机制[^2]) during automated GUI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
+- **Feature 3**: supporting auto-assertions (支持断言机制[^2]) during automated UI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
-These three features can be combined to customize and improve automated GUI testing.
+These three features can be combined to customize and improve automated UI testing.
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
@@ -27,7 +27,7 @@ These three features can be combined to customize and improve automated GUI test
 Kea2, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
-- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
+- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated UI testing tool.
 
 In the future, Kea2 will be extended to support
 - [pytest](https://docs.pytest.org/en/stable/)
@@ -114,7 +114,7 @@ emulator -avd Android12 -port 5554 &
 
 > [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
 
-## Feature 1: run Fastbot for automated UI Testing
+## Feature 1: running Fastbot to automate UI Testing
 
 Test your app with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
 
@@ -127,7 +127,7 @@ The usage is similar to the the original [Fastbot](https://github.com/bytedance/
 See more options by `python kea_launcher.py driver -h`
 
 
-## Feature 2: Customizing automated UI testing with scripts
+## Feature 2: customizing automated UI testing by scripts
 
 When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The reason is that Fastbot lacks knowledge of your apps. 
 
@@ -169,46 +169,42 @@ Assuming `Privacy` is a hard-to-reach page, we can guide Fastbot to reach this p
         self.d(text="Privacy").click()
 ```
 
-- By the decorator `@precondition`, we specify the precondition --- when we are at the `Home` page. 
-> In this case, the script will be invoked when we are at `Home` page by checking whether the widget `Home` exists.
-- In script body, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the page `Privacy`.
+- By the decorator `@precondition`, we specify the precondition --- when we are at the `Home` page. In this case, the script will be invoked when we are at `Home` page by checking whether the widget `Home` exists.
+- In script body of function `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the page `Privacy`.
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. 
 
-Just change the script in `quickstart2.py` to experience feat 2.
+You can find the full example in script `quickstart2.py` and run it by executing:
+```python
+python3 quickstart2.py
+```
 
-## Feature 3: Find functional bugs with assertions in scripts.
+## Feature 3: Finding functional bugs by adding assertions in scripts.
 
-In fact. We can do more when we have scripts. Previously, we find crashed bugs with automated testing tool like fastbot. And find functional bugs in scipt testing with the use of assertion.
-
-**The reason why automated testing tool cannot find functional bug is the lack of test oracle.** The tool can only specify a crash bug (the bug appears when app crash), but is not able to specify a funcitonal bug. 
-
-Howerver, in script testing. We make use of human knowledge to specify functional bugs' test oracle. We did it by **making assertion** in script. When assertion fails, we find a suspected bug.
-
-Apparently, we can make assertion in stage 2's scripts. And here comes stage 3: Find functional bugs with assertions in scripts.
+Kea2 supports auto-assertions (支持断言机制[^2]) during automated UI testing for finding *logic bugs* (i.e., *non-crashing bugs*). To achieve this, you can add assertions in the scripts. When an assertion fails during automated UI testing, we find a likely functional bug. This idea is inspired by  [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea).
 
 <div align="center">
     <img src="docs/stage3.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
-**How to use stage 3**
-
-We make assrtions to make full use of the capability of script and find functional bug. Compare to stage 2. We need to make assertion when we finish the script body. (Of course we can make multiple assertions just like what we do in script testing)
+In Feature 3, a script is composed of three elements:
 
 1. **Precondition:** When to execute the script.
 2. **Script body:** The interaction logic to reach where we want.
 3. **Assertion:** The expected app behaviour.
 
-Here's an statement example. In social app, the `send button` should exists when the input box is not empty.
+### Example
+
+In a social media app like WeChat, on the message sending page, the `send` button should always exists when the input box is not empty.
 
 <div align="center" >
     <div >
         <img src="docs/socialAppBug.png" style="border-radius: 14px; width:60%; height:70%;"/>
     </div>
-    <p>An inputbox bug: Expected (Upper.) Bug (Lower.)
+    <p>The expected behavior (the upper figure) and the buggy behavior (the lower figure).
 <p/>
 </div>
 
-So, we can write the following script to check this bug. When there is an `input_box`. We type random words into the box and assert `send_button` exists.
+For the preceding always-holding property, we can write the following script to validate the functional correctness: when there is an `input_box` widget on the message sending page, we can type any non-empty string text into the input box and assert `send_button` should always exists.
 
 
 ```python
@@ -221,13 +217,11 @@ So, we can write the following script to check this bug. When there is an `input
         self.d(description="input_box").set_text(random_str)
         assert self.d(description="send_button").exist
 
-        # we can even do more assertions.
-        # example: the input string should exist
+        # we can even do more assertions, e.g.,
+        #       the input string should exist on the message sending page
         assert self.d(text=random_str).exist
 ```
-> [hypothesis](https://github.com/HypothesisWorks/hypothesis) is a property-based testing library for Python. It can generate various input according to the given rules.
-
-We call the stage 3 script **property**, and the stage 3 method **Property Based Testing (PBT)**. [Click this link to learn more about PBT](https://github.com/ecnusse/Kea).
+> [hypothesis](https://github.com/HypothesisWorks/hypothesis) is a property-based testing library for Python. We use it to generate random texts according to the given rules.
 
 # Documentation
 
