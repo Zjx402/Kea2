@@ -2,34 +2,34 @@
 
 Kea2 is an easy-to-use Python library for supporting and customizing automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
-### Kea2 has 3 important features:
-- **Feature 1**: coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
+### Kea2 has three important features:
+- **Feature 1**: coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
 - **Feature 2**: customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
-- **Feature 3**: supporting auto-assertions (断言机制[^2]) during automated GUI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
+- **Feature 3**: supporting auto-assertions (支持断言机制[^2]) during automated UI testing, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
-These 3 features can be combined and correspond to 3 stages of automated UI testing. By spending time building with features in Kea2, your automated testing tool will be much more powerful.
+These three features can be combined to customize and improve automated UI testing.
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
-    <img src="docs/intro.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
-**The ability of the 3 features in Kea2**
-|  | **feature 1** | **feature 2** | **feature 3** |
-| --- | --- | --- | ---- |
-| **Find crash** | :+1: | :+1: | :+1: |
-| **Find crash in deep state** |  | :+1: | :+1: |
-| **Find functional bug** |  |  | :+1: |
+> Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
 
-> In essence, Kea2 is designed to be capable of fusing the (property-based) *scripted tests* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripted tests) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
+**The ability of the three features in Kea2**
+|  | **Feature 1** | **Feature 2** | **Feature 3** |
+| --- | --- | --- | ---- |
+| **Finding crashes** | :+1: | :+1: | :+1: |
+| **Finding crashes in deep states** |  | :+1: | :+1: |
+| **Finding non-crashing functional bugs** |  |  | :+1: |
  
 Kea2, released as a Python library, currently works with:
 - [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
-- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated GUI testing tool.
+- [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated UI testing tool.
 
-In the future, Kea2 is planned to additionally support
+In the future, Kea2 will be extended to support
 - [pytest](https://docs.pytest.org/en/stable/)
 - [Appium](https://github.com/appium/appium), [Hypium]() (for HarmonyOS)
 - other automated UI testing tools (not limited to Fastbot)
@@ -41,24 +41,23 @@ In the future, Kea2 is planned to additionally support
 
 ## Installation
 
-Running requirements or environment:
+Running requirements/environment:
 - support Windows, MacOS and Linux
 - python 3.8+
 - Android SDK installed
-- **VPN disabled** (u2 mode requires local network access. VPN will lead to error)
+- **VPN closed** (Features 2 and 3 required)
 
-1. Create a workspace and clone this repository into the workspace.
+1. Clone `Kea2` into your workspace.
 
 ```bash
 git clone git@github.com:ecnusse/Kea2.git
 cd Kea2
 ```
 
-2. Setup python envirnment with uv (virtual environment).
+2. Setup the python virtual environment with `uv`.
 
-> [uv](https://github.com/astral-sh/uv) is a python package manager. It creates a python virtual environment. Aallows you to isolate dependencies for each project, preventing dependency conflicts.
-
-> You can also [install Kea2 in your global environment](#appendix-install-kea-to-global-environment). But this may lead to confits.
+> [uv](https://github.com/astral-sh/uv) is a extremely fast python package and project manager. It creates a python virtual environment like `virtualenv` to avoid any dependency issues or conflicts with your existing python environment.
+Of course, you can also setup Kea2 in your [global environment](#appendix-install-kea-to-global-environment).
 
 ```bash
 pip install --upgrade pip
@@ -66,15 +65,14 @@ pip install uv
 uv sync
 ```
 
-Some macOS users will have trouble with global pip insatll. Use brew instead.
-
+> MacOS users may have trouble with global pip install. In such cases, they can use `brew`.
 ```bash
-# for macOS user
+# For macOS users
 brew install uv
 uv sync
 ```
 
-3. **Activate virtual environment**
+3. Activate virtual environment
 
 - Linux and macOS
 ```bash
@@ -91,125 +89,122 @@ source .venv/bin/activate
 \.venv\Scripts\activate.ps1
 ```
 
-### Quick Start and test.
+## Quick Test
 
-Connect to an Android devices, and make sure you can see the connected device by running `adb devices`. If you don't have an android device, [you can use an emulator](#appendix-create-and-start-an-android-emulator)
-1. run `quickstart.py` to fuzz a sample app `omninotes`.
-The script will automatically download the sample app `omninotes`'s apk `omninotes.apk` and run.
+Kea2 connects to and runs on Android devices. We recommend you to do a quick test to ensure that Kea2 is compatible with your devices.
+
+1. Connect to an Android device and make sure you can see the connected device by running `adb devices`. 
+
+2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quickstart.py` will automatically install and test this sample app.
 
 ```python
 python3 quickstart.py
 ```
 
-There you go. You can now experience **feature 1: Automated testing with fastbot.**
+If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help report the error messages to us.
+
+If you do not have an Android device at hand, you can use an Android emulator to run Kea2. The following commands can help create and start an Android emulator (Android version 12, API level 31) on a x86 machine (of course, you can create emulators by Android Studio):
+```bash
+sdkmanager "system-images;android-31;google_apis;x86_64"
+
+avdmanager create avd --force --name Android12 --package 'system-images;android-31;google_apis;x86_64' --abi google_apis/x86_64 --sdcard 1024M --device 'Nexus 7'
+
+emulator -avd Android12 -port 5554 &
+```
 
 > [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) gives a dead simple scripted test which is ready-to-go with Fastbot. You can customize this script test for testing your apps at your needs.
 
-## Feature 1: Automated UI Testing
+## Feature 1: running Fastbot to automate UI Testing
 
-During automated UI testing. We can find crashed bugs with automated UI testing tools such as [fastbot](https://github.com/bytedance/Fastbot_Android), [monkey](https://developer.android.com/studio/test/other-testing-tools/monkey), [AppCrawler](https://github.com/seveniruby/AppCrawler).
-But we have some states that's hard to reach for testing tools because these states requires human knowledge.
+Test your app with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (发现稳定性问题) (i.e., *crashing bugs*); 
 
-<div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage1.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
-    </div>
-</div>
 
-**How to use stage 1**
-
-Most of the command is similar to [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)
-
-Here's a sample shell command. See more options with `python kea_launcher.py driver -h`
 ```bash
 python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
 ```
 
-## Feature 2: Automated UI Testing with customizing scripts
+The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command). 
+See more options by `python kea_launcher.py driver -h`
 
-As described in stage 1, we have some hard-to-reach states because the path to these states require human knowledge.
 
-Here's some examples:
-- **The action requires human knowledge:** Filling a form
-- **The state is too deep:** Entering the target state requires multiple steps and complicated conditions.
+## Feature 2: customizing automated UI testing by scripts
 
-However, this is the strength of script testing. By writing scripts. We can guide the testing tool to wherever we want.
-
+When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The reason is that Fastbot lacks knowledge of your apps. 
 
 <div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage2.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
+    <div>
+    <img src="docs/stage1.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
+However, this is the strength of script testing. In Feature 2, Kea2 can support writing small scripts to guide Fastbot to explore wherever we want.
 
-**How to use stage 2**
+<div align="center">
+    <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+</div>
 
-In high level, A script in UI automated testing is composed by 2 parts.
+In Kea2, you can test your app by customizing testing scenarios (自定义测试场景或事件序列[^1], e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
-1. **Precondition:** When to execute the script.
-2. **Script body:** The interaction logic to reach where we want.
+In Kea2, a script is composed of two elements:
+-  **Precondition:** When to execute the script.
+- **Script body:** The interaction logic to reach where we want.
 
-Here's an example. Given the `Privacy Settings` is a hard-to-reach page, we can guide the automated testing tool to this page when we are at `Home` page.
+### Example
 
-In precondition, we specify when do we want to execute this script. 
-In this case, we want to execute the script when we are at `Home` page. The way we specify `Home` is the widget `Home` exists.
-
-In script body, we write the interaction logic to guide the tools to Privacy page. (Same as scipt testing)
+Assuming `Privacy` is a hard-to-reach page, we can guide Fastbot to reach this page when we are at the `Home` page.
 
 ```python
-    # Precond: When we are at home page
+    @prob(0.5)
+    # precondition: when we are at the page `Home`
     @precondition(lambda self: 
         self.d(text="Home").exists
     )
     def test_goToPrivacy(self):
         """
-        Guide automated testing tool to Privacy Settings.
+        Guide Fastbot to the page `Privacy` by opening `Drawer`, 
+        clicking the option `Setting` and clicking `Privacy`.
         """
         self.d(description="Drawer").click()
         self.d(text="Settings").click()
         self.d(text="Privacy").click()
 ```
 
-Currently, we support app driver [uiautomator2](https://github.com/openatx/uiautomator2). You can read its docs to learn how to write script.
+- By the decorator `@precondition`, we specify the precondition --- when we are at the `Home` page. In this case, the script will be invoked when we are at `Home` page by checking whether the widget `Home` exists.
+- In script body of function `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the page `Privacy`.
+- By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. 
 
-Just change the script in `quickstart2.py` to experience feat 2.
+You can find the full example in script `quickstart2.py` and run it by executing:
+```python
+python3 quickstart2.py
+```
 
-## Feature 3: Find functional bugs with assertions in scripts.
+## Feature 3: Finding functional bugs by adding assertions in scripts.
 
-In fact. We can do more when we have scripts. Previously, we find crashed bugs with automated testing tool like fastbot. And find functional bugs in scipt testing with the use of assertion.
-
-**The reason why automated testing tool cannot find functional bug is the lack of test oracle.** The tool can only specify a crash bug (the bug appears when app crash), but is not able to specify a funcitonal bug. 
-
-Howerver, in script testing. We make use of human knowledge to specify functional bugs' test oracle. We did it by **making assertion** in script. When assertion fails, we find a suspected bug.
-
-Apparently, we can make assertion in stage 2's scripts. And here comes stage 3: Find functional bugs with assertions in scripts.
+Kea2 supports auto-assertions (支持断言机制[^2]) during automated UI testing for finding *logic bugs* (i.e., *non-crashing bugs*). To achieve this, you can add assertions in the scripts. When an assertion fails during automated UI testing, we find a likely functional bug. This idea is inspired by  [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea).
 
 <div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/stage3.png" style="border-radius: 14px; max-width: 80%; height: 80%;"/> 
-    </div>
+    <img src="docs/stage3.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
-**How to use stage 3**
-
-We make assrtions to make full use of the capability of script and find functional bug. Compare to stage 2. We need to make assertion when we finish the script body. (Of course we can make multiple assertions just like what we do in script testing)
+In Feature 3, a script is composed of three elements:
 
 1. **Precondition:** When to execute the script.
 2. **Script body:** The interaction logic to reach where we want.
 3. **Assertion:** The expected app behaviour.
 
-Here's an statement example. In social app, the `send button` should exists when the input box is not empty.
+### Example
+
+In a social media app like WeChat, on the message sending page, the `send` button should always exists when the input box is not empty.
 
 <div align="center" >
-    <div style="max-width:70%; max-height:70%">
-        <img src="docs/socialAppBug.png" style="border-radius: 14px "/>
+    <div >
+        <img src="docs/socialAppBug.png" style="border-radius: 14px; width:60%; height:70%;"/>
     </div>
-    <p>An inputbox bug: Expected (Upper.) Bug (Lower.)
+    <p>The expected behavior (the upper figure) and the buggy behavior (the lower figure).
 <p/>
 </div>
 
-So, we can write the following script to check this bug. When there is an `input_box`. We type random words into the box and assert `send_button` exists.
+For the preceding always-holding property, we can write the following script to validate the functional correctness: when there is an `input_box` widget on the message sending page, we can type any non-empty string text into the input box and assert `send_button` should always exists.
 
 
 ```python
@@ -222,13 +217,11 @@ So, we can write the following script to check this bug. When there is an `input
         self.d(description="input_box").set_text(random_str)
         assert self.d(description="send_button").exist
 
-        # we can even do more assertions.
-        # example: the input string should exist
+        # we can even do more assertions, e.g.,
+        #       the input string should exist on the message sending page
         assert self.d(text=random_str).exist
 ```
-> [hypothesis](https://github.com/HypothesisWorks/hypothesis) is a property-based testing library for Python. It can generate various input according to the given rules.
-
-We call the stage 3 script **property**, and the stage 3 method **Property Based Testing (PBT)**. [Click this link to learn more about PBT](https://github.com/ecnusse/Kea).
+> [hypothesis](https://github.com/HypothesisWorks/hypothesis) is a property-based testing library for Python. We use it to generate random texts according to the given rules.
 
 # Documentation
 
