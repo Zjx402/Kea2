@@ -1,6 +1,7 @@
 import subprocess
+from typing import List, Optional
 
-def run_adb_command(cmd, timeout=10):
+def run_adb_command(cmd: List[str], timeout=10):
     """
     Runs an adb command and returns its output.
     
@@ -49,18 +50,32 @@ def ensure_device(func):
     connected, it raises a RuntimeError.
     """
     def wrapper(*args, **kwargs):
+        devices = get_devices()
         if kwargs.get("device") is None:
-            devices = get_devices()
             if not devices:
                 raise RuntimeError("No connected devices.")
             if len(devices) > 1:
                 raise RuntimeError("Multiple connected devices detected. Please specify a device.")
             kwargs["device"] = devices[0]
+        if kwargs["device"] not in devices:
+            raise RuntimeError(f"[ERROR] {kwargs['device']} not connected. Please check.")
         return func(*args, **kwargs)
     return wrapper
 
 @ensure_device
-def install_app(apk_path, device=None):
+def adb_shell(cmd: List[str], device:Optional[str]=None):
+    """
+    run adb shell commands
+
+    Parameters:
+        cmd (List[str])
+        device (str, optional): The device serial number. If None, it's resolved automatically when only one device is connected.
+    """
+    return run_adb_command(["-s", device, "shell"] + cmd)
+
+
+@ensure_device
+def install_app(apk_path: str, device: Optional[str]=None):
     """
     Installs an APK application on the specified device.
     
@@ -73,8 +88,9 @@ def install_app(apk_path, device=None):
     """
     return run_adb_command(["-s", device, "install", apk_path])
 
+
 @ensure_device
-def uninstall_app(package_name, device=None):
+def uninstall_app(package_name: str, device: Optional[str] = None):
     """
     Uninstalls an app from the specified device.
     
@@ -87,8 +103,9 @@ def uninstall_app(package_name, device=None):
     """
     return run_adb_command(["-s", device, "uninstall", package_name])
 
+
 @ensure_device
-def push_file(local_path, remote_path, device=None):
+def push_file(local_path: str, remote_path: str, device: Optional[str] = None):
     """
     Pushes a file to the specified device.
     
@@ -104,8 +121,9 @@ def push_file(local_path, remote_path, device=None):
     remote_path = str(remote_path)
     return run_adb_command(["-s", device, "push", local_path, remote_path])
 
+
 @ensure_device
-def pull_file(remote_path, local_path, device=None):
+def pull_file(remote_path: str, local_path: str, device: Optional[str] = None):
     """
     Pulls a file from the device to a local path.
     
@@ -119,10 +137,12 @@ def pull_file(remote_path, local_path, device=None):
     """
     return run_adb_command(["-s", device, "pull", remote_path, local_path])
 
+
 # Forward-related functions
 
+
 @ensure_device
-def list_forwards(device=None):
+def list_forwards(device: Optional[str] = None):
     """
     Lists current port forwarding rules on the specified device.
     
@@ -141,13 +161,15 @@ def list_forwards(device=None):
             if len(parts) == 3:
                 # Each line is expected to be: <device> <local> <remote>
                 rule = {"device": parts[0], "local": parts[1], "remote": parts[2]}
-                forwards.append(rule)
+                if rule["device"] == device:
+                    forwards.append(rule)
             else:
                 forwards.append(line)
     return forwards
 
+
 @ensure_device
-def create_forward(local_spec, remote_spec, device=None):
+def create_forward(local_spec: str, remote_spec: str, device: Optional[str] = None):
     """
     Creates a port forwarding rule on the specified device.
     
@@ -161,8 +183,9 @@ def create_forward(local_spec, remote_spec, device=None):
     """
     return run_adb_command(["-s", device, "forward", local_spec, remote_spec])
 
+
 @ensure_device
-def remove_forward(local_spec, device=None):
+def remove_forward(local_spec, device: Optional[str] = None):
     """
     Removes a specific port forwarding rule on the specified device.
     
@@ -175,8 +198,9 @@ def remove_forward(local_spec, device=None):
     """
     return run_adb_command(["-s", device, "forward", "--remove", local_spec])
 
+
 @ensure_device
-def remove_all_forwards(device=None):
+def remove_all_forwards(device: Optional[str] = None):
     """
     Removes all port forwarding rules on the specified device.
     
@@ -187,6 +211,7 @@ def remove_all_forwards(device=None):
         str: The output from the command to remove all forwards.
     """
     return run_adb_command(["-s", device, "forward", "--remove-all"])
+
 
 if __name__ == '__main__':
     # For testing: print the list of currently connected devices.
