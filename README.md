@@ -121,7 +121,7 @@ Test your app with the full capability of [Fastbot](https://github.com/bytedance
 
 
 ```bash
-python3 kea_launcher.py driver --agent native --running-minutes 10 -p it.feio.android.omninotes.alpha -s emulator-5554
+python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
 ```
 
 The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)'s shell commands. 
@@ -236,7 +236,7 @@ For the preceding always-holding property, we can write the following script to 
 
 # Documentation
 
-## Write scripts
+## Write scripts in Kea2
 
 Kea2 uses [Unittest](https://github.com/python/cpython/tree/main/Lib/unittest) to manage scripts. All the Kea2's scripts can be found in unittest's rules (i.e., the test methods should start with `test_`, the test classes should extend `unittest.TestCase`).
 
