@@ -174,9 +174,20 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. As a result, Kea2 still allows Fastbot to explore other pages.
 
 You can find the full example in script `quickstart2.py` and run it by executing:
+
+
+```bash
+# Launch Kea2 and load one single script quickstart2.py.
+python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart2.py
+```
+
+or simply run:
+
 ```python
 python3 quickstart2.py
 ```
+
+
 
 ## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
 
