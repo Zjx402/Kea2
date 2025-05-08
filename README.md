@@ -236,7 +236,7 @@ For the preceding always-holding property, we can write the following script to 
 
 # Documentation
 
-## Write scripts in Kea2
+## Write scripts
 
 Kea2 uses [Unittest](https://github.com/python/cpython/tree/main/Lib/unittest) to manage scripts. All the Kea2's scripts can be found in unittest's rules (i.e., the test methods should start with `test_`, the test classes should extend `unittest.TestCase`).
 
