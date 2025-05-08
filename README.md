@@ -34,7 +34,7 @@ In the future, Kea2 will be extended to support
 - [Appium](https://github.com/appium/appium), [Hypium]() (for HarmonyOS)
 - other automated UI testing tools (not limited to Fastbot)
 
-> Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners from Bytedance (the Fastbot team), OPay, WeChat, Huawei and etc. Kudos!
+> Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners from Bytedance (Zhao Zhang, Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu), Huawei, Xiaomi and etc. Kudos!
 
 
 # Deploy Kea2
