@@ -128,7 +128,7 @@ The usage is similar to the the original [Fastbot](https://github.com/bytedance/
 See more options by `python kea_launcher.py driver -h`
 
 
-## Feature 2(自定义测试场景或事件序列): customizing Fastbot by scripts
+## Feature 2(自定义测试场景或事件序列): customizing testing scenarios by scripts
 
 When running any automated UI testing tools like Fastbot to test your apps, you may find that some specifc UI pages or functionalities are difficult to reach or cover. The reason is that Fastbot lacks knowledge of your apps. Fortunately, this is the strength of script testing. In Feature 2, Kea2 can support writing small scripts to guide Fastbot to explore wherever we want.
 
@@ -178,7 +178,7 @@ You can find the full example in script `quickstart2.py` and run it by executing
 python3 quickstart2.py
 ```
 
-## Feature 3(支持断言机制: Finding functional bugs by scripts.
+## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
 
 Kea2 supports auto-assertions when running Fastbot for finding *logic bugs* (i.e., *non-crashing bugs*). To achieve this, you can add assertions in the scripts. When an assertion fails during automated UI testing, we find a likely functional bug. This idea is inspired by  [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea).
 
