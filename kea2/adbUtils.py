@@ -17,7 +17,10 @@ def run_adb_command(cmd: List[str], timeout=10):
         result = subprocess.run(full_cmd, capture_output=True, text=True, timeout=timeout)
         if result.returncode != 0:
             print(f"Command failed: {' '.join(full_cmd)}\nError: {result.stderr}")
-        return result.stdout.strip()
+        return "\n".join([
+            result.stdout.strip(),
+            result.stderr.strip()
+        ])
     except subprocess.TimeoutExpired:
         print(f"Command timed out: {' '.join(full_cmd)}")
         return None
@@ -58,7 +61,9 @@ def ensure_device(func):
                 raise RuntimeError("Multiple connected devices detected. Please specify a device.")
             kwargs["device"] = devices[0]
         if kwargs["device"] not in devices:
-            raise RuntimeError(f"[ERROR] {kwargs['device']} not connected. Please check.")
+            output = run_adb_command(["-s", kwargs["device"], "get-state"])
+            if output.strip() != "device":
+                raise RuntimeError(f"[ERROR] {kwargs['device']} not connected. Please check.\n{output}")
         return func(*args, **kwargs)
     return wrapper
 
