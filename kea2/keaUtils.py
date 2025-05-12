@@ -117,7 +117,7 @@ class JsonResult(TextTestResult):
         json_res = dict()
         for propName, propStatitic in self.res.items():
             json_res[propName] = asdict(propStatitic)
-        with open(outfile, "w") as fp:
+        with open(outfile, "w", encoding="utf-8") as fp:
             json.dump(json_res, fp, indent=4)
 
     def addExcuted(self, test: TestCase):
@@ -213,11 +213,11 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
-    with open("fastbot.log", "w"):
+    with open("fastbot.log", "w", encoding="utf-8"):
         pass
 
     # log file
-    outfile = open("fastbot.log", "w")
+    outfile = open("fastbot.log", "w", encoding="utf-8")
 
     print("[INFO] Options info: {}".format(asdict(options)))
     print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
