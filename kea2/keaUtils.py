@@ -96,14 +96,22 @@ class PBTTestResult(dict):
     def __getitem__(self, key) -> PropStatistic:
         return super().__getitem__(key)
 
+
+def getFullPropName(testCase: TestCase):
+    return ".".join([
+        testCase.__module__,
+        testCase.__class__.__name__,
+        testCase._testMethodName
+    ])
+
 class JsonResult(TextTestResult):
     res: PBTTestResult
 
     @classmethod
     def setProperties(cls, allProperties: Dict):
         cls.res = dict()
-        for propName in allProperties.keys():
-            cls.res[propName] = PropStatistic()
+        for testCase in allProperties.values():
+            cls.res[getFullPropName(testCase)] = PropStatistic()
 
     def flushResult(self, outfile):
         json_res = dict()
@@ -113,18 +121,18 @@ class JsonResult(TextTestResult):
             json.dump(json_res, fp, indent=4)
 
     def addExcuted(self, test: TestCase):
-        self.res[test._testMethodName].executed += 1
+        self.res[getFullPropName(test)].executed += 1
 
     def addPrecondSatisfied(self, test: TestCase):
-        self.res[test._testMethodName].precond_satisfied += 1
+        self.res[getFullPropName(test)].precond_satisfied += 1
 
     def addFailure(self, test, err):
         super().addFailure(test, err)
-        self.res[test._testMethodName].fail += 1
+        self.res[getFullPropName(test)].fail += 1
 
     def addError(self, test, err):
         super().addError(test, err)
-        self.res[test._testMethodName].error += 1
+        self.res[getFullPropName(test)].error += 1
 
 
 def activateFastbot(options: Options, port=None) -> threading.Thread:
