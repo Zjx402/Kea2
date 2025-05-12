@@ -25,6 +25,7 @@ class LogWatcher:
             time.sleep(poll_interval)
         
     def read_log(self):
+        time.sleep(0.02)
         with open(self.log_path, 'r', encoding='utf-8') as f:
             f.seek(self.last_pos)
             new_data = f.read()
