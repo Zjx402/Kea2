@@ -315,7 +315,7 @@ class KeaTestRunner(TextTestRunner):
                     # filter the properties according to the given p
                     for propName, test in propsSatisfiedPrecond.items():
                         result.addPrecondSatisfied(test)
-                        if getattr(test, "p", 0.5) >= p:
+                        if getattr(test, "p", 1) >= p:
                             propsNameFilteredByP.append(propName)
 
                     if len(propsNameFilteredByP) == 0:
