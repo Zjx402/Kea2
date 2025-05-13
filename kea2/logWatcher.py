@@ -9,7 +9,7 @@ PATTERN_STATISTIC = re.compile(r".+Monkey\sis\sover!\n([\s\S]+)")
 
 
 def thread_excepthook(args):
-    print(args.exc_value)
+    print(args.exc_value, flush=True)
     os._exit(1)
 
 
@@ -53,7 +53,7 @@ class LogWatcher:
                 print(
                     "[INFO] Fastbot exit:\n" + 
                     statistic_body
-                )
+                , flush=True)
 
     def __init__(self):
         self.log_path = "fastbot.log"

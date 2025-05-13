@@ -46,12 +46,12 @@ class U2ScriptDriver(AbstractScriptDriver):
                 """rewrite forward_port mothod to avoid the relocation of port
                 :return: the new forward port
                 """
-                print("Rewriting forward_port method")
+                print("Rewriting forward_port method", flush=True)
                 self.d._dev.forward_port = types.MethodType(
                                 forward_port, self.d._dev)
                 lport = self.d._dev.forward_port(8090)
                 setattr(self.d._dev, "msg", "meta")
-                print(f"[U2] local port: {lport}")
+                print(f"[U2] local port: {lport}", flush=True)
                 return lport
             
             self._remove_remote_port(8090)
@@ -121,8 +121,8 @@ def _get_bounds(raw_bounds):
     try:
         bounds = [int(m.group(1)), int(m.group(2)), int(m.group(3)), int(m.group(4))]
     except Exception as e:
-        print(f"raw_bounds: {raw_bounds}")
-        print(f"Please report this bug to Kea2")
+        print(f"raw_bounds: {raw_bounds}", flush=True)
+        print(f"Please report this bug to Kea2", flush=True)
         raise RuntimeError(e)
         
     return bounds

@@ -180,7 +180,7 @@ def activateFastbot(options: Options, port=None) -> threading.Thread:
     )
 
     t = startFastbotService(options)
-    print("[INFO] Running Fastbot...")
+    print("[INFO] Running Fastbot...", flush=True)
 
     return t
 
@@ -194,7 +194,7 @@ def check_alive(port):
             requests.get(f"http://localhost:{port}/ping")
             return
         except requests.ConnectionError:
-            print("[INFO] waiting for connection.")
+            print("[INFO] waiting for connection.", flush=True)
             pass
     raise RuntimeError("Failed to connect fastbot")
 
@@ -217,11 +217,11 @@ def startFastbotService(options: Options) -> threading.Thread:
         pass
 
     # log file
-    outfile = open("fastbot.log", "w", encoding="utf-8")
+    outfile = open("fastbot.log", "w", encoding="utf-8", buffering=1)
 
-    print("[INFO] Options info: {}".format(asdict(options)))
-    print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
-    print("[INFO] Fastbot log will be saved to {}".format(outfile.name))
+    print("[INFO] Options info: {}".format(asdict(options)), flush=True)
+    print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)), flush=True)
+    print("[INFO] Fastbot log will be saved to {}".format(outfile.name), flush=True)
 
     # process handler
     proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
@@ -246,7 +246,7 @@ class KeaTestRunner(TextTestRunner):
         if not isinstance(options.packageNames, list) and len(options.packageNames) > 0:
             raise ValueError("packageNames should be given in a list.")
         if options.Driver is not None and options.agent == "native":
-            print("[Warning] Can not use any Driver when runing native mode.")
+            print("[Warning] Can not use any Driver when runing native mode.", flush=True)
             options.Driver = None
         cls.options = options
 
@@ -256,7 +256,7 @@ class KeaTestRunner(TextTestRunner):
         self.collectAllProperties(test)
 
         if len(self.allProperties) == 0:
-            print("[Warning] No property has been found.")
+            print("[Warning] No property has been found.", flush=True)
 
         JsonResult.setProperties(self.allProperties)
         self.resultclass = JsonResult
@@ -300,18 +300,18 @@ class KeaTestRunner(TextTestRunner):
                         f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
                         else f"({step})"
                         )
-                    )
+                    , flush=True)
 
                     try:
                         propsSatisfiedPrecond = self.getValidProperties()
                     except requests.ConnectionError:
                         print(
                             "[INFO] Exploration times up (--running-minutes)."
-                        )
+                        , flush=True)
                         end_by_remote = True
                         break
 
-                    print(f"{len(propsSatisfiedPrecond)} precond satisfied.")
+                    print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
 
                     # Go to the next round if no precond satisfied
                     if len(propsSatisfiedPrecond) == 0:
@@ -327,7 +327,7 @@ class KeaTestRunner(TextTestRunner):
                             propsNameFilteredByP.append(propName)
 
                     if len(propsNameFilteredByP) == 0:
-                        print("Not executed any property due to probability.")
+                        print("Not executed any property due to probability.", flush=True)
                         continue
 
                     execPropName = random.choice(propsNameFilteredByP)
@@ -335,7 +335,7 @@ class KeaTestRunner(TextTestRunner):
                     # Dependency Injection. driver when doing scripts
                     self.scriptDriver = self.options.Driver.getScriptDriver()
                     setattr(test, self.options.driverName, self.scriptDriver)
-                    print("execute property %s." % execPropName)
+                    print("execute property %s." % execPropName, flush=True)
 
                     result.addExcuted(test)
                     try:
@@ -349,7 +349,7 @@ class KeaTestRunner(TextTestRunner):
                     self.stopMonkey()
                 result.flushResult(outfile="result.json")
 
-            print(f"Finish sending monkey events.")
+            print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
             self.tearDown()
 
@@ -406,7 +406,7 @@ class KeaTestRunner(TextTestRunner):
         r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stopMonkey")
 
         res = r.content.decode(encoding="utf-8")
-        print(f"[Server INFO] {res}")
+        print(f"[Server INFO] {res}", flush=True)
 
     def getValidProperties(self) -> PropertyStore:
 
@@ -464,6 +464,7 @@ class KeaTestRunner(TextTestRunner):
                 remove_tearDown(t)
                 # save it into allProperties for PBT
                 self.allProperties[testMethodName] = t
+                print(f"[INFO] Load property: {getFullPropName(t)}", flush=True)
 
     def tearDown(self):
         # TODO Add tearDown method (remove local port, etc.)

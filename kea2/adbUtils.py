@@ -16,13 +16,13 @@ def run_adb_command(cmd: List[str], timeout=10):
     try:
         result = subprocess.run(full_cmd, capture_output=True, text=True, timeout=timeout)
         if result.returncode != 0:
-            print(f"Command failed: {' '.join(full_cmd)}\nError: {result.stderr}")
+            print(f"Command failed: {' '.join(full_cmd)}\nError: {result.stderr}", flush=True)
         return "\n".join([
             result.stdout.strip(),
             result.stderr.strip()
         ])
     except subprocess.TimeoutExpired:
-        print(f"Command timed out: {' '.join(full_cmd)}")
+        print(f"Command timed out: {' '.join(full_cmd)}", flush=True)
         return None
 
 def get_devices():
@@ -222,37 +222,37 @@ if __name__ == '__main__':
     # For testing: print the list of currently connected devices.
     devices = get_devices()
     if devices:
-        print("Connected devices:")
+        print("Connected devices:", flush=True)
         for dev in devices:
-            print(f" - {dev}")
+            print(f" - {dev}", flush=True)
     else:
-        print("No devices connected.")
+        print("No devices connected.", flush=True)
 
     # Example usage of forward-related functionalities:
     try:
         # List current forwards
         forwards = list_forwards()
-        print("Current forward rules:")
+        print("Current forward rules:", flush=True)
         for rule in forwards:
-            print(rule)
+            print(rule, flush=True)
             
         # Create a forward rule (example: forward local tcp 8000 to remote tcp 9000)
         output = create_forward("tcp:8000", "tcp:9000")
-        print("Create forward output:", output)
+        print("Create forward output:", output, flush=True)
         
         # List forwards again
         forwards = list_forwards()
-        print("Forward rules after creation:")
+        print("Forward rules after creation:", flush=True)
         for rule in forwards:
-            print(rule)
+            print(rule, flush=True)
         
         # Remove the forward rule
         output = remove_forward("tcp:8000")
-        print("Remove forward output:", output)
+        print("Remove forward output:", output, flush=True)
         
         # Remove all forwards (if needed)
         # output = remove_all_forwards()
         # print("Remove all forwards output:", output)
         
     except RuntimeError as e:
-        print("Error:", e)
+        print("Error:", e, flush=True)

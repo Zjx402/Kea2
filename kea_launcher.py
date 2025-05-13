@@ -71,23 +71,23 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
 
 def unittest_info_logger(args):
     if args.agent == "native":
-        print("[Warning] Property not availble in native agent.")
+        print("[Warning] Property not availble in native agent.", flush=True)
     if args.extra and args.extra[0] == "unittest":
-        print("Captured unittest args:", args.extra)
+        print("Captured unittest args:", args.extra, flush=True)
 
 
 def driver_info_logger(args):
-    print("[INFO] Driver Settings:")
+    print("[INFO] Driver Settings:", flush=True)
     if args.serial:
-        print("  serial:", args.serial)
+        print("  serial:", args.serial, flush=True)
     if args.package_names:
-        print("  package_names:", args.package_names)
+        print("  package_names:", args.package_names, flush=True)
     if args.agent:
-        print("  agent:", args.agent)
+        print("  agent:", args.agent, flush=True)
     if args.running_minutes:
-        print("  running_minutes:", args.running_minutes)
+        print("  running_minutes:", args.running_minutes, flush=True)
     if args.throttle_ms:
-        print("  throttle_ms:", args.throttle_ms)
+        print("  throttle_ms:", args.throttle_ms, flush=True)
 
 
 def parse_args():
