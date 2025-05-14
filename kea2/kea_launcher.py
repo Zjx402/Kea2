@@ -1,4 +1,5 @@
 import argparse
+from typing import List
 import unittest
 
 def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
@@ -90,23 +91,23 @@ def driver_info_logger(args):
         print("  throttle_ms:", args.throttle_ms, flush=True)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Kea4Fastbot")
+def parse_args(argv: List):
+    parser = argparse.ArgumentParser(description="Kea2")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     _set_driver_parser(subparsers)
-
-    args = parser.parse_args()
+    if len(argv) == 0:
+        argv.append("-h")
+    args = parser.parse_args(argv)
     driver_info_logger(args)
     unittest_info_logger(args)
     return args
 
-
-if __name__ == "__main__":
-    args = parse_args()
-
-    import sys
-    argv = sys.argv
+def run(argv=None):
+    if argv is None:
+        import sys
+        argv = sys.argv
+    args = parse_args(argv[1:])
 
     from kea2 import KeaTestRunner, Options
     from kea2.u2Driver import U2Driver
@@ -128,3 +129,7 @@ if __name__ == "__main__":
     sys.argv = ["python3 -m unittest"] + unittest_args
 
     unittest.main(module=None, testRunner=KeaTestRunner)
+
+
+if __name__ == "__main__":
+    run()
