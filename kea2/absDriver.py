@@ -2,12 +2,24 @@ import abc
 
 
 class AbstractScriptDriver(abc.ABC):
+    _instances = {}
+    def __new__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__new__(cls)
+        return cls._instances[cls]
+    
     @abc.abstractmethod
     def getInstance(self):
         pass
 
 
 class AbstractStaticChecker(abc.ABC):
+    _instances = {}
+    def __new__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__new__(cls)
+        return cls._instances[cls]
+    
     @abc.abstractmethod
     def getInstance(self):
         pass
@@ -18,6 +30,12 @@ class AbstractStaticChecker(abc.ABC):
 
 
 class AbstractDriver(abc.ABC):
+    _instances = {}
+    def __new__(cls, *args, **kwargs):
+        if cls not in cls._instances:
+            cls._instances[cls] = super().__new__(cls)
+        return cls._instances[cls]
+    
     @classmethod
     @abc.abstractmethod
     def setDeviceSerial(self):
