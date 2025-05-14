@@ -104,8 +104,8 @@ def parse_args(argv: List):
     return args
 
 def run(argv=None):
+    import sys
     if argv is None:
-        import sys
         argv = sys.argv
     args = parse_args(argv[1:])
 

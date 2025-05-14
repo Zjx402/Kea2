@@ -213,11 +213,14 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
-    with open("fastbot.log", "w", encoding="utf-8"):
+    import datetime
+    timestamp = datetime.datetime.now().strftime('%Y%m%d%H_%M%S%f')
+    log_file = f"fastbot_{timestamp}.log"
+    with open(log_file, "w", encoding="utf-8"):
         pass
 
     # log file
-    outfile = open("fastbot.log", "w", encoding="utf-8", buffering=1)
+    outfile = open(log_file, "w", encoding="utf-8", buffering=1)
 
     print("[INFO] Options info: {}".format(asdict(options)), flush=True)
     print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)), flush=True)
@@ -228,6 +231,7 @@ def startFastbotService(options: Options) -> threading.Thread:
     t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
     t.start()
 
+    setattr(t, "log_file", log_file)
     return t
 
 def close_on_exit(proc: subprocess.Popen, f: IO):
@@ -284,7 +288,7 @@ class KeaTestRunner(TextTestRunner):
                     )
 
             t = activateFastbot(options=self.options)
-            log_watcher = LogWatcher()
+            log_watcher = LogWatcher(t.log_file)
             if self.options.agent == "native":
                 t.join()
             else:

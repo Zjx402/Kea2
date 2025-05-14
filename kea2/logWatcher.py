@@ -26,7 +26,7 @@ class LogWatcher:
         
     def read_log(self):
         time.sleep(0.02)
-        with open(self.log_path, 'r', encoding='utf-8') as f:
+        with open(self.log_file, 'r', encoding='utf-8') as f:
             f.seek(self.last_pos)
             new_data = f.read()
             self.last_pos = f.tell()
@@ -55,8 +55,8 @@ class LogWatcher:
                     statistic_body
                 , flush=True)
 
-    def __init__(self):
-        self.log_path = "fastbot.log"
+    def __init__(self, log_file):
+        self.log_file = log_file
 
         threading.excepthook = thread_excepthook
         t = threading.Thread(target=self.watcher, daemon=True)
@@ -68,4 +68,4 @@ class LogWatcher:
 
 
 if __name__ == "__main__":
-    LogWatcher()
+    LogWatcher("fastbot.log")
