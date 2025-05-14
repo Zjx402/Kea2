@@ -4,11 +4,14 @@ import uiautomator2 as u2
 import types
 import rtree
 import re
+import os
 from typing import Dict, List, Union
 from xml.etree import ElementTree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
+from .utils import TimeStamp
 
+TIME_STAMP = TimeStamp().getTimeStamp()
 
 """
 The definition of U2ScriptDriver
@@ -227,10 +230,12 @@ class U2StaticChecker(AbstractStaticChecker):
 
     def setHierarchy(self, hierarchy: str):
         self.d.xml_raw = hierarchy
-        with open("tmp.xml", "w", encoding="utf-8") as fp:
+        tmp_file = f"tmp_{TIME_STAMP}.xml"
+        with open(tmp_file, "w", encoding="utf-8") as fp:
             fp.write(hierarchy)
             fp.flush()
-        self.d.xml = ElementTree.parse("tmp.xml")
+        self.d.xml = ElementTree.parse(tmp_file)
+        os.remove(tmp_file)
         # filter the hidden widget
         _HindenWidgetFilter(self.d.xml)
 
