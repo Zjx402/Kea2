@@ -1,6 +1,6 @@
 .vscode/*
 unittest/*
-result.json
+result*.json
 **/__pycache__/
 .DS_Store
 *.xml

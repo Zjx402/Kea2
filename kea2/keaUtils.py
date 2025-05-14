@@ -14,14 +14,18 @@ from functools import wraps
 from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
+from .utils import TimeStamp
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
 
-
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
+
+TIME_STAMP = TimeStamp().getTimeStamp()
+LOGFILE = f"fastbot_{TIME_STAMP}.log"
+RESFILE = f"result_{TIME_STAMP}.json"
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -213,14 +217,7 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
-    import datetime
-    timestamp = datetime.datetime.now().strftime('%Y%m%d%H_%M%S%f')
-    log_file = f"fastbot_{timestamp}.log"
-    with open(log_file, "w", encoding="utf-8"):
-        pass
-
-    # log file
-    outfile = open(log_file, "w", encoding="utf-8", buffering=1)
+    outfile = open(LOGFILE, "w", encoding="utf-8", buffering=1)
 
     print("[INFO] Options info: {}".format(asdict(options)), flush=True)
     print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)), flush=True)
@@ -231,7 +228,6 @@ def startFastbotService(options: Options) -> threading.Thread:
     t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
     t.start()
 
-    setattr(t, "log_file", log_file)
     return t
 
 def close_on_exit(proc: subprocess.Popen, f: IO):
@@ -288,10 +284,12 @@ class KeaTestRunner(TextTestRunner):
                     )
 
             t = activateFastbot(options=self.options)
-            log_watcher = LogWatcher(t.log_file)
+            log_watcher = LogWatcher(LOGFILE)
             if self.options.agent == "native":
                 t.join()
             else:
+                # initialize the result.json file
+                result.flushResult(outfile=RESFILE)
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
@@ -299,6 +297,7 @@ class KeaTestRunner(TextTestRunner):
                 end_by_remote = False
                 step = 0
                 while step < self.options.maxStep:
+                    
                     step += 1
                     print("[INFO] Sending monkeyEvent {}".format(
                         f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
@@ -347,11 +346,11 @@ class KeaTestRunner(TextTestRunner):
                     finally:
                         result.printErrors()
 
-                    result.flushResult(outfile="result.json")
+                    result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
                     self.stopMonkey()
-                result.flushResult(outfile="result.json")
+                result.flushResult(outfile=RESFILE)
 
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
