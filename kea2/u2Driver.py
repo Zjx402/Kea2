@@ -139,8 +139,11 @@ class _HindenWidgetFilter:
 
         self.idx = rtree.index.Index()
         self.set_covered_attr(root)
-        # hierarchy.write("filterd_tree.xml", xml_declaration=True, encoding="utf-8")
-        # pass
+
+        xml_bytes = etree.tostring(root, pretty_print=True, encoding="utf-8", xml_declaration=True)
+        with open("filtered_tree.xml", "wb") as f:
+            f.write(xml_bytes)
+        xml_bytes
 
     def _iter_by_drawing_order(self, ele: etree._Element):
         """
