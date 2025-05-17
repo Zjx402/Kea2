@@ -1,10 +1,19 @@
 [project]
 name = "Kea2"
 version = "0.1.0"
-description = "Add your description here"
+description = "A python library for supporting and customizing automated UI testing for mobile apps"
 readme = "README.md"
-requires-python = ">=3.11"
+requires-python = ">=3.8"
 dependencies = [
     "rtree>=1.4.0",
     "uiautomator2>=3.2.9",
 ]
+authors = [
+    { name = "Xixian Liang", email = "xixian@stu.ecnu.edu.cn" }
+]
+
+[project.scripts]
+kea2 = "kea2.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["kea2"]
