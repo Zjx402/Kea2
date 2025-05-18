@@ -5,9 +5,7 @@ from __future__ import absolute_import, print_function
 
 from .kea_launcher import run
 import argparse
-import json
 import logging
-import sys
 
 import os
 from pathlib import Path
@@ -40,15 +38,9 @@ def cmd_init(args):
         shutil.copytree(src, dst)
 
     def copy_samples():
-        root = Path(__file__).parent.parent
-        files = {
-            root / "quickstart.py": "quickstart.py",
-            root / "quickstart2.py": "quickstart2.py",
-            root / "omninotes.apk": "omninotes.apk"
-        }
-
-        for src, dst in files.items():
-            shutil.copyfile(src, cwd / dst)
+        src = Path(__file__).parent / "assets" / "quickstart.py"
+        dst = cwd / "quickstart.py"
+        shutil.copyfile(src, dst)
 
     copy_configs()
     copy_samples()
@@ -59,7 +51,21 @@ def cmd_load_configs(args):
     pass
 
 
+def _find_root():
+    root = Path("/")
+    cur_dir = Path.absolute(Path(os.curdir))
+    while not os.path.isdir(cur_dir / "configs"):
+        if cur_dir == root:
+            return None
+        cur_dir = cur_dir.parent
+    return cur_dir
+
+
 def cmd_run(args):
+    base_dir = _find_root()
+    if base_dir is None:
+        logger.error("kea2 project not initialized. Use `kea2 init`.")
+        return
     argv = [__file__]
     argv.extend(args.args)
     run(argv)

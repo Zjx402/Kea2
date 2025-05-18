@@ -3,7 +3,7 @@ name = "Kea2"
 version = "0.1.0"
 description = "A python library for supporting and customizing automated UI testing for mobile apps"
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.9"
 dependencies = [
     "rtree>=1.4.0",
     "uiautomator2>=3.2.9",
@@ -17,3 +17,6 @@ kea2 = "kea2.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["kea2"]
+
+[tool.setuptools.package-data]
+kea2 = ["assets/**/*"]
