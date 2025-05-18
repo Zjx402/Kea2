@@ -6,6 +6,7 @@ result*.json
 *.xml
 *.log
 *.apk
+configs/
 
 build
 *.egg-info

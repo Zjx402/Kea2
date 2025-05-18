@@ -2,39 +2,27 @@
 # cli.py
 
 from __future__ import absolute_import, print_function
-
+from kea2.utils import getProjectRoot, getLogger
 from .kea_launcher import run
 import argparse
-import logging
 
 import os
 from pathlib import Path
 
 
-logger = logging.getLogger(__name__)
-
-def enable_pretty_logging(level=logging.DEBUG):
-    if not logger.handlers:
-        # Configure handler
-        handler = logging.StreamHandler()
-        formatter = logging.Formatter('[%(levelname)1s][%(asctime)s %(module)s:%(lineno)d pid:%(process)d] %(message)s')
-        handler.setFormatter(formatter)
-        logger.addHandler(handler)
-
-    logger.setLevel(level)
-
-enable_pretty_logging()
+logger = getLogger(__name__)
 
 def cmd_init(args):
     cwd = Path(os.getcwd())
-    if os.path.isdir(cwd / "configs"):
+    configs_dir = cwd / "configs"
+    if os.path.isdir(configs_dir):
         logger.warning("Kea2 project already initialized")
         return
 
     import shutil
     def copy_configs():
         src = Path(__file__).parent / "assets" / "fastbot_configs"
-        dst = cwd / "config"
+        dst = configs_dir
         shutil.copytree(src, dst)
 
     def copy_samples():
@@ -50,19 +38,8 @@ def cmd_init(args):
 def cmd_load_configs(args):
     pass
 
-
-def _find_root():
-    root = Path("/")
-    cur_dir = Path.absolute(Path(os.curdir))
-    while not os.path.isdir(cur_dir / "configs"):
-        if cur_dir == root:
-            return None
-        cur_dir = cur_dir.parent
-    return cur_dir
-
-
 def cmd_run(args):
-    base_dir = _find_root()
+    base_dir = getProjectRoot()
     if base_dir is None:
         logger.error("kea2 project not initialized. Use `kea2 init`.")
         return
@@ -181,9 +158,11 @@ def main():
             sp.add_argument(*args, **kwargs)
 
     args = parser.parse_args()
-    enable_pretty_logging()
+    
 
     if args.debug:
+        import logging
+        logging.basicConfig(level=logging.DEBUG)
         logger.debug("args: %s", args)
 
     if args.subparser:

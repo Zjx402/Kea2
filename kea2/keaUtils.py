@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import subprocess
 import threading
@@ -6,7 +7,6 @@ from typing import IO, Callable, Any, Dict, List, Literal, NewType, Optional, Un
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
-from xml.etree import ElementTree
 from dataclasses import dataclass, asdict
 import requests
 from .absDriver import AbstractDriver
@@ -14,10 +14,14 @@ from functools import wraps
 from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
-from .utils import TimeStamp
+from .utils import TimeStamp, BLOCK_WIDGET, getProjectRoot, getLogger
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
+
+
+logger = getLogger(__name__)
+
 
 # Class Typing
 PropName = NewType("PropName", str)
@@ -240,6 +244,7 @@ class KeaTestRunner(TextTestRunner):
     resultclass: JsonResult
     allProperties: PropertyStore
     options: Options = None
+    _blockList = None
 
     @classmethod
     def setOptions(cls, options: Options):
@@ -468,8 +473,49 @@ class KeaTestRunner(TextTestRunner):
                 # save it into allProperties for PBT
                 self.allProperties[testMethodName] = t
                 print(f"[INFO] Load property: {getFullPropName(t)}", flush=True)
+    
+    @property
+    def blockList(self):
+        if self._blockList is None:
+            self._blockList = list()
+            root_dir = getProjectRoot()
+            if root_dir is None or not os.path.exists(
+                file_block_widgets := root_dir / "configs" / "widget.block.py"
+            ):
+                print(f"[WARNING] widget.block.py not find", flush=True)
+            
+
+            def __get_block_widgets_module():
+                import importlib.util
+                module_name = "block_widgets"
+                spec = importlib.util.spec_from_file_location(module_name, file_block_widgets)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+
+            mod = __get_block_widgets_module()
+
+            import inspect
+            for _, func in inspect.getmembers(mod, inspect.isfunction):
+                if getattr(func, BLOCK_WIDGET, None) is not None:
+                    self._blockList.append(func)
+
+        return self._blockList
+
+    def _getBlockedWidgets(self):
+        blocked_widgets = list()
+        for func in self.blockList:
+            try:
+                driver = self.options.Driver.getScriptDriver()
+                if func(driver):
+                    widget_wrapper = getattr(func, BLOCK_WIDGET)
+                    blocked_widgets.append(widget_wrapper(driver))
+            except Exception as e:
+                logger.error(f"error when getting blocked widgets: {e}")
+                import traceback
+                traceback.print_exc()
+
+        return blocked_widgets
 
     def tearDown(self):
         # TODO Add tearDown method (remove local port, etc.)
         pass
-        
