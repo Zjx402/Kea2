@@ -14,7 +14,7 @@ from functools import wraps
 from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
-from .utils import TimeStamp, BLOCK_WIDGET, getProjectRoot, getLogger
+from .utils import TimeStamp, getProjectRoot, getLogger
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -192,6 +192,7 @@ def activateFastbot(options: Options, port=None) -> threading.Thread:
 
     return t
 
+
 def check_alive(port):
     """
     check if the script driver and proxy server are alive.
@@ -205,6 +206,7 @@ def check_alive(port):
             print("[INFO] waiting for connection.", flush=True)
             pass
     raise RuntimeError("Failed to connect fastbot")
+
 
 def startFastbotService(options: Options) -> threading.Thread:
     shell_command = [
@@ -234,17 +236,18 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     return t
 
+
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()
     f.close()
-    
+  
 
 class KeaTestRunner(TextTestRunner):
 
     resultclass: JsonResult
     allProperties: PropertyStore
     options: Options = None
-    _blockList = None
+    _block_widgets_funcs = None
 
     @classmethod
     def setOptions(cls, options: Options):
@@ -298,11 +301,12 @@ class KeaTestRunner(TextTestRunner):
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
-                
+        
+
                 end_by_remote = False
                 step = 0
                 while step < self.options.maxStep:
-                    
+
                     step += 1
                     print("[INFO] Sending monkeyEvent {}".format(
                         f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
@@ -401,7 +405,14 @@ class KeaTestRunner(TextTestRunner):
         """
         send a step monkey request to the server and get the xml string.
         """
-        r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stepMonkey")
+        block_widgets: List[str] = self._getBlockedWidgets()
+        URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
+        r = requests.post(
+            url=URL,
+            json={
+                "block_widgets": block_widgets
+            }
+        )
 
         res = json.loads(r.content)
         xml_raw = res["result"]
@@ -475,9 +486,9 @@ class KeaTestRunner(TextTestRunner):
                 print(f"[INFO] Load property: {getFullPropName(t)}", flush=True)
     
     @property
-    def blockList(self):
-        if self._blockList is None:
-            self._blockList = list()
+    def _blockWidgetFuncs(self):
+        if self._block_widgets_funcs is None:
+            self._block_widgets_funcs = list()
             root_dir = getProjectRoot()
             if root_dir is None or not os.path.exists(
                 file_block_widgets := root_dir / "configs" / "widget.block.py"
@@ -491,24 +502,34 @@ class KeaTestRunner(TextTestRunner):
                 spec = importlib.util.spec_from_file_location(module_name, file_block_widgets)
                 mod = importlib.util.module_from_spec(spec)
                 spec.loader.exec_module(mod)
+                return mod
 
             mod = __get_block_widgets_module()
 
             import inspect
-            for _, func in inspect.getmembers(mod, inspect.isfunction):
-                if getattr(func, BLOCK_WIDGET, None) is not None:
-                    self._blockList.append(func)
+            for func_name, func in inspect.getmembers(mod, inspect.isfunction):
+                if func_name.startswith("block_") or func_name == "global_block_widgets":
+                    if getattr(func, PRECONDITIONS_MARKER, None) is None:
+                        if func_name.startswith("block_"):
+                            logger.warning(f"No precondition in block widget function: {func_name}. Default globally active.")
+                        setattr(func, PRECONDITIONS_MARKER, (lambda d: True, ))
+                    self._block_widgets_funcs.append(func)
 
-        return self._blockList
+        return self._block_widgets_funcs
 
     def _getBlockedWidgets(self):
         blocked_widgets = list()
-        for func in self.blockList:
+        for func in self._blockWidgetFuncs:
             try:
-                driver = self.options.Driver.getScriptDriver()
-                if func(driver):
-                    widget_wrapper = getattr(func, BLOCK_WIDGET)
-                    blocked_widgets.append(widget_wrapper(driver))
+                script_driver = self.options.Driver.getScriptDriver()
+                preconds = getattr(func, PRECONDITIONS_MARKER)
+                if all([precond(script_driver) for precond in preconds]):
+                    _widgets = func(self.options.Driver.getStaticChecker())
+                    if not isinstance(_widgets, list):
+                        _widgets = [_widgets]
+                    blocked_widgets.extend([
+                        w._getXPath(w.selector) for w in _widgets
+                    ])
             except Exception as e:
                 logger.error(f"error when getting blocked widgets: {e}")
                 import traceback

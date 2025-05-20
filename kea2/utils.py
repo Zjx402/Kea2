@@ -38,14 +38,9 @@ class TimeStamp:
             cls.time_stamp = datetime.datetime.now().strftime('%Y%m%d%H_%M%S%f')
         return cls.time_stamp
 
-BLOCK_WIDGET = "__block_widgets__"
 
-
-def block(allow_widgets):
-    def decorator(func):
-        setattr(func, BLOCK_WIDGET, allow_widgets)
-        return func
-    return decorator
+from uiautomator2 import Device
+d = Device
 
 
 def getProjectRoot():

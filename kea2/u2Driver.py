@@ -43,7 +43,7 @@ class U2ScriptDriver(AbstractScriptDriver):
                 u2.connect() if self.deviceSerial is None
                 else u2.connect(self.deviceSerial)
             )
-            
+
             def get_u2_forward_port() -> int:
                 """rewrite forward_port mothod to avoid the relocation of port
                 :return: the new forward port
@@ -61,10 +61,10 @@ class U2ScriptDriver(AbstractScriptDriver):
             self._remove_remote_port(9008)
 
         return self.d
-    
+
     def tearDown(self):
         self.d.stop_uiautomator()
-    
+
     def _remove_remote_port(self, port:int):
         """remove the forward port
         """
@@ -73,42 +73,50 @@ class U2ScriptDriver(AbstractScriptDriver):
             if forward["remote"] == f"tcp:{port}":
                 forward_local = forward["local"]
                 remove_forward(local_spec=forward_local, device=self.deviceSerial)
-        
+
 
 """
 The definition of U2StaticChecker
 """
-
-
-
 class StaticU2UiObject(u2.UiObject):
     def __init__(self, session, selector):
         self.session: U2StaticDevice = session
         self.selector = selector
-    
-    def _filterU2Keys(self, originKey):
+
+    def _transferU2Keys(self, originKey):
         filterDict = {
             "resourceId": "resource-id"
         }
         if filterDict.get(originKey, None):
             return filterDict[originKey]
         return originKey
-        
+
     def _getXPath(self, kwargs: Dict[str, str]):
-        attrLocs = list()
-        SPECIAL_KEY = {"mask", "childOrSibling", "childOrSiblingSelector"}
-        for key, val in kwargs.items():
-            if key in SPECIAL_KEY:
-                continue
-            key = self._filterU2Keys(key)
-            attrLocs.append(f"[@{key}='{val}']")
-        # filter the covered widgets
-        attrLocs.append("[@covered='false']")
+
+        def filter_selectors(kwargs: Dict[str, str]):
+            """
+            filter the selector
+            """
+            new_kwargs = dict()
+            SPECIAL_KEY = {"mask", "childOrSibling", "childOrSiblingSelector"}
+            for key, val in kwargs.items():
+                if key in SPECIAL_KEY:
+                    continue
+                key = self._transferU2Keys(key)
+                new_kwargs[key] = val
+            return new_kwargs
+
+        kwargs = filter_selectors(kwargs)
+
+        attrLocs = [
+            f"[@{k}='{v}']" for k, v in kwargs.items()
+        ]
         xpath = f".//node{''.join(attrLocs)}"
         return xpath
 
     @property
     def exists(self):
+        self.selector["covered"] = "true"
         xpath = self._getXPath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
@@ -128,7 +136,7 @@ def _get_bounds(raw_bounds):
         print(f"raw_bounds: {raw_bounds}", flush=True)
         print(f"Please report this bug to Kea2", flush=True)
         raise RuntimeError(e)
-        
+
     return bounds
 
 
@@ -228,13 +236,15 @@ class U2StaticChecker(AbstractStaticChecker):
     ```
     """
     def __init__(self):
-        self.d = U2StaticDevice() 
+        self.d = U2StaticDevice()
 
     def setHierarchy(self, hierarchy: str):
+        if hierarchy is None:
+            return
         self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
         _HindenWidgetFilter(self.d.xml)
 
-    def getInstance(self, hierarchy: str):
+    def getInstance(self, hierarchy: str=None):
         self.setHierarchy(hierarchy)
         return self.d
 
@@ -257,7 +267,7 @@ class U2Driver(AbstractDriver):
         return self.scriptDriver.getInstance()
 
     @classmethod
-    def getStaticChecker(self, hierarchy):
+    def getStaticChecker(self, hierarchy=None):
         if self.staticChecker is None:
             self.staticChecker = U2StaticChecker()
         return self.staticChecker.getInstance(hierarchy)

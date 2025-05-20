@@ -1,8 +1,8 @@
-from kea2.utils import block
+from kea2.utils import precondition
 from uiautomator2 import Device
 
 
-@block(lambda d:
+@precondition(lambda d:
     d(text="Setting")
 )
 def sample_block_list(d: "Device"):
