@@ -15,6 +15,8 @@ from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
+from .u2Driver import StaticU2UiObject
+import uiautomator2 as u2
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -301,7 +303,6 @@ class KeaTestRunner(TextTestRunner):
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
-        
 
                 end_by_remote = False
                 step = 0
@@ -527,9 +528,18 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = func(self.options.Driver.getStaticChecker())
                     if not isinstance(_widgets, list):
                         _widgets = [_widgets]
-                    blocked_widgets.extend([
-                        w._getXPath(w.selector) for w in _widgets
-                    ])
+                    for w in _widgets:
+                        if isinstance(w, StaticU2UiObject):
+                            blocked_widgets.append(w._getXPath(w.selector))
+                        elif isinstance(w, u2.xpath.XPathSelector):
+                            def getXPathRepr(w):
+                                return w._parent.xpath
+                            blocked_widgets.append(getXPathRepr(w))
+                        else:
+                            logger.warning(f"{w} Not supported")
+                    # blocked_widgets.extend([
+                    #     w._getXPath(w.selector) for w in _widgets
+                    # ])
             except Exception as e:
                 logger.error(f"error when getting blocked widgets: {e}")
                 import traceback

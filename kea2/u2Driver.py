@@ -116,7 +116,7 @@ class StaticU2UiObject(u2.UiObject):
 
     @property
     def exists(self):
-        self.selector["covered"] = "true"
+        dict.update(self.selector, {"covered": "true"})
         xpath = self._getXPath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
@@ -124,7 +124,7 @@ class StaticU2UiObject(u2.UiObject):
     def __len__(self):
         xpath = self._getXPath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
-        return len(matched_widgets)   
+        return len(matched_widgets)
 
 
 def _get_bounds(raw_bounds):
@@ -216,11 +216,20 @@ class U2StaticDevice(u2.Device):
         def get_page_source(self):
             # print("[Debug] Using static get_page_source method")
             return u2.xpath.PageSource.parse(self._d.xml_raw)
-        xpathEntry = u2.xpath.XPathEntry(self)
+        xpathEntry = _XPathEntry(self)
         xpathEntry.get_page_source = types.MethodType(
             get_page_source, xpathEntry
         )
         return xpathEntry
+
+class _XPathEntry(u2.xpath.XPathEntry):
+    def __init__(self, d):
+        self.xpath = None
+        super().__init__(d)
+        
+    def __call__(self, xpath, source = None):
+        self.xpath = xpath
+        return super().__call__(xpath, source)
 
 
 class U2StaticChecker(AbstractStaticChecker):
