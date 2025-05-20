@@ -85,7 +85,8 @@ class StaticU2UiObject(u2.UiObject):
 
     def _transferU2Keys(self, originKey):
         filterDict = {
-            "resourceId": "resource-id"
+            "resourceId": "resource-id",
+            "description": "content-desc"
         }
         if filterDict.get(originKey, None):
             return filterDict[originKey]
