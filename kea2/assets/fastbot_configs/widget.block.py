@@ -1,22 +1,19 @@
-from kea2.utils import precondition
-from uiautomator2 import Device
+from kea2.utils import Device
+from kea2.keaUtils import precondition
 
 
-@precondition(lambda d:
-    d(text="Setting")
-)
-def sample_block_list(d: "Device"):
-    return d(text="Omni Notes Alpha").exists
+def global_block_widgets(d: "Device"):
+    """
+    global block widgets.
+    return the widgets you want to block globally
+    only available in mode `u2 agent`
+    """
+    return []
 
 
-if __name__ == "__main__":
-    from kea2.utils import BLOCK_WIDGET
-    func = getattr(sample_block_list, BLOCK_WIDGET)
-    import uiautomator2 as u2
-    d = u2.connect()
-    blocked_widgets = func(d)
-    if isinstance(blocked_widgets, u2.UiObject):
-        blocked_widgets = [blocked_widgets]
-    if not all([isinstance(w, u2.UiObject) for w in blocked_widgets]):
-        raise TypeError(f"Invalid widgets block list in {sample_block_list}")
+# conditional block list
+@precondition(lambda d: d(text="In the home page").exists)
+def block_sth(d: "Device"):
+    # Important: function shold starts with "block"
+    return [d(text="widgets to block"), d.xpath("//node[@text='widgets to block']")]
     
