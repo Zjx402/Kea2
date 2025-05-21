@@ -117,7 +117,7 @@ class StaticU2UiObject(u2.UiObject):
 
     @property
     def exists(self):
-        dict.update(self.selector, {"covered": "true"})
+        dict.update(self.selector, {"covered": "false"})
         xpath = self._getXPath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
