@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import subprocess
 import threading
+import traceback
 from typing import IO, Callable, Any, Dict, List, Literal, NewType, Optional, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
@@ -442,7 +443,13 @@ class KeaTestRunner(TextTestRunner):
                 # Dependency injection. Static driver checker for precond
                 setattr(test, self.options.driverName, staticCheckerDriver)
                 # excecute the precond
-                if not precond(test):
+                try:
+                    if not precond(test):
+                        valid = False
+                        break
+                except Exception as e:
+                    print(f"[ERROR] Error when checking precond: {getFullPropName(test)}", flush=True)
+                    traceback.print_exc()
                     valid = False
                     break
             # if all the precond passed. make it the candidate prop.

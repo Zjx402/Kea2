@@ -15,7 +15,7 @@ These three features can be combined to customize and improve automated UI testi
     </div>
 </div>
 
-> Kea2 is designed to be capable of fusing the (property-based) *scripteds* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripts) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
+> Kea2 is designed to be capable of fusing the (property-based) *scripts* (e.g., written in uiautomator2) with automated UI testing tools (e.g., Fastbot), thus combining the strengths of human knowledge on app's business logics (empowered by the scripts) and random fuzzing. Many useful features (e.g., mimicing exploratory testing) can be implemented based on such a capability.
 
 **The ability of the three features in Kea2**
 |  | **Feature 1** | **Feature 2** | **Feature 3** |

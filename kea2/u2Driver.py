@@ -29,13 +29,11 @@ class U2ScriptDriver(AbstractScriptDriver):
     """
 
     deviceSerial: str = None
-    
+    d = None
+
     @classmethod
     def setDeviceSerial(cls, deviceSerial):
         cls.deviceSerial = deviceSerial
-    
-    def __init__(self):
-        self.d = None
 
     def getInstance(self):
         if self.d is None:
@@ -205,9 +203,11 @@ class _HindenWidgetFilter:
             )
             self._nodes.append(e)
 
+
 class U2StaticDevice(u2.Device):
-    def __init__(self):
+    def __init__(self, script_driver):
         self.xml: etree._Element = None
+        self._script_driver = script_driver
 
     def __call__(self, **kwargs):
         return StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
@@ -222,6 +222,10 @@ class U2StaticDevice(u2.Device):
             get_page_source, xpathEntry
         )
         return xpathEntry
+    
+    def __getattr__(self, attr):
+        """Proxy other methods to script_driver"""
+        return getattr(self._script_driver, attr)
 
 class _XPathEntry(u2.xpath.XPathEntry):
     def __init__(self, d):
@@ -246,7 +250,7 @@ class U2StaticChecker(AbstractStaticChecker):
     ```
     """
     def __init__(self):
-        self.d = U2StaticDevice()
+        self.d = U2StaticDevice(U2ScriptDriver().getInstance()) 
 
     def setHierarchy(self, hierarchy: str):
         if hierarchy is None:
