@@ -36,59 +36,20 @@ In the future, Kea2 will be extended to support
 
 > Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners from Bytedance (Zhao Zhang, Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu), Huawei, Xiaomi and etc. Kudos!
 
-
-# Deploy Kea2
-
 ## Installation
 
 Running requirements/environment:
 - support Windows, MacOS and Linux
-- python 3.8+
+- python 3.9+
 - Android SDK installed
 - **VPN closed** (Features 2 and 3 required)
 
-1. Clone `Kea2` into your workspace.
-
 ```bash
-git clone git@github.com:ecnusse/Kea2.git
-cd Kea2
+python3 -m pip install Kea2-python
+
+kea2 -h
 ```
 
-2. Setup the python virtual environment with `uv`.
-
-> [uv](https://github.com/astral-sh/uv) is a extremely fast python package and project manager. We use `uv` to create a python virtual environment for Kea2 to avoid any dependency issues or conflicts with your existing python environment.
-`uv` is similar to `virtualenv` but much more powerful.
-Of course, you can also setup Kea2 in your [global environment](https://github.com/ecnusse/Kea2/tree/dev?tab=readme-ov-file#appendix-install-kea2-in-a-global-environment).
-
-```bash
-pip install --upgrade pip
-pip install uv
-uv sync
-```
-
-> MacOS users may have trouble with global pip install. In such cases, they can use `brew`.
-```bash
-# For macOS users
-brew install uv
-uv sync
-```
-
-3. Activate virtual environment
-
-- Linux and macOS
-```bash
-source .venv/bin/activate
-```
-
-- Windows cmd
-```cmd
-\.venv\Scripts\activate.bat
-```
-
-- Windows powershell
-```powershell
-\.venv\Scripts\activate.ps1
-```
 
 ## Quick Test
 
@@ -99,7 +60,8 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quickstart.py` will automatically install and test this sample app for a short time.
 
 ```python
-python3 quickstart.py
+kea2 init
+python3 quickstart.py native
 ```
 
 If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help [file a bug report](https://github.com/ecnusse/Kea2/issues) with the error message to us. Thank you!
@@ -121,7 +83,7 @@ Test your app with the full capability of [Fastbot](https://github.com/bytedance
 
 
 ```bash
-python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
 ```
 
 The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)'s shell commands. 
@@ -173,19 +135,17 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 - In script's test method `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the `Privacy` page.
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. As a result, Kea2 still allows Fastbot to explore other pages.
 
-You can find the full example in script `quickstart2.py` and run it by executing:
-
-
-```bash
-# Launch Kea2 and load one single script quickstart2.py.
-python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart2.py
-```
-
-or simply run:
+You can find the full example in script `quickstart.py` and run it by executing:
 
 ```python
-python3 quickstart2.py
+python3 quickstart.py u2
 ```
+
+```bash
+# Launch Kea2 and load one single script quickstart.py.
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
+```
+
 
 
 
@@ -282,21 +242,21 @@ We offer two ways to launch Kea2.
 
 ### 1. Launch by shell commands
 
-Kea2 is compatible with `unittest` framework. You can manage your test cases in unittest style. You can launch Kea2 with `kea_launcher.py` with two sub-commands `driver` (for Kea2 options) and `unittest` (for unittest options).
+Kea2 is compatible with `unittest` framework. You can manage your test cases in unittest style. You can launch Kea2 with `kea run` with driver options and sub-command `unittest` (for unittest options).
 
 The shell command:
 ```
-python3 kea_launcher.py driver <Kea2 cmds> unittest <unittest cmds> 
+kea2 run <Kea2 cmds> unittest <unittest cmds> 
 ```
 
 Sample shell commands:
 
 ```bash
 # Launch Kea2 and load one single script quickstart.py.
-python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
 
 # Launch Kea2 and load multiple scripts from the directory mytests/omni_notes
-python3 kea_launcher.py driver -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
 ```
 
 | arg | meaning |
