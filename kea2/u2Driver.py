@@ -12,6 +12,10 @@ from .utils import TimeStamp
 
 TIME_STAMP = TimeStamp().getTimeStamp()
 
+import logging
+logging.getLogger("urllib3").setLevel(logging.INFO)
+logging.getLogger("uiautomator2").setLevel(logging.INFO)
+
 """
 The definition of U2ScriptDriver
 """

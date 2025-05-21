@@ -76,7 +76,9 @@ def check_installation():
 def _get_agent():
     import sys
     if len(sys.argv) == 0 or sys.argv[1] == "u2":
+        sys.argv=sys.argv[:1]
         return "u2"
+    sys.argv=sys.argv[:1]
     return "native"
 
 if __name__ == "__main__":
