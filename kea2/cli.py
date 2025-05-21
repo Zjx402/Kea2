@@ -44,9 +44,7 @@ def cmd_run(args):
     if base_dir is None:
         logger.error("kea2 project not initialized. Use `kea2 init`.")
         return
-    argv = [__file__]
-    argv.extend(args.args)
-    run(argv)
+    run(args)
 
 
 def cmd_install(args):
@@ -84,14 +82,14 @@ _commands = [
         command="init",
         help="init the Kea2 project in current directory",
     ),
-    dict(
-        action=cmd_run,
-        command="run",
-        help="run kea2",
-        flags=[
-            dict(args=["args"], nargs=argparse.REMAINDER),
-        ],
-    ),
+    # dict(
+    #     action=cmd_run,
+    #     command="run",
+    #     help="run kea2",
+    #     flags=[
+    #         dict(args=["args"], nargs=argparse.REMAINDER),
+    #     ],
+    # ),
     # dict(
     #     action=cmd_install,
     #     command="",
@@ -158,12 +156,17 @@ def main():
             kwargs.pop('args', None)
             sp.add_argument(*args, **kwargs)
 
-    if sys.argv[1:] == ["run", "-h"]:
-        sys.argv = sys.argv[:-1]
+    from .kea_launcher import _set_driver_parser
+    _set_driver_parser(subparser)
+    actions["run"] = cmd_run
+    if sys.argv[1:] == ["run"]:
+        sys.argv.append("-h")
     args = parser.parse_args()
 
+    import logging
+    logging.getLogger("urllib3").setLevel(logging.INFO)
+    logging.getLogger("uiautomator2").setLevel(logging.INFO)
     if args.debug:
-        import logging
         logging.basicConfig(level=logging.DEBUG)
         logger.debug("args: %s", args)
 

@@ -1,9 +1,10 @@
+import sys
 import argparse
-from typing import List
 import unittest
+from typing import List
 
 def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
-    parser = subparsers.add_parser("driver", help="Driver Settings. Use `-h` for details")
+    parser = subparsers.add_parser("run", help="run kea2")
     parser.add_argument(
         "-s",
         "--serial",
@@ -96,21 +97,28 @@ def parse_args(argv: List):
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     _set_driver_parser(subparsers)
-    if len(argv) == 0 or argv == ["driver"]:
-        argv.append("-h")
     args = parser.parse_args(argv)
-    driver_info_logger(args)
-    unittest_info_logger(args)
     return args
 
-def run(argv=None):
-    import sys
-    if argv is None:
-        argv = sys.argv
-    args = parse_args(argv[1:])
+def _sanitize_args(args):
+    if args.agent == "u2" and not args.driver_name:
+        if args.extra == []:
+            args.driver_name = "d"
+        else:
+            raise ValueError("--driver-name should be specified when customizing script in --agent u2")
+
+def run(args=None):
+    if args is None:
+        args = parse_args(sys.argv[1:])
+
+    _sanitize_args(args)
+
+    driver_info_logger(args)
+    unittest_info_logger(args)
 
     from kea2 import KeaTestRunner, Options
     from kea2.u2Driver import U2Driver
+    U2Driver.setDeviceSerial(args.serial)
     options = Options(
         agent=args.agent,
         driverName=args.driver_name,
