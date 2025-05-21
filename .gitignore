@@ -1,8 +1,13 @@
 .vscode/*
 unittest/*
-result.json
+result*.json
 **/__pycache__/
 .DS_Store
 *.xml
 *.log
 *.apk
+configs/
+
+build
+*.egg-info
+clean.sh

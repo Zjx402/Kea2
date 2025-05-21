@@ -5,10 +5,12 @@ import types
 import rtree
 import re
 from typing import Dict, List, Union
-from xml.etree import ElementTree
+from lxml import etree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
+from .utils import TimeStamp
 
+TIME_STAMP = TimeStamp().getTimeStamp()
 
 """
 The definition of U2ScriptDriver
@@ -39,7 +41,7 @@ class U2ScriptDriver(AbstractScriptDriver):
                 u2.connect() if self.deviceSerial is None
                 else u2.connect(self.deviceSerial)
             )
-            
+
             def get_u2_forward_port() -> int:
                 """rewrite forward_port mothod to avoid the relocation of port
                 :return: the new forward port
@@ -57,10 +59,10 @@ class U2ScriptDriver(AbstractScriptDriver):
             self._remove_remote_port(9008)
 
         return self.d
-    
+
     def tearDown(self):
         self.d.stop_uiautomator()
-    
+
     def _remove_remote_port(self, port:int):
         """remove the forward port
         """
@@ -69,7 +71,7 @@ class U2ScriptDriver(AbstractScriptDriver):
             if forward["remote"] == f"tcp:{port}":
                 forward_local = forward["local"]
                 remove_forward(local_spec=forward_local, device=self.deviceSerial)
-        
+
 
 """
 The definition of U2StaticChecker
@@ -79,38 +81,49 @@ class StaticU2UiObject(u2.UiObject):
         self.session: U2StaticDevice = session
         self.selector = selector
 
-    @property
-    def exists(self):
-        def filterU2Keys(originKey):
-            filterDict = {
-                "resourceId": "resource-id"
-            }
-            if filterDict.get(originKey, None):
-                return filterDict[originKey]
-            return originKey
-        
-        def getXPath(kwargs: Dict[str, str]):
-            attrLocs = list()
+    def _transferU2Keys(self, originKey):
+        filterDict = {
+            "resourceId": "resource-id",
+            "description": "content-desc"
+        }
+        if filterDict.get(originKey, None):
+            return filterDict[originKey]
+        return originKey
+
+    def _getXPath(self, kwargs: Dict[str, str]):
+
+        def filter_selectors(kwargs: Dict[str, str]):
+            """
+            filter the selector
+            """
+            new_kwargs = dict()
             SPECIAL_KEY = {"mask", "childOrSibling", "childOrSiblingSelector"}
             for key, val in kwargs.items():
                 if key in SPECIAL_KEY:
                     continue
-                key = filterU2Keys(key)
-                attrLocs.append(f"[@{key}='{val}']")
-            # filter the covered widgets
-            attrLocs.append("[@covered='false']")
-            xpath = f".//node{''.join(attrLocs)}"
-            return xpath
+                key = self._transferU2Keys(key)
+                new_kwargs[key] = val
+            return new_kwargs
 
-        def getXMLCoveredINFO(xml):
-            """
-            Algorithm: Filter the hidden widgets.
-            Set `covered` xml info according to drawing orders.
-            """
-            pass
-        
-        xpath = getXPath(self.selector)
-        return self.session.xml.find(xpath) is not None
+        kwargs = filter_selectors(kwargs)
+
+        attrLocs = [
+            f"[@{k}='{v}']" for k, v in kwargs.items()
+        ]
+        xpath = f".//node{''.join(attrLocs)}"
+        return xpath
+
+    @property
+    def exists(self):
+        dict.update(self.selector, {"covered": "false"})
+        xpath = self._getXPath(self.selector)
+        matched_widgets = self.session.xml.xpath(xpath)
+        return bool(matched_widgets)
+
+    def __len__(self):
+        xpath = self._getXPath(self.selector)
+        matched_widgets = self.session.xml.xpath(xpath)
+        return len(matched_widgets)
 
 
 def _get_bounds(raw_bounds):
@@ -122,21 +135,24 @@ def _get_bounds(raw_bounds):
         print(f"raw_bounds: {raw_bounds}", flush=True)
         print(f"Please report this bug to Kea2", flush=True)
         raise RuntimeError(e)
-        
+
     return bounds
 
 
 class _HindenWidgetFilter:
-    def __init__(self, hierarchy):
+    def __init__(self, root: etree._Element):
         # self.global_drawing_order = 0
         self._nodes = []
 
         self.idx = rtree.index.Index()
-        self.set_covered_attr(hierarchy)
-        # hierarchy.write("filterd_tree.xml", xml_declaration=True, encoding="utf-8")
-        # pass
+        self.set_covered_attr(root)
 
-    def _iter_by_drawing_order(self, ele: ElementTree.Element):
+        # xml_bytes = etree.tostring(root, pretty_print=True, encoding="utf-8", xml_declaration=True)
+        # with open("filtered_tree.xml", "wb") as f:
+        #     f.write(xml_bytes)
+        # xml_bytes
+
+    def _iter_by_drawing_order(self, ele: etree._Element):
         """
         iter by drawing order (DFS)
         """
@@ -152,9 +168,8 @@ class _HindenWidgetFilter:
         for child in children:
             yield from self._iter_by_drawing_order(child)
    
-    def set_covered_attr(self, tree: ElementTree):
-        root: ElementTree.Element = tree.getroot()
-        self._nodes: List[ElementTree.Element] = list()
+    def set_covered_attr(self, root: etree._Element):
+        self._nodes: List[etree._Element] = list()
         for e in self._iter_by_drawing_order(root):
             # e.set("global-order", str(self.global_drawing_order))
             # self.global_drawing_order += 1
@@ -191,8 +206,7 @@ class _HindenWidgetFilter:
 
 class U2StaticDevice(u2.Device):
     def __init__(self, script_driver):
-        self.xml_raw = None
-        self.xml = None
+        self.xml: etree._Element = None
         self._script_driver = script_driver
 
     def __call__(self, **kwargs):
@@ -203,7 +217,7 @@ class U2StaticDevice(u2.Device):
         def get_page_source(self):
             # print("[Debug] Using static get_page_source method")
             return u2.xpath.PageSource.parse(self._d.xml_raw)
-        xpathEntry = u2.xpath.XPathEntry(self)
+        xpathEntry = _XPathEntry(self)
         xpathEntry.get_page_source = types.MethodType(
             get_page_source, xpathEntry
         )
@@ -212,6 +226,15 @@ class U2StaticDevice(u2.Device):
     def __getattr__(self, attr):
         """Proxy other methods to script_driver"""
         return getattr(self._script_driver, attr)
+
+class _XPathEntry(u2.xpath.XPathEntry):
+    def __init__(self, d):
+        self.xpath = None
+        super().__init__(d)
+        
+    def __call__(self, xpath, source = None):
+        self.xpath = xpath
+        return super().__call__(xpath, source)
 
 
 class U2StaticChecker(AbstractStaticChecker):
@@ -230,15 +253,12 @@ class U2StaticChecker(AbstractStaticChecker):
         self.d = U2StaticDevice(U2ScriptDriver().getInstance()) 
 
     def setHierarchy(self, hierarchy: str):
-        self.d.xml_raw = hierarchy
-        with open("tmp.xml", "w", encoding="utf-8") as fp:
-            fp.write(hierarchy)
-            fp.flush()
-        self.d.xml = ElementTree.parse("tmp.xml")
-        # filter the hidden widget
+        if hierarchy is None:
+            return
+        self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
         _HindenWidgetFilter(self.d.xml)
 
-    def getInstance(self, hierarchy: str):
+    def getInstance(self, hierarchy: str=None):
         self.setHierarchy(hierarchy)
         return self.d
 
@@ -249,7 +269,7 @@ The definition of U2Driver
 class U2Driver(AbstractDriver):
     scriptDriver = None
     staticChecker = None
-    
+
     @classmethod
     def setDeviceSerial(cls, deviceSerial):
         U2ScriptDriver.setDeviceSerial(deviceSerial)
@@ -261,7 +281,7 @@ class U2Driver(AbstractDriver):
         return self.scriptDriver.getInstance()
 
     @classmethod
-    def getStaticChecker(self, hierarchy):
+    def getStaticChecker(self, hierarchy=None):
         if self.staticChecker is None:
             self.staticChecker = U2StaticChecker()
         return self.staticChecker.getInstance(hierarchy)

@@ -1,0 +1,181 @@
+# coding: utf-8
+# cli.py
+
+from __future__ import absolute_import, print_function
+import sys
+from kea2.utils import getProjectRoot, getLogger
+from .kea_launcher import run
+import argparse
+
+import os
+from pathlib import Path
+
+
+logger = getLogger(__name__)
+
+def cmd_init(args):
+    cwd = Path(os.getcwd())
+    configs_dir = cwd / "configs"
+    if os.path.isdir(configs_dir):
+        logger.warning("Kea2 project already initialized")
+        return
+
+    import shutil
+    def copy_configs():
+        src = Path(__file__).parent / "assets" / "fastbot_configs"
+        dst = configs_dir
+        shutil.copytree(src, dst)
+
+    def copy_samples():
+        src = Path(__file__).parent / "assets" / "quickstart.py"
+        dst = cwd / "quickstart.py"
+        shutil.copyfile(src, dst)
+
+    copy_configs()
+    copy_samples()
+    logger.info("Kea2 project initialized.")
+
+
+def cmd_load_configs(args):
+    pass
+
+def cmd_run(args):
+    base_dir = getProjectRoot()
+    if base_dir is None:
+        logger.error("kea2 project not initialized. Use `kea2 init`.")
+        return
+    run(args)
+
+
+def cmd_install(args):
+    pass
+
+
+def cmd_uninstall(args):
+    pass
+
+
+def cmd_start(args):
+    pass
+
+
+def cmd_stop(args):
+    pass
+
+
+def cmd_current(args):
+    pass
+
+
+def cmd_doctor(args):
+    pass
+
+
+# def cmd_version(args):
+#     print(__version__)
+
+
+_commands = [
+    # dict(action=cmd_version, command="version", help="show version"),
+    dict(
+        action=cmd_init,
+        command="init",
+        help="init the Kea2 project in current directory",
+    ),
+    # dict(
+    #     action=cmd_run,
+    #     command="run",
+    #     help="run kea2",
+    #     flags=[
+    #         dict(args=["args"], nargs=argparse.REMAINDER),
+    #     ],
+    # ),
+    # dict(
+    #     action=cmd_install,
+    #     command="",
+    #     help="install packages",
+    #     flags=[
+    #         dict(args=["url"], help="package url"),
+    #     ],
+    # ),
+    # dict(
+    #     action=cmd_uninstall,
+    #     command="uninstall",
+    #     help="uninstall packages",
+    #     flags=[
+    #         dict(args=["--all"], action="store_true", help="uninstall all packages"),
+    #         dict(args=["package_name"], nargs="*", help="package name"),
+    #     ],
+    # ),
+    # dict(
+    #     action=cmd_start,
+    #     command="start",
+    #     help="start application",
+    #     flags=[dict(args=["package_name"], type=str, nargs=None, help="package name")],
+    # ),
+    # dict(
+    #     action=cmd_stop,
+    #     command="stop",
+    #     help="stop application",
+    #     flags=[
+    #         dict(args=["--all"], action="store_true", help="stop all"),
+    #         dict(args=["package_name"], nargs="*", help="package name"),
+    #     ],
+    # ),
+    # dict(action=cmd_current, command="current", help="show current application"),
+    # dict(action=cmd_doctor, command="doctor", help="detect connect problem"),
+]
+
+
+def main():
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter
+    )
+    parser.add_argument("-d", "--debug", action="store_true",
+                        help="show log")
+    parser.add_argument('-s', '--serial', type=str,
+                        help='device serial number')
+
+    subparser = parser.add_subparsers(dest='subparser')
+
+    actions = {}
+    for c in _commands:
+        cmd_name = c['command']
+        actions[cmd_name] = c['action']
+        sp = subparser.add_parser(
+            cmd_name,
+            help=c.get('help'),
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter
+        )
+        for f in c.get('flags', []):
+            args = f.get('args')
+            if not args:
+                args = ['-'*min(2, len(n)) + n for n in f['name']]
+            kwargs = f.copy()
+            kwargs.pop('name', None)
+            kwargs.pop('args', None)
+            sp.add_argument(*args, **kwargs)
+
+    from .kea_launcher import _set_driver_parser
+    _set_driver_parser(subparser)
+    actions["run"] = cmd_run
+    if sys.argv[1:] == ["run"]:
+        sys.argv.append("-h")
+    args = parser.parse_args()
+
+    import logging
+    logging.getLogger("urllib3").setLevel(logging.INFO)
+    logging.getLogger("uiautomator2").setLevel(logging.INFO)
+    if args.debug:
+        logging.basicConfig(level=logging.DEBUG)
+        logger.debug("args: %s", args)
+
+    if args.subparser:
+        actions[args.subparser](args)
+        return
+
+    parser.print_help()
+
+
+if __name__ == "__main__":
+    main()

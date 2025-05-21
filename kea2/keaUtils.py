@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import subprocess
 import threading
@@ -7,7 +8,6 @@ from typing import IO, Callable, Any, Dict, List, Literal, NewType, Optional, Un
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
-from xml.etree import ElementTree
 from dataclasses import dataclass, asdict
 import requests
 from .absDriver import AbstractDriver
@@ -15,14 +15,24 @@ from functools import wraps
 from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
+from .utils import TimeStamp, getProjectRoot, getLogger
+from .u2Driver import StaticU2UiObject
+import uiautomator2 as u2
 import types
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
 
 
+logger = getLogger(__name__)
+
+
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
+
+TIME_STAMP = TimeStamp().getTimeStamp()
+LOGFILE = f"fastbot_{TIME_STAMP}.log"
+RESFILE = f"result_{TIME_STAMP}.json"
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -185,6 +195,7 @@ def activateFastbot(options: Options, port=None) -> threading.Thread:
 
     return t
 
+
 def check_alive(port):
     """
     check if the script driver and proxy server are alive.
@@ -198,6 +209,7 @@ def check_alive(port):
             print("[INFO] waiting for connection.", flush=True)
             pass
     raise RuntimeError("Failed to connect fastbot")
+
 
 def startFastbotService(options: Options) -> threading.Thread:
     shell_command = [
@@ -214,11 +226,7 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
-    with open("fastbot.log", "w", encoding="utf-8"):
-        pass
-
-    # log file
-    outfile = open("fastbot.log", "w", encoding="utf-8", buffering=1)
+    outfile = open(LOGFILE, "w", encoding="utf-8", buffering=1)
 
     print("[INFO] Options info: {}".format(asdict(options)), flush=True)
     print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)), flush=True)
@@ -231,16 +239,18 @@ def startFastbotService(options: Options) -> threading.Thread:
 
     return t
 
+
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()
     f.close()
-    
+  
 
 class KeaTestRunner(TextTestRunner):
 
     resultclass: JsonResult
     allProperties: PropertyStore
     options: Options = None
+    _block_widgets_funcs = None
 
     @classmethod
     def setOptions(cls, options: Options):
@@ -285,17 +295,20 @@ class KeaTestRunner(TextTestRunner):
                     )
 
             t = activateFastbot(options=self.options)
-            log_watcher = LogWatcher()
+            log_watcher = LogWatcher(LOGFILE)
             if self.options.agent == "native":
                 t.join()
             else:
+                # initialize the result.json file
+                result.flushResult(outfile=RESFILE)
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
-                
+
                 end_by_remote = False
                 step = 0
                 while step < self.options.maxStep:
+
                     step += 1
                     print("[INFO] Sending monkeyEvent {}".format(
                         f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
@@ -344,11 +357,11 @@ class KeaTestRunner(TextTestRunner):
                     finally:
                         result.printErrors()
 
-                    result.flushResult(outfile="result.json")
+                    result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
                     self.stopMonkey()
-                result.flushResult(outfile="result.json")
+                result.flushResult(outfile=RESFILE)
 
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
@@ -394,7 +407,14 @@ class KeaTestRunner(TextTestRunner):
         """
         send a step monkey request to the server and get the xml string.
         """
-        r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stepMonkey")
+        block_widgets: List[str] = self._getBlockedWidgets()
+        URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
+        r = requests.post(
+            url=URL,
+            json={
+                "block_widgets": block_widgets
+            }
+        )
 
         res = json.loads(r.content)
         xml_raw = res["result"]
@@ -472,8 +492,68 @@ class KeaTestRunner(TextTestRunner):
                 # save it into allProperties for PBT
                 self.allProperties[testMethodName] = t
                 print(f"[INFO] Load property: {getFullPropName(t)}", flush=True)
+    
+    @property
+    def _blockWidgetFuncs(self):
+        if self._block_widgets_funcs is None:
+            self._block_widgets_funcs = list()
+            root_dir = getProjectRoot()
+            if root_dir is None or not os.path.exists(
+                file_block_widgets := root_dir / "configs" / "widget.block.py"
+            ):
+                print(f"[WARNING] widget.block.py not find", flush=True)
+            
+
+            def __get_block_widgets_module():
+                import importlib.util
+                module_name = "block_widgets"
+                spec = importlib.util.spec_from_file_location(module_name, file_block_widgets)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod
+
+            mod = __get_block_widgets_module()
+
+            import inspect
+            for func_name, func in inspect.getmembers(mod, inspect.isfunction):
+                if func_name.startswith("block_") or func_name == "global_block_widgets":
+                    if getattr(func, PRECONDITIONS_MARKER, None) is None:
+                        if func_name.startswith("block_"):
+                            logger.warning(f"No precondition in block widget function: {func_name}. Default globally active.")
+                        setattr(func, PRECONDITIONS_MARKER, (lambda d: True, ))
+                    self._block_widgets_funcs.append(func)
+
+        return self._block_widgets_funcs
+
+    def _getBlockedWidgets(self):
+        blocked_widgets = list()
+        for func in self._blockWidgetFuncs:
+            try:
+                script_driver = self.options.Driver.getScriptDriver()
+                preconds = getattr(func, PRECONDITIONS_MARKER)
+                if all([precond(script_driver) for precond in preconds]):
+                    _widgets = func(self.options.Driver.getStaticChecker())
+                    if not isinstance(_widgets, list):
+                        _widgets = [_widgets]
+                    for w in _widgets:
+                        if isinstance(w, StaticU2UiObject):
+                            blocked_widgets.append(w._getXPath(w.selector))
+                        elif isinstance(w, u2.xpath.XPathSelector):
+                            def getXPathRepr(w):
+                                return w._parent.xpath
+                            blocked_widgets.append(getXPathRepr(w))
+                        else:
+                            logger.warning(f"{w} Not supported")
+                    # blocked_widgets.extend([
+                    #     w._getXPath(w.selector) for w in _widgets
+                    # ])
+            except Exception as e:
+                logger.error(f"error when getting blocked widgets: {e}")
+                import traceback
+                traceback.print_exc()
+
+        return blocked_widgets
 
     def tearDown(self):
         # TODO Add tearDown method (remove local port, etc.)
         pass
-        

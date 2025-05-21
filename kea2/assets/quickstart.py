@@ -73,7 +73,15 @@ def check_installation():
     d.stop_uiautomator()
 
 
+def _get_agent():
+    import sys
+    if len(sys.argv) == 0 or sys.argv[1] == "u2":
+        return "u2"
+    return "native"
+
 if __name__ == "__main__":
+    
+    AGENT=_get_agent()
     check_installation()
     KeaTestRunner.setOptions(
         Options(
@@ -84,7 +92,7 @@ if __name__ == "__main__":
             maxStep=5000,
             # running_mins=10,  # specify the maximal running time in minutes, default value is 10m
             # throttle=200,   # specify the throttle in milliseconds, default value is 200ms
-            # agent='native'  # 'native' for running the vanilla Fastbot, 'u2' for running Kea2
+            agent=AGENT  # 'native' for running the vanilla Fastbot, 'u2' for running Kea2
         )
     )
     unittest.main(testRunner=KeaTestRunner)

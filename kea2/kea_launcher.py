@@ -1,8 +1,10 @@
+import sys
 import argparse
 import unittest
+from typing import List
 
 def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
-    parser = subparsers.add_parser("driver", help="Driver Settings")
+    parser = subparsers.add_parser("run", help="run kea2")
     parser.add_argument(
         "-s",
         "--serial",
@@ -90,26 +92,33 @@ def driver_info_logger(args):
         print("  throttle_ms:", args.throttle_ms, flush=True)
 
 
-def parse_args():
-    parser = argparse.ArgumentParser(description="Kea4Fastbot")
+def parse_args(argv: List):
+    parser = argparse.ArgumentParser(description="Kea2")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     _set_driver_parser(subparsers)
-
-    args = parser.parse_args()
-    driver_info_logger(args)
-    unittest_info_logger(args)
+    args = parser.parse_args(argv)
     return args
 
+def _sanitize_args(args):
+    if args.agent == "u2" and not args.driver_name:
+        if args.extra == []:
+            args.driver_name = "d"
+        else:
+            raise ValueError("--driver-name should be specified when customizing script in --agent u2")
 
-if __name__ == "__main__":
-    args = parse_args()
+def run(args=None):
+    if args is None:
+        args = parse_args(sys.argv[1:])
 
-    import sys
-    argv = sys.argv
+    _sanitize_args(args)
+
+    driver_info_logger(args)
+    unittest_info_logger(args)
 
     from kea2 import KeaTestRunner, Options
     from kea2.u2Driver import U2Driver
+    U2Driver.setDeviceSerial(args.serial)
     options = Options(
         agent=args.agent,
         driverName=args.driver_name,
@@ -128,3 +137,7 @@ if __name__ == "__main__":
     sys.argv = ["python3 -m unittest"] + unittest_args
 
     unittest.main(module=None, testRunner=KeaTestRunner)
+
+
+if __name__ == "__main__":
+    run()
