@@ -87,7 +87,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --
 ```
 
 The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)'s shell commands. 
-See more options by `python kea_launcher.py driver -h`
+See more options by `kea2 run -h`
 
 
 ## Feature 2(自定义测试场景或事件序列): customizing testing scenarios by scripts
@@ -141,13 +141,14 @@ You can find the full example in script `quickstart.py` and run it by executing:
 python3 quickstart.py u2
 ```
 
+In real use, you can use `kea2 run` to launch the customizing script.
+
 ```bash
 # Launch Kea2 and load one single script quickstart.py.
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
 ```
 
-
-
+> In python 3.9 & 3.10, You cannot use `... unittest quickstart.py` because the `unittest` module under python 3.11 treats file arguments as test discovery patterns, not as scripts to run. Use `kea2 run ... unittest discvoer -p quickstart.py` instead.
 
 ## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
 
