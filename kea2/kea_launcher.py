@@ -3,7 +3,7 @@ from typing import List
 import unittest
 
 def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
-    parser = subparsers.add_parser("driver", help="Driver Settings")
+    parser = subparsers.add_parser("driver", help="Driver Settings. Use `-h` for details")
     parser.add_argument(
         "-s",
         "--serial",
@@ -96,7 +96,7 @@ def parse_args(argv: List):
     subparsers = parser.add_subparsers(dest="command", required=True)
 
     _set_driver_parser(subparsers)
-    if len(argv) == 0:
+    if len(argv) == 0 or argv == ["driver"]:
         argv.append("-h")
     args = parser.parse_args(argv)
     driver_info_logger(args)

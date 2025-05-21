@@ -2,6 +2,7 @@
 # cli.py
 
 from __future__ import absolute_import, print_function
+import sys
 from kea2.utils import getProjectRoot, getLogger
 from .kea_launcher import run
 import argparse
@@ -88,7 +89,7 @@ _commands = [
         command="run",
         help="run kea2",
         flags=[
-            dict(args=["args"], nargs=argparse.REMAINDER, help="args for kea2 run"),
+            dict(args=["args"], nargs=argparse.REMAINDER),
         ],
     ),
     # dict(
@@ -157,8 +158,9 @@ def main():
             kwargs.pop('args', None)
             sp.add_argument(*args, **kwargs)
 
+    if sys.argv[1:] == ["run", "-h"]:
+        sys.argv = sys.argv[:-1]
     args = parser.parse_args()
-    
 
     if args.debug:
         import logging
