@@ -206,44 +206,6 @@ For the preceding always-holding property, we can write the following script to 
 
 1. A small tutorial of applying Kea2's Feature 2 and 3 on [WeChat](docs/Scenario_Examples_zh.md).
 
-## Configuration File
-
-After executing `Kea2 init`, some configuration files will be generated in the `configs` directory. 
-These configuration files belong to `Fastbot`, and their specific introductions are provided in [Introduction to configuration files](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E4%B8%93%E5%AE%B6%E7%B3%BB%E7%BB%9F).
-
-## Widget Block
-
-We support blacklisting of widgets so that you can guide Fastbot to block certain widgets 
-during the testing process. 
-This feature is specifically divided into Global Block List (always effective) 
-and Conditional Block List (only effective when one or several preconditions are met).
-The list of blocked widgets is specifically written in `configs/widget.block.py`in the root directory, and its usage is as follows.
-
-### Global Block List
-You can write the following function in the script, and the return value of the function 
-is the widgets you want to block, and the blocking will always take effect. 
-The widgets here support specifying with `text`, `description`, or `xpath`.
-```python
-    def global_block_widgets(d: "Device"):
-    """
-    global block widgets.
-    return the widgets you want to block globally
-    only available in mode `u2 agent`
-    """
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
-```
-### Conditional Block List
-If you add the `@precondition` annotation before the function, you can specify that blocking 
-only takes effect under certain specific conditions.
-```python
-    # conditional block list
-@precondition(lambda d: d(text="In the home page").exists)
-def block_sth(d: "Device"):
-    # Important: function shold starts with "block"
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
-```
 
 ## Kea2's scripts
 
@@ -382,6 +344,40 @@ throttle: int = 200
 output_dir: str = "output"
 ```
 
+## Widget Block
+
+We support blacklisting of widgets so that you can guide Fastbot to block certain widgets 
+during the testing process. 
+This feature is specifically divided into Global Block List (always effective) 
+and Conditional Block List (only effective when one or several preconditions are met).
+The list of blocked widgets is specifically written in `configs/widget.block.py`in the root directory, and its usage is as follows.
+
+### Global Block List
+You can write the following function in the script, and the return value of the function 
+is the widgets you want to block, and the blocking will always take effect. 
+The widgets here support specifying with `text`, `description`, or `xpath`.
+```python
+    def global_block_widgets(d: "Device"):
+    """
+    global block widgets.
+    return the widgets you want to block globally
+    only available in mode `u2 agent`
+    """
+    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+            d(description="widgets to block")]
+```
+### Conditional Block List
+If you add the `@precondition` annotation before the function, you can specify that blocking 
+only takes effect under certain specific conditions.
+```python
+    # conditional block list
+@precondition(lambda d: d(text="In the home page").exists)
+def block_sth(d: "Device"):
+    # Important: function shold starts with "block"
+    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+            d(description="widgets to block")]
+```
+
 
 ## Examining the running statistics of scripts .
 
@@ -409,6 +405,12 @@ precond_satisfied | During exploration, how many times has the test method's pre
 executed | During UI testing, how many times the test method has been executed? | Has the test method ever been executed?
 fail | How many times did the test method fail the assertions during UI testing? | When failed, the test method found a likely functional bug. 
 error | How many times does the test method abort during UI tsting due to some unexpected errors (e.g. some UI widgets used in the test method cannot be found) | When some error happens, the script needs to be updated/fixed because the script leads to some unexpected errors.
+
+## Configuration File
+
+After executing `Kea2 init`, some configuration files will be generated in the `configs` directory. 
+These configuration files belong to `Fastbot`, and their specific introductions are provided in [Introduction to configuration files](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E4%B8%93%E5%AE%B6%E7%B3%BB%E7%BB%9F).
+
 
 ## Contributors/Maintainers
 
