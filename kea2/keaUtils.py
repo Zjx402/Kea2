@@ -94,6 +94,8 @@ class Options:
     running_mins: int = 10
     # time(ms) to wait when exploring the app
     throttle: int = 200
+    # the output_dir for saving logs and results
+    output_dir: str = "output"
 
 
 @dataclass
@@ -261,6 +263,13 @@ class KeaTestRunner(TextTestRunner):
             options.Driver = None
         cls.options = options
 
+    def _setOuputDir(self):
+        output_dir = Path(self.options.output_dir).absolute()
+        os.mkdir(output_dir, parents=True, exist_ok=True)
+        global LOGFILE, RESFILE
+        LOGFILE = output_dir / Path(LOGFILE)
+        RESFILE = output_dir / Path(RESFILE)
+
     def run(self, test):
 
         self.allProperties = dict()
@@ -268,6 +277,8 @@ class KeaTestRunner(TextTestRunner):
 
         if len(self.allProperties) == 0:
             print("[Warning] No property has been found.", flush=True)
+
+        self._setOuputDir()
 
         JsonResult.setProperties(self.allProperties)
         self.resultclass = JsonResult

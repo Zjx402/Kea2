@@ -156,8 +156,8 @@ def main():
             kwargs.pop('args', None)
             sp.add_argument(*args, **kwargs)
 
-    from .kea_launcher import _set_driver_parser
-    _set_driver_parser(subparser)
+    from .kea_launcher import _set_runner_parser
+    _set_runner_parser(subparser)
     actions["run"] = cmd_run
     if sys.argv[1:] == ["run"]:
         sys.argv.append("-h")

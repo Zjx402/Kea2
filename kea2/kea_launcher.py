@@ -1,9 +1,11 @@
+import os
 import sys
 import argparse
 import unittest
+from pathlib import Path
 from typing import List
 
-def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
+def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
     parser = subparsers.add_parser("run", help="run kea2")
     parser.add_argument(
         "-s",
@@ -21,6 +23,16 @@ def _set_driver_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         type=str,
         required=True,
         help="The target package names com.example.app",
+    )
+
+    parser.add_argument(
+        "-o",
+        "--output-dir",
+        dest="output_dir",
+        type=str,
+        required=False,
+        default="output",
+        help="The output dir for saving logs and results."
     )
 
     parser.add_argument(
@@ -96,7 +108,7 @@ def parse_args(argv: List):
     parser = argparse.ArgumentParser(description="Kea2")
     subparsers = parser.add_subparsers(dest="command", required=True)
 
-    _set_driver_parser(subparsers)
+    _set_runner_parser(subparsers)
     args = parser.parse_args(argv)
     return args
 
