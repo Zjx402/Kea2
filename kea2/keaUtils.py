@@ -223,6 +223,7 @@ def startFastbotService(options: Options) -> threading.Thread:
         "reuseq",
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
+        "--bugreport", "--output-directory", "/sdcard/fastbot_report"
         "-v", "-v", "-v"
     ]
 
