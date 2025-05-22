@@ -247,6 +247,14 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
+### Warning 
+We only support basic selector (No parent-child relation ship) and basic xpath in uiautomator2. 
+
+| Support | Not support |
+| -- | -- |
+| `d(text="1").exist` | `d(text="1").child(text="2").exist` |
+| `d.xpath(".//[@text='1']")` | `d.xpath(".//[@text='1']).xpath(".//[@text]='2')"` |
+
 
 ## Launching Kea2
 
@@ -348,37 +356,42 @@ output_dir: str = "output"
 ## Widget Block
 
 We support blacklisting of widgets so that you can guide Fastbot to block certain widgets 
-during the testing process. 
+during the app exploration process. 
+
 This feature is specifically divided into Global Block List (always effective) 
-and Conditional Block List (only effective when one or several preconditions are met).
-The list of blocked widgets is specifically written in `configs/widget.block.py`in the root directory, and its usage is as follows.
+and Conditional Block List (only effective when the precondition is met).
+The list of blocked widgets is specifically written in `configs/widget.block.py` in the kea2's project root directory, and its usage is as follows.
 
 ### Global Block List
-You can write the following function in the script, and the return value of the function 
-is the widgets you want to block, and the blocking will always take effect. 
-The widgets here support specifying with `text`, `description`, or `xpath`.
+In `configs/widget.block.py`, return the the list of block widgets specified with u2 selector or xpath in function `global_block_widgets`.
+
 ```python
-    def global_block_widgets(d: "Device"):
+def global_block_widgets(d: "Device"):
     """
     global block widgets.
     return the widgets you want to block globally
     only available in mode `u2 agent`
     """
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
+    return [
+        d(text="widgets to block"),
+        d.xpath(".//node[@text='widget to block']"),
+        d(description="widgets to block")
+    ]
 ```
+
 ### Conditional Block List
-If you add the `@precondition` annotation before the function, you can specify that blocking 
-only takes effect under certain specific conditions.
+The conditional block list should be written in a function startswith `block_`. Add decorated by `@precondition`. Block will only takes effect when the precondition is satisfied.
+
 ```python
-    # conditional block list
+# conditional block list
 @precondition(lambda d: d(text="In the home page").exists)
 def block_sth(d: "Device"):
     # Important: function shold starts with "block"
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
+    return [
+        d(text="widgets to block"),
+        d.xpath(".//node[@text='widget to block']")
+    ]
 ```
-
 
 ## Examining the running statistics of scripts .
 
@@ -411,7 +424,6 @@ error | How many times does the test method abort during UI tsting due to some u
 
 After executing `Kea2 init`, some configuration files will be generated in the `configs` directory. 
 These configuration files belong to `Fastbot`, and their specific introductions are provided in [Introduction to configuration files](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E4%B8%93%E5%AE%B6%E7%B3%BB%E7%BB%9F).
-
 
 ## Contributors/Maintainers
 
