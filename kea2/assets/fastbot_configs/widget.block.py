@@ -14,5 +14,5 @@ def global_block_widgets(d: "Device"):
 # conditional block list
 @precondition(lambda d: d(text="In the home page").exists)
 def block_sth(d: "Device"):
-    # Important: function shold starts with "block"
+    # Important: function shold starts with "block_"
     return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']")]

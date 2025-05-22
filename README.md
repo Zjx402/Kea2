@@ -158,30 +158,36 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 
 We support blacklisting specific widgets so that Fastbot can avoid interacting with these widgets during fuzzing. We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
 
-The list of blocked widgets are specified in Kea2's config file `configs/widget.block.py`. 
-The widgets needed to be blocked can be flexibly specified by its `text`, `description`, `xpath`, etc.
+The list of blocked widgets are specified in Kea2's config file `configs/widget.block.py` (generated when running `kea2 init`). 
+The widgets needed to be blocked can be flexibly specified by u2 selector (e.g., `text`, `description`) or `xpath`, etc.
 
 #### Global Block List
 We can define the function `global_block_widgets` to specify which UI widgets should be blocked globally. The blocking always takes effect. 
 
 ```python
+# file: configs/widget.block.py
+
     def global_block_widgets(d: "Device"):
     """
     global block list.
     return the widgets which should be blocked globally
     """
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+    return [d(text="widgets to block"), 
+            d.xpath(".//node[@text='widget to block']"),
             d(description="widgets to block")]
 ```
 #### Conditional Block List
 We can define any reserved function whose name starts with "block_" and decorate such function by `@precondition` to allow conditional block list.
 In this case, the blocking only takes effect when the precondition is satisfied.
 ```python
-    # conditional block list
+# file: configs/widget.block.py
+
+# conditional block list
 @precondition(lambda d: d(text="In the home page").exists)
 def block_sth(d: "Device"):
     # Important: the function name should start with "block_"
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+    return [d(text="widgets to block"), 
+            d.xpath(".//node[@text='widget to block']"),
             d(description="widgets to block")]
 ```
 
@@ -278,6 +284,15 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
+### Warning 
+In `@precondition` decorator and `widgets.block.py`. We only support basic selector (No parent-child relationship) and basic xpath (No chain call like `.xpath().xpath()`) in uiautomator2.
+
+If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
+
+| | **Support** | **Not support** |
+| -- | -- | -- |
+| **Selctor** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
+| **XPath** | `d.xpath(".//[@text='1']")` | `d.xpath(".//[@text='1']").xpath(".//[@text]='2'")` |
 
 ## Launching Kea2
 
@@ -376,7 +391,6 @@ throttle: int = 200
 output_dir: str = "output"
 ```
 
-
 ## Examining the running statistics of scripts .
 
 If you want to examine whether your scripts have been executed or how many times they have been executed during testing. Open the file `result.json` after the testing is finished.
@@ -408,7 +422,6 @@ error | How many times does the test method abort during UI tsting due to some u
 
 After executing `Kea2 init`, some configuration files will be generated in the `configs` directory. 
 These configuration files belong to `Fastbot`, and their specific introductions are provided in [Introduction to configuration files](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E4%B8%93%E5%AE%B6%E7%B3%BB%E7%BB%9F).
-
 
 ## Contributors/Maintainers
 
