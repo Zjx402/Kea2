@@ -40,7 +40,7 @@ In the future, Kea2 will be extended to support
 
 Running requirements/environment:
 - support Windows, MacOS and Linux
-- python 3.9+
+- python 3.8+
 - Android SDK installed
 - **VPN closed** (Features 2 and 3 required)
 
@@ -145,10 +145,8 @@ In real use, you can use `kea2 run` to launch the customizing script.
 
 ```bash
 # Launch Kea2 and load one single script quickstart.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quickstart.py
 ```
-
-> In python 3.9 & 3.10, You cannot use `... unittest quickstart.py` because the `unittest` module under python 3.11 treats file arguments as test discovery patterns, not as scripts to run. Use `kea2 run ... unittest discvoer -p quickstart.py` instead.
 
 ## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
 
