@@ -360,14 +360,6 @@ executed | During UI testing, how many times the test method has been executed? 
 fail | How many times did the test method fail the assertions during UI testing? | When failed, the test method found a likely functional bug. 
 error | How many times does the test method abort during UI tsting due to some unexpected errors (e.g. some UI widgets used in the test method cannot be found) | When some error happens, the script needs to be updated/fixed because the script leads to some unexpected errors.
 
-### Appendix: Install Kea2 in global environment
-
-```bash
-# In the working directory of Kea2
-python3 -m pip install --upgrade pip
-python3 -m pip install .
-```
-
 ## Contributors/Maintainers
 
 Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
