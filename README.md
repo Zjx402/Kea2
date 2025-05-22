@@ -4,7 +4,7 @@ Kea2 is an easy-to-use Python library for supporting, customizing and improving 
 
 ### Kea2 has three important features:
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
-- **Feature 2**(自定义测试场景或事件序列[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
+- **Feature 2**(自定义测试场景或事件序列[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific UI widgets) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 - **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
 These three features can be combined to support, customize and improve automated UI testing.
@@ -116,13 +116,13 @@ When running any automated UI testing tools like Fastbot to test your apps, you 
     <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
-Kea2 can support you to test your app by customizing testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
+Kea2 can support you to test your app by customizing testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app, blacklisting specific UI widgets) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
 In Kea2, a script is composed of two elements:
 -  **Precondition:** When to execute the script.
 - **Interaction scenario:** The interaction logic (specified in the script's test method) to reach where we want.
 
-### Example
+### Example 1: reaching specific UI pages
 
 Assuming `Privacy` is a hard-to-reach UI page during automated UI testing. Kea2 can easily guide Fastbot to reach this page.
 
@@ -152,6 +152,37 @@ You can find the full example in script `quicktest.py`, and run this script with
 ```bash
 # Launch Kea2 and load one single script quicktest.py.
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+```
+
+### Example 2: blacklisting specific UI widgets
+
+We support blacklisting specific widgets so that Fastbot can avoid interacting with these widgets during fuzzing. We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
+
+The list of blocked widgets are specified in Kea2's config file `configs/widget.block.py`. 
+The widgets needed to be blocked can be flexibly specified by its `text`, `description`, `xpath`, etc.
+
+#### Global Block List
+We can define the function `global_block_widgets` to specify which UI widgets should be blocked globally. The blocking always takes effect. 
+
+```python
+    def global_block_widgets(d: "Device"):
+    """
+    global block list.
+    return the widgets which should be blocked globally
+    """
+    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+            d(description="widgets to block")]
+```
+#### Conditional Block List
+We can define any reserved function whose name starts with "block_" and decorate such function by `@precondition` to allow conditional block list.
+In this case, the blocking only takes effect when the precondition is satisfied.
+```python
+    # conditional block list
+@precondition(lambda d: d(text="In the home page").exists)
+def block_sth(d: "Device"):
+    # Important: the function name should start with "block_"
+    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
+            d(description="widgets to block")]
 ```
 
 ## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
@@ -343,40 +374,6 @@ running_mins: int = 10
 throttle: int = 200
 # the output_dir for saving logs and results
 output_dir: str = "output"
-```
-
-## Widget Block
-
-We support blacklisting of widgets so that you can guide Fastbot to block certain widgets 
-during the testing process. 
-This feature is specifically divided into Global Block List (always effective) 
-and Conditional Block List (only effective when one or several preconditions are met).
-The list of blocked widgets is specifically written in `configs/widget.block.py`in the root directory, and its usage is as follows.
-
-### Global Block List
-You can write the following function in the script, and the return value of the function 
-is the widgets you want to block, and the blocking will always take effect. 
-The widgets here support specifying with `text`, `description`, or `xpath`.
-```python
-    def global_block_widgets(d: "Device"):
-    """
-    global block widgets.
-    return the widgets you want to block globally
-    only available in mode `u2 agent`
-    """
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
-```
-### Conditional Block List
-If you add the `@precondition` annotation before the function, you can specify that blocking 
-only takes effect under certain specific conditions.
-```python
-    # conditional block list
-@precondition(lambda d: d(text="In the home page").exists)
-def block_sth(d: "Device"):
-    # Important: function shold starts with "block"
-    return [d(text="widgets to block"), d.xpath(".//node[@text='widget to block']"),
-            d(description="widgets to block")]
 ```
 
 
