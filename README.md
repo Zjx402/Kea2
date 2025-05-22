@@ -46,10 +46,12 @@ Running requirements/environment:
 
 ```bash
 python3 -m pip install Kea2-python
-
-kea2 -h
 ```
 
+Find helps by running 
+```bash
+kea2 -h
+```
 
 ## Quick Test
 
@@ -59,8 +61,13 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 
 2. Run `quicktest.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quicktest.py` will automatically install and test this sample app for a short time.
 
+Initialize Kea under your preferred working directory:
 ```python
 kea2 init
+```
+
+Run the quick test:
+```python
 python3 quicktest.py
 ```
 
@@ -75,7 +82,7 @@ avdmanager create avd --force --name Android12 --package 'system-images;android-
 emulator -avd Android12 -port 5554 &
 ```
 
-> [quicktest.py](https://github.com/XixianLiang/KeaPlus/blob/main/quicktest.py) is a dead simple script which is ready-to-go with Fastbot. You can customize this script for testing your apps.
+> [quicktest.py](https://github.com/ecnusse/Kea2/blob/main/kea2/assets/quicktest.py) is a dead simple script which is ready-to-go with Fastbot. You can customize this script for testing your own apps.
 
 ## Feature 1(查找稳定性问题): running Fastbot
 
