@@ -195,11 +195,11 @@ For the preceding always-holding property, we can write the following script to 
 
 # Documentation
 
-## Tutorials 
+## Kea2's tutorials 
 
 1. A small tutorial of applying Kea2's Feature 2 and 3 on [WeChat](docs/Scenario_Examples_zh.md).
 
-## Write scripts
+## Kea2's scripts
 
 Kea2 uses [Unittest](https://docs.python.org/3/library/unittest.html) to manage scripts. All the Kea2's scripts can be found in unittest's rules (i.e., the test methods should start with `test_`, the test classes should extend `unittest.TestCase`).
 
@@ -239,7 +239,7 @@ class MyFirstTest(unittest.TestCase):
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
 
-## Launch Kea2
+## Launching Kea2
 
 We offer two ways to launch Kea2.
 
