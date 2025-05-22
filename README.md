@@ -7,6 +7,8 @@ Kea2 is an easy-to-use Python library for supporting and customizing automated U
 - **Feature 2**(自定义测试场景或事件序列[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 - **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
+We provide a detailed introduction to the application scenarios of features 2 and 3 using WeChat as an example. Please refer to [Scenario_Examples](docs/Scenario_Examples_zh.md).
+
 These three features can be combined to customize and improve automated UI testing.
 
 <div align="center">
