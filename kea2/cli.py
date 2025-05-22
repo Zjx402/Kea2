@@ -13,6 +13,12 @@ from pathlib import Path
 
 logger = getLogger(__name__)
 
+
+def cmd_version(args):
+    from importlib.metadata import version
+    print(version("Kea2-python"), flush=True)
+
+
 def cmd_init(args):
     cwd = Path(os.getcwd())
     configs_dir = cwd / "configs"
@@ -39,6 +45,7 @@ def cmd_init(args):
 def cmd_load_configs(args):
     pass
 
+
 def cmd_run(args):
     base_dir = getProjectRoot()
     if base_dir is None:
@@ -48,7 +55,7 @@ def cmd_run(args):
 
 
 _commands = [
-    # dict(action=cmd_version, command="version", help="show version"),
+    dict(action=cmd_version, command="version", help="show version"),
     dict(
         action=cmd_init,
         command="init",
