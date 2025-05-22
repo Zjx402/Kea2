@@ -265,7 +265,7 @@ class KeaTestRunner(TextTestRunner):
 
     def _setOuputDir(self):
         output_dir = Path(self.options.output_dir).absolute()
-        os.mkdir(output_dir, parents=True, exist_ok=True)
+        output_dir.mkdir(parents=True, exist_ok=True)
         global LOGFILE, RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)

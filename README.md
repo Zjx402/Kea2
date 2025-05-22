@@ -57,11 +57,11 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 
 1. Connect to an Android device and make sure you can see the connected device by running `adb devices`. 
 
-2. Run `quickstart.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quickstart.py` will automatically install and test this sample app for a short time.
+2. Run `quicktest.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quicktest.py` will automatically install and test this sample app for a short time.
 
 ```python
 kea2 init
-python3 quickstart.py native
+python3 quicktest.py native
 ```
 
 If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help [file a bug report](https://github.com/ecnusse/Kea2/issues) with the error message to us. Thank you!
@@ -75,7 +75,7 @@ avdmanager create avd --force --name Android12 --package 'system-images;android-
 emulator -avd Android12 -port 5554 &
 ```
 
-> [quickstart.py](https://github.com/XixianLiang/KeaPlus/blob/main/quickstart.py) is a dead simple script which is ready-to-go with Fastbot. You can customize this script for testing your apps.
+> [quicktest.py](https://github.com/XixianLiang/KeaPlus/blob/main/quicktest.py) is a dead simple script which is ready-to-go with Fastbot. You can customize this script for testing your apps.
 
 ## Feature 1(查找稳定性问题): running Fastbot
 
@@ -135,17 +135,17 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 - In script's test method `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the `Privacy` page.
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. As a result, Kea2 still allows Fastbot to explore other pages.
 
-You can find the full example in script `quickstart.py` and run it by executing:
+You can find the full example in script `quicktest.py` and run it by executing:
 
 ```python
-python3 quickstart.py u2
+python3 quicktest.py u2
 ```
 
 In real use, you can use `kea2 run` to launch the customizing script.
 
 ```bash
-# Launch Kea2 and load one single script quickstart.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quickstart.py
+# Launch Kea2 and load one single script quicktest.py.
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
 ```
 
 ## Feature 3(支持断言机制): Supporting auto-assertions by scripts.
@@ -251,8 +251,8 @@ kea2 run <Kea2 cmds> unittest <unittest cmds>
 Sample shell commands:
 
 ```bash
-# Launch Kea2 and load one single script quickstart.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quickstart.py
+# Launch Kea2 and load one single script quicktest.py.
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quicktest.py
 
 # Launch Kea2 and load multiple scripts from the directory mytests/omni_notes
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
@@ -262,6 +262,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | --- | --- |
 | -s | The serial of your device, which can be found by `adb devices` |
 | -p | The tested app's package name (e.g., com.example.app) | 
+| -o | The ouput directory for logs and results |
 | --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.|
 | --running-minutes | The time (m) to run Kea2 | 
 | --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | 

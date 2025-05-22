@@ -27,8 +27,8 @@ def cmd_init(args):
         shutil.copytree(src, dst)
 
     def copy_samples():
-        src = Path(__file__).parent / "assets" / "quickstart.py"
-        dst = cwd / "quickstart.py"
+        src = Path(__file__).parent / "assets" / "quicktest.py"
+        dst = cwd / "quicktest.py"
         shutil.copyfile(src, dst)
 
     copy_configs()

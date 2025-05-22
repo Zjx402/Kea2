@@ -11,3 +11,6 @@ configs/
 build
 *.egg-info
 clean.sh
+
+test/
+tests/
