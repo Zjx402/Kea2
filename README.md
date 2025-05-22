@@ -44,11 +44,13 @@ Running requirements/environment:
 - Android SDK installed
 - **VPN closed** (Features 2 and 3 required)
 
+
+Install Kea2 by `pip`:
 ```bash
 python3 -m pip install Kea2-python
 ```
 
-Find helps by running 
+Find Kea2's additional options by running 
 ```bash
 kea2 -h
 ```
@@ -61,7 +63,7 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 
 2. Run `quicktest.py` to test a sample app `omninotes` (released as `omninotes.apk` in Kea2's repository). The script `quicktest.py` will automatically install and test this sample app for a short time.
 
-Initialize Kea under your preferred working directory:
+Initialize Kea2 under your preferred working directory:
 ```python
 kea2 init
 ```
@@ -142,13 +144,7 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 - In script's test method `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the `Privacy` page.
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. As a result, Kea2 still allows Fastbot to explore other pages.
 
-You can find the full example in script `quicktest.py` and run it by executing:
-
-```python
-python3 quicktest.py
-```
-
-In real use, you can use `kea2 run` to launch the customizing script.
+You can find the full example in script `quicktest.py`, and run this script by `kea2 run`:
 
 ```bash
 # Launch Kea2 and load one single script quicktest.py.
@@ -199,6 +195,8 @@ For the preceding always-holding property, we can write the following script to 
         assert self.d(text=random_str).exist
 ```
 >  We use [hypothesis](https://github.com/HypothesisWorks/hypothesis), a property-based testing library for Python, to generate random texts according to the given rules.
+
+You can run this example by using the similar command line in Feature 2.
 
 # Documentation
 
