@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import threading
 import traceback
-from typing import IO, Callable, Any, Dict, List, Literal, NewType, Optional, Union
+from typing import IO, Callable, Any, Dict, List, Literal, NewType, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings

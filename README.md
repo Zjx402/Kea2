@@ -61,7 +61,7 @@ Kea2 connects to and runs on Android devices. We recommend you to do a quick tes
 
 ```python
 kea2 init
-python3 quicktest.py native
+python3 quicktest.py
 ```
 
 If you can see the app `omninotes` is successfully running and tested, Kea2 works. Otherwise, please help [file a bug report](https://github.com/ecnusse/Kea2/issues) with the error message to us. Thank you!
@@ -138,7 +138,7 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 You can find the full example in script `quicktest.py` and run it by executing:
 
 ```python
-python3 quicktest.py u2
+python3 quicktest.py
 ```
 
 In real use, you can use `kea2 run` to launch the customizing script.
@@ -252,7 +252,7 @@ Sample shell commands:
 
 ```bash
 # Launch Kea2 and load one single script quicktest.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest quicktest.py
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
 
 # Launch Kea2 and load multiple scripts from the directory mytests/omni_notes
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
@@ -328,6 +328,8 @@ maxStep: int # default "inf"
 running_mins: int = 10
 # time(ms) to wait when exploring the app
 throttle: int = 200
+# the output_dir for saving logs and results
+output_dir: str = "output"
 ```
 
 
