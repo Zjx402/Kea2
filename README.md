@@ -88,16 +88,19 @@ emulator -avd Android12 -port 5554 &
 
 ## Feature 1(查找稳定性问题): running Fastbot
 
-Test your app with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
+Test your app with the full capability of Fastbot for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
 
 
 ```bash
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
 ```
 
-The usage is similar to the the original [Fastbot](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command)'s shell commands. 
-See more options by `kea2 run -h`
+The usage is similar to the the original Fastbot's [shell commands](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command). 
 
+See more options by 
+```bash
+kea2 run -h
+```
 
 ## Feature 2(自定义测试场景或事件序列): customizing testing scenarios by scripts
 
@@ -144,7 +147,7 @@ In this case, the `Home` page is the entry page of the `Privacy` page and the `H
 - In script's test method `test_goToPrivacy`, we specify the interaction logic (i.e., opening `Drawer`, clicking the option `Setting` and clicking `Privacy`) to guide Fastbot to reach the `Privacy` page.
 - By the decorator `@prob`, we specify the probability (50% in this example) to do the guidance when we are at the `Home` page. As a result, Kea2 still allows Fastbot to explore other pages.
 
-You can find the full example in script `quicktest.py`, and run this script by `kea2 run`:
+You can find the full example in script `quicktest.py`, and run this script with Fastbot by the command `kea2 run`:
 
 ```bash
 # Launch Kea2 and load one single script quicktest.py.
