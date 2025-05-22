@@ -248,13 +248,14 @@ class MyFirstTest(unittest.TestCase):
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
 ### Warning 
-We only support basic selector (No parent-child relation ship) and basic xpath in uiautomator2. 
+In `@precondition` decorator and `widgets.block.py`. We only support basic selector (No parent-child relationship) and basic xpath (No chain call like `.xpath().xpath()`) in uiautomator2.
 
-| Support | Not support |
-| -- | -- |
-| `d(text="1").exist` | `d(text="1").child(text="2").exist` |
-| `d.xpath(".//[@text='1']")` | `d.xpath(".//[@text='1']).xpath(".//[@text]='2')"` |
+If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
 
+| | **Support** | **Not support** |
+| -- | -- | -- |
+| **Selctor** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
+| **XPath** | `d.xpath(".//[@text='1']")` | `d.xpath(".//[@text='1']").xpath(".//[@text]='2'")` |
 
 ## Launching Kea2
 
@@ -355,17 +356,19 @@ output_dir: str = "output"
 
 ## Widget Block
 
-We support blacklisting of widgets so that you can guide Fastbot to block certain widgets 
+We support blacklisting of widgets so that you can block certain widgets 
 during the app exploration process. 
 
 This feature is specifically divided into Global Block List (always effective) 
 and Conditional Block List (only effective when the precondition is met).
-The list of blocked widgets is specifically written in `configs/widget.block.py` in the kea2's project root directory, and its usage is as follows.
+
+Block widgets is specified in `configs/widget.block.py` generated during `kea2 init`.
 
 ### Global Block List
-In `configs/widget.block.py`, return the the list of block widgets specified with u2 selector or xpath in function `global_block_widgets`.
+In `global_block_widgets`, return the the list of block widgets specified with u2 selector or xpath in function .
 
 ```python
+# file: configs/widget.block.py
 def global_block_widgets(d: "Device"):
     """
     global block widgets.
@@ -380,9 +383,11 @@ def global_block_widgets(d: "Device"):
 ```
 
 ### Conditional Block List
-The conditional block list should be written in a function startswith `block_`. Add decorated by `@precondition`. Block will only takes effect when the precondition is satisfied.
+The conditional block list should be written in a function startswith `block_` and decorated by `@precondition`. Block will only takes effect when the precondition is satisfied.
 
 ```python
+# file: configs/widget.block.py
+
 # conditional block list
 @precondition(lambda d: d(text="In the home page").exists)
 def block_sth(d: "Device"):
