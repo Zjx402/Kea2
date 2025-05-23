@@ -77,6 +77,14 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
     )
 
     parser.add_argument(
+        "--log-stamp",
+        dest="log_stamp",
+        type=str,
+        required=False,
+        help="the stamp for log file and result file, default: current time stamp",
+    )
+
+    parser.add_argument(
         "extra",
         nargs=argparse.REMAINDER,
         help="Extra args for unittest <args>",
@@ -138,7 +146,8 @@ def run(args=None):
         serial=args.serial,
         running_mins=args.running_minutes if args.running_minutes else 10,
         maxStep=args.max_step if args.max_step else 500,
-        throttle=args.throttle_ms if args.throttle_ms else 200
+        throttle=args.throttle_ms if args.throttle_ms else 200,
+        log_stamp=args.log_stamp
     )
 
     KeaTestRunner.setOptions(options)

@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, print_function
 import sys
-from kea2.utils import getProjectRoot, getLogger
+from .utils import getProjectRoot, getLogger
 from .kea_launcher import run
 import argparse
 

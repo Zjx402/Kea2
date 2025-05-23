@@ -8,13 +8,15 @@ from typing import Dict, List, Union
 from lxml import etree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
-from .utils import TimeStamp
+from .utils import TimeStamp, getLogger
 
 TIME_STAMP = TimeStamp().getTimeStamp()
 
 import logging
 logging.getLogger("urllib3").setLevel(logging.INFO)
 logging.getLogger("uiautomator2").setLevel(logging.INFO)
+
+logger = getLogger(__name__)
 
 """
 The definition of U2ScriptDriver
@@ -57,7 +59,7 @@ class U2ScriptDriver(AbstractScriptDriver):
                 setattr(self.d._dev, "msg", "meta")
                 print(f"[U2] local port: {lport}", flush=True)
                 return lport
-            
+
             self._remove_remote_port(8090)
             self.d.lport = get_u2_forward_port()
             self._remove_remote_port(9008)
@@ -231,6 +233,7 @@ class U2StaticDevice(u2.Device):
     
     def __getattr__(self, attr):
         """Proxy other methods to script_driver"""
+        logger.debug(f"{attr} not exists in static checker, proxy to script_driver.")
         return getattr(self._script_driver, attr)
 
 class _XPathEntry(u2.xpath.XPathEntry):
@@ -311,6 +314,7 @@ def forward_port(self, remote: Union[int, str]) -> int:
                 return int(f.local[len("tcp:") :])
         local_port = get_free_port()
         self.forward("tcp:" + str(local_port), remote)
+        logger.debug(f"forwading port: tcp:{local_port} -> {remote}")
         return local_port
 
 

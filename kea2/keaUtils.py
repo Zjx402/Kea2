@@ -31,9 +31,9 @@ logger = getLogger(__name__)
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 
-TIME_STAMP = TimeStamp().getTimeStamp()
-LOGFILE = f"fastbot_{TIME_STAMP}.log"
-RESFILE = f"result_{TIME_STAMP}.json"
+STAMP = TimeStamp().getTimeStamp()
+LOGFILE = f"fastbot_{STAMP}.log"
+RESFILE = f"result_{STAMP}.json"
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -117,10 +117,16 @@ class Options:
     throttle: int = 200
     # the output_dir for saving logs and results
     output_dir: str = "output"
+    # the stamp for log file and result file, default: current time stamp
+    log_stamp: str = None
 
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
+        if self.log_stamp:
+            global LOGFILE, RESFILE
+            LOGFILE = f"fastbot_{self.log_stamp}.log"
+            RESFILE = f"result_{self.log_stamp}.json"
 
 
 @dataclass
@@ -298,6 +304,8 @@ class KeaTestRunner(TextTestRunner):
         global LOGFILE, RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)
+        logger.debug(f"Log file: {LOGFILE}")
+        logger.debug(f"Result file: {RESFILE}")
 
     def run(self, test):
 
@@ -366,8 +374,6 @@ class KeaTestRunner(TextTestRunner):
                         break
 
                     print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
-                    
-
 
                     # Go to the next round if no precond satisfied
                     if len(propsSatisfiedPrecond) == 0:
@@ -451,6 +457,8 @@ class KeaTestRunner(TextTestRunner):
         """
         block_widgets: List[str] = self._getBlockedWidgets()
         URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
+        logger.debug(f"Sending request: {URL}")
+        logger.debug(f"Blocking widgets: {block_widgets}")
         r = requests.post(
             url=URL,
             json={
@@ -466,7 +474,9 @@ class KeaTestRunner(TextTestRunner):
         """
         send a stop monkey request to the server and get the xml string.
         """
-        r = requests.get(f"http://localhost:{self.scriptDriver.lport}/stopMonkey")
+        URL = f"http://localhost:{self.scriptDriver.lport}/stopMonkey"
+        logger.debug(f"Sending request: {URL}")
+        r = requests.get(URL)
 
         res = r.content.decode(encoding="utf-8")
         print(f"[Server INFO] {res}", flush=True)

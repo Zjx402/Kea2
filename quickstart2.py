@@ -2,7 +2,7 @@ import unittest
 import uiautomator2 as u2
 
 from time import sleep
-from kea2 import precondition, prob, KeaTestRunner, Options
+from kea2 import precondition, prob, max_tries, KeaTestRunner, Options
 from kea2.u2Driver import U2Driver
 
 
@@ -31,6 +31,7 @@ class Omni_Notes_Sample(unittest.TestCase):
         print("trying to click Privacy")
         self.d(text="Privacy").click()
 
+    @max_tries(1)
     @precondition(
         lambda self: self.d(resourceId="it.feio.android.omninotes.alpha:id/search_src_text").exists
     )
