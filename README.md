@@ -1,5 +1,9 @@
 # Introduction 
 
+[![PyPI](https://img.shields.io/pypi/v/kea2-python.svg)](https://pypi.python.org/pypi/kea2-python)
+[![PyPI Downloads](https://static.pepy.tech/badge/kea2-python)](https://pepy.tech/projects/kea2-python)
+![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+
 Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
 ### Kea2 has three important features:
