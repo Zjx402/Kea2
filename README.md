@@ -284,15 +284,17 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
-### Warning 
-In `@precondition` decorator and `widgets.block.py`. We only support basic selector (No parent-child relationship) and basic xpath (No chain call like `.xpath().xpath()`) in uiautomator2.
+### Notes
+Currently, in `@precondition` decorator and `widgets.block.py`. We only support basic selector (No parent-child relationship) and basic xpath (No chain call like `.xpath().xpath()`) in uiautomator2. The Script body in the function fully support uiautomator2.
 
-If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
 
 | | **Support** | **Not support** |
 | -- | -- | -- |
 | **Selctor** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
 | **XPath** | `d.xpath(".//[@text='1']")` | `d.xpath(".//[@text='1']").xpath(".//[@text]='2'")` |
+
+If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
+
 
 ## Launching Kea2
 
