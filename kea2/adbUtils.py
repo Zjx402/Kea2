@@ -1,5 +1,9 @@
 import subprocess
 from typing import List, Optional
+from .utils import getLogger
+
+logger = getLogger(__name__)
+
 
 def run_adb_command(cmd: List[str], timeout=10):
     """
@@ -13,6 +17,7 @@ def run_adb_command(cmd: List[str], timeout=10):
         str: The standard output from the command. If an error occurs, returns None.
     """
     full_cmd = ["adb"] + cmd
+    logger.debug(f"{' '.join(full_cmd)}")
     try:
         result = subprocess.run(full_cmd, capture_output=True, text=True, timeout=timeout)
         if result.returncode != 0:

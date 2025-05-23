@@ -50,3 +50,7 @@ class AbstractDriver(abc.ABC):
     @abc.abstractmethod
     def getStaticChecker(self, hierarchy) -> AbstractStaticChecker:
         pass
+
+    @classmethod
+    @abc.abstractmethod
+    def tearDown(self): ...

@@ -610,6 +610,8 @@ class KeaTestRunner(TextTestRunner):
 
         return blocked_widgets
 
-    def tearDown(self):
-        # TODO Add tearDown method (remove local port, etc.)
-        pass
+    def __del__(self):
+        """tearDown method. Cleanup the env.
+        """
+        if self.options.Driver:
+            self.options.Driver.tearDown()

@@ -66,9 +66,6 @@ class U2ScriptDriver(AbstractScriptDriver):
 
         return self.d
 
-    def tearDown(self):
-        self.d.stop_uiautomator()
-
     def _remove_remote_port(self, port:int):
         """remove the forward port
         """
@@ -78,6 +75,11 @@ class U2ScriptDriver(AbstractScriptDriver):
                 forward_local = forward["local"]
                 remove_forward(local_spec=forward_local, device=self.deviceSerial)
 
+    def tearDown(self):
+        logger.debug("U2Driver tearDown: stop_uiautomator")
+        self.d.stop_uiautomator()
+        logger.debug("U2Driver tearDown: remove forward")
+        self._remove_remote_port(8090)
 
 """
 The definition of U2StaticChecker
@@ -295,6 +297,10 @@ class U2Driver(AbstractDriver):
         if self.staticChecker is None:
             self.staticChecker = U2StaticChecker()
         return self.staticChecker.getInstance(hierarchy)
+
+    @classmethod
+    def tearDown(self):
+        self.scriptDriver.tearDown()
 
 
 """
