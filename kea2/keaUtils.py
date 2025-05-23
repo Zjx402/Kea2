@@ -19,9 +19,10 @@ from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject
 import uiautomator2 as u2
 import types
+
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
-
+MAX_TRIES_MARKER = "max_tries"
 
 logger = getLogger(__name__)
 
@@ -37,7 +38,7 @@ RESFILE = f"result_{TIME_STAMP}.json"
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
 
-    The precondition specifies when the property could be executed.
+    @precondition specifies when the property could be executed.
     A property could have multiple preconditions, each of which is specified by @precondition.
     """
     def accept(f):
@@ -56,7 +57,7 @@ def precondition(precond: Callable[[Any], bool]) -> Callable:
 def prob(p: float):
     """the decorator @prob
 
-    The prob specify the propbability of execution when a property is satisfied.
+    @prob specify the propbability of execution when a property is satisfied.
     """
     p = float(p)
     if not 0 < p <= 1.0:
@@ -67,6 +68,26 @@ def prob(p: float):
             return f(*args, **kwargs)
 
         setattr(precondition_wrapper, PROP_MARKER, p)
+
+        return precondition_wrapper
+
+    return accept
+
+
+def max_tries(n: int):
+    """the decorator @max_tries
+
+    @max_tries specify the maximum tries of executing a property.
+    """
+    n = int(n)
+    if not n > 0:
+        raise ValueError("The maxium tries should be a positive integer.")
+    def accept(f):
+        @wraps(f)
+        def precondition_wrapper(*args, **kwargs):
+            return f(*args, **kwargs)
+
+        setattr(precondition_wrapper, MAX_TRIES_MARKER, n)
 
         return precondition_wrapper
 
@@ -150,6 +171,9 @@ class JsonResult(TextTestResult):
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
+
+    def getExcuted(self, test: TestCase):
+        return self.res[getFullPropName(test)].executed
 
 
 def activateFastbot(options: Options, port=None) -> threading.Thread:
@@ -333,7 +357,7 @@ class KeaTestRunner(TextTestRunner):
                     , flush=True)
 
                     try:
-                        propsSatisfiedPrecond = self.getValidProperties()
+                        propsSatisfiedPrecond = self.getValidProperties(result)
                     except requests.ConnectionError:
                         print(
                             "[INFO] Exploration times up (--running-minutes)."
@@ -342,6 +366,8 @@ class KeaTestRunner(TextTestRunner):
                         break
 
                     print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
+                    
+
 
                     # Go to the next round if no precond satisfied
                     if len(propsSatisfiedPrecond) == 0:
@@ -445,7 +471,7 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         print(f"[Server INFO] {res}", flush=True)
 
-    def getValidProperties(self) -> PropertyStore:
+    def getValidProperties(self, result: JsonResult) -> PropertyStore:
 
         xml_raw = self.stepMonkey()
         staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xml_raw)
@@ -470,6 +496,10 @@ class KeaTestRunner(TextTestRunner):
                     break
             # if all the precond passed. make it the candidate prop.
             if valid:
+                logger.debug(f"precond satisfied: {getFullPropName(test)}")
+                if result.getExcuted(test) >= getattr(prop, MAX_TRIES_MARKER, float("inf")):
+                    logger.debug(f"{getFullPropName(test)} has reached its max_tries. Skip.")
+                    continue
                 validProps[propName] = test
         return validProps
 
