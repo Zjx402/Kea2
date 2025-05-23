@@ -57,7 +57,7 @@ PACKAGE_NAME = "it.feio.android.omninotes.alpha"
 FILE_NAME = "omninotes.apk"
 
 
-def check_installation():
+def check_installation(serial=None):
     import os
     from pathlib import Path
     if not os.path.exists(Path(".") / FILE_NAME):
@@ -65,7 +65,7 @@ def check_installation():
         import urllib.request
         urllib.request.urlretrieve(URL, FILE_NAME)
 
-    d = u2.connect()
+    d = u2.connect(serial)
     # automatically install omni-notes
     if PACKAGE_NAME not in d.app_list():
         print("[INFO] Installing omninotes.", flush=True)
@@ -74,7 +74,7 @@ def check_installation():
 
 
 if __name__ == "__main__":
-    check_installation()
+    check_installation(serial=None)
     KeaTestRunner.setOptions(
         Options(
             driverName="d",
