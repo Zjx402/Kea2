@@ -97,6 +97,10 @@ class Options:
     # the output_dir for saving logs and results
     output_dir: str = "output"
 
+    def __post_init__(self):
+        if self.serial and self.Driver:
+            self.Driver.setDeviceSerial(self.serial)
+
 
 @dataclass
 class PropStatistic:

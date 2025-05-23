@@ -239,6 +239,7 @@ class _XPathEntry(u2.xpath.XPathEntry):
         super().__init__(d)
         
     def __call__(self, xpath, source = None):
+        # TODO fully support xpath in widget.block.py
         self.xpath = xpath
         return super().__call__(xpath, source)
 

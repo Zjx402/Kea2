@@ -130,7 +130,6 @@ def run(args=None):
 
     from kea2 import KeaTestRunner, Options
     from kea2.u2Driver import U2Driver
-    U2Driver.setDeviceSerial(args.serial)
     options = Options(
         agent=args.agent,
         driverName=args.driver_name,
