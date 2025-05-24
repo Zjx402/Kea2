@@ -49,13 +49,14 @@ In the future, Kea2 will be extended to support
 Running requirements/environment:
 - support Windows, MacOS and Linux
 - python 3.8+
+- Android 4.4+
 - Android SDK installed
 - **VPN closed** (Features 2 and 3 required)
 
 
 Install Kea2 by `pip`:
 ```bash
-python3 -m pip install Kea2-python
+python3 -m pip install kea2-python
 ```
 
 Find Kea2's additional options by running 
