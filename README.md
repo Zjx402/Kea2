@@ -293,31 +293,6 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
-### Notes
-Currently, in `@precondition` decorator and `widgets.block.py`. We only support basic selector (No parent-child relationship) in uiautomator2. The Script body in the function fully support uiautomator2.
-
-| | **Support** | **Not support** |
-| -- | -- | -- |
-| **Selctor** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
-
-If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
-
-for example: 
-
-```python
-# Do not use:
-# @precondition(lambda self: 
-#      self.d(className="android.widget.ListView").child(text="Bluetooth")
-# ):
-# ...
-
-# Use
-@precondition(lambda self: 
-    self.d.xpath('//android.widget.ListView/*[@text="Bluetooth"]')
-):
-...
-```
-
 
 ## Launching Kea2
 
