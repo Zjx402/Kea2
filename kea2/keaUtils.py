@@ -127,6 +127,17 @@ class Options:
             global LOGFILE, RESFILE
             LOGFILE = f"fastbot_{self.log_stamp}.log"
             RESFILE = f"result_{self.log_stamp}.json"
+        _check_package_installation(self.serial, self.packageNames)
+
+
+def _check_package_installation(serial, packageNames):
+    from .adbUtils import get_packages
+    installed_packages = get_packages(device=serial)
+
+    for package in packageNames:
+        if package not in installed_packages:
+            logger.error(f"package {package} not installed. Abort.")
+            raise ValueError("package not installed")
 
 
 @dataclass

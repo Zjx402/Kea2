@@ -1,5 +1,5 @@
 import subprocess
-from typing import List, Optional
+from typing import List, Optional, Set
 from .utils import getLogger
 
 logger = getLogger(__name__)
@@ -221,6 +221,34 @@ def remove_all_forwards(device: Optional[str] = None):
         str: The output from the command to remove all forwards.
     """
     return run_adb_command(["-s", device, "forward", "--remove-all"])
+
+
+@ensure_device
+def get_packages(device: Optional[str] = None) -> Set[str]:
+    """
+    Retrieves packages that match the specified regular expression pattern.
+    
+    Parameters:
+        pattern (str): Regular expression pattern to match package names.
+        device (str, optional): The device serial number. If None, it is resolved automatically.
+        
+    Returns:
+        set: A set of package names that match the pattern.
+    """
+    import re
+    
+    cmd = ["-s", device, "shell", "pm", "list", "packages"]
+    output = run_adb_command(cmd)
+    
+    packages = set()
+    if output:
+        compiled_pattern = re.compile(r"package:(.+)\n")
+        matches = compiled_pattern.findall(output)
+        for match in matches:
+            if match:
+                packages.add(match)
+    
+    return packages
 
 
 if __name__ == '__main__':

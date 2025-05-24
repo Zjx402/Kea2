@@ -99,6 +99,7 @@ def main():
     args = parser.parse_args()
 
     import logging
+    logging.basicConfig(level=logging.INFO)
     if args.debug:
         logging.basicConfig(level=logging.DEBUG)
         logger.debug("args: %s", args)
