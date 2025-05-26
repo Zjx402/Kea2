@@ -1,12 +1,12 @@
 # Advance User Manuel
 
-### Enhence Kea2 performance
+### Enhance Kea2 performance
 
 Currently, we have an algorithm in `@precondition` decorator and `widgets.block.py` to enhence the performance of the tool. The algorithm only support basic selector (No parent-child relationship) in uiautomator2. If you have many properties with complex preconditions and observed performance issue, you're recommanded to specify it in xpath.
 
 | | **Recommand** | **Not recommand** |
 | -- | -- | -- |
-| **Selctor** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
+| **Selector** | `d(text="1").exist` | `d(text="1").child(text="2").exist` |
 
 If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
 
