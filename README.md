@@ -317,16 +317,17 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
 ```
 
-| arg | meaning |
-| --- | --- |
-| -s | The serial of your device, which can be found by `adb devices` |
-| -p | The tested app's package name (e.g., com.example.app) | 
-| -o | The ouput directory for logs and results |
-| --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.|
-| --running-minutes | The time (m) to run Kea2 | 
-| --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | 
-| --throttle | The delay time (ms) between two monkey events |
+| arg | meaning | default | 
+| --- | --- | --- |
+| -s | The serial of your device, which can be found by `adb devices` | |
+| -p | *The tested app's package name (e.g., com.example.app) | 
+| -o | The ouput directory for logs and results | `output` |
+| --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.| `u2` |
+| --running-minutes | The time (m) to run Kea2 | `10` |
+| --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | `inf` |
+| --throttle | The delay time (ms) between two monkey events | `200` |
 | --driver-name | The name of driver used in the script. If `--driver-name d` is specified, you should use `d` to interact with a device, e..g, `self.d(..).click()`. |
+| --log-stamp | the stamp for log file and result file, default: current time stamp | |
 | unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
 
 
@@ -389,6 +390,8 @@ running_mins: int = 10
 throttle: int = 200
 # the output_dir for saving logs and results
 output_dir: str = "output"
+# the stamp for log file and result file, default: current time stamp
+log_stamp: str = None
 ```
 
 ## Examining the running statistics of scripts .

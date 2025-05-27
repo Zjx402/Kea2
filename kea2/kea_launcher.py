@@ -144,9 +144,9 @@ def run(args=None):
         Driver=U2Driver,
         packageNames=args.package_names,
         serial=args.serial,
-        running_mins=args.running_minutes if args.running_minutes else 10,
-        maxStep=args.max_step if args.max_step else 500,
-        throttle=args.throttle_ms if args.throttle_ms else 200,
+        running_mins=args.running_minutes,
+        maxStep=args.max_step,
+        throttle=args.throttle_ms,
         log_stamp=args.log_stamp
     )
 

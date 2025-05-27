@@ -120,6 +120,11 @@ class Options:
     # the stamp for log file and result file, default: current time stamp
     log_stamp: str = None
 
+    def __setattr__(self, name, value):
+        if value is None:
+            return
+        super().__setattr__(name, value)
+
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
