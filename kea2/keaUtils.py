@@ -306,6 +306,7 @@ class KeaTestRunner(TextTestRunner):
     allProperties: PropertyStore
     options: Options = None
     _block_widgets_funcs = None
+    _block_trees_funcs = None
 
     @classmethod
     def setOptions(cls, options: Options):
@@ -475,15 +476,19 @@ class KeaTestRunner(TextTestRunner):
         """
         send a step monkey request to the server and get the xml string.
         """
-        block_widgets: List[str] = self._getBlockedWidgets()
+        block_dict = self._getBlockedWidgets()
+        block_widgets: List[str] = block_dict['widgets']
+        block_trees: List[str] = block_dict['trees']
         URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
         logger.debug(f"Sending request: {URL}")
         logger.debug(f"Blocking widgets: {block_widgets}")
+        logger.debug(f"Blocking trees: {block_trees}")
         r = requests.post(
             url=URL,
             json={
                 "steps_count": self.stepsCount,
-                "block_widgets": block_widgets
+                "block_widgets": block_widgets,
+                "block_trees": block_trees
             }
         )
 
@@ -577,17 +582,16 @@ class KeaTestRunner(TextTestRunner):
                 # save it into allProperties for PBT
                 self.allProperties[testMethodName] = t
                 print(f"[INFO] Load property: {getFullPropName(t)}", flush=True)
-    
+
     @property
     def _blockWidgetFuncs(self):
         if self._block_widgets_funcs is None:
             self._block_widgets_funcs = list()
             root_dir = getProjectRoot()
             if root_dir is None or not os.path.exists(
-                file_block_widgets := root_dir / "configs" / "widget.block.py"
+                    file_block_widgets := root_dir / "configs" / "widget.block.py"
             ):
                 print(f"[WARNING] widget.block.py not find", flush=True)
-            
 
             def __get_block_widgets_module():
                 import importlib.util
@@ -601,18 +605,62 @@ class KeaTestRunner(TextTestRunner):
 
             import inspect
             for func_name, func in inspect.getmembers(mod, inspect.isfunction):
-                if func_name.startswith("block_") or func_name == "global_block_widgets":
+                if (func_name.startswith("block_") and not func_name.startswith("block_tree_")) or func_name == "global_block_widgets":
                     if getattr(func, PRECONDITIONS_MARKER, None) is None:
                         if func_name.startswith("block_"):
-                            logger.warning(f"No precondition in block widget function: {func_name}. Default globally active.")
-                        setattr(func, PRECONDITIONS_MARKER, (lambda d: True, ))
+                            logger.warning(
+                                f"No precondition in block widget function: {func_name}. Default globally active.")
+                        setattr(func, PRECONDITIONS_MARKER, (lambda d: True,))
                     self._block_widgets_funcs.append(func)
 
         return self._block_widgets_funcs
 
+    @property
+    def _blockTreeFuncs(self):
+        if self._block_trees_funcs is None:
+            self._block_trees_funcs = list()
+            root_dir = getProjectRoot()
+            if root_dir is None or not os.path.exists(
+                    file_block_widgets := root_dir / "configs" / "widget.block.py"
+            ):
+                print(f"[WARNING] widget.block.py not find", flush=True)
+
+            def __get_block_widgets_module():
+                import importlib.util
+                module_name = "block_widgets"
+                spec = importlib.util.spec_from_file_location(module_name, file_block_widgets)
+                mod = importlib.util.module_from_spec(spec)
+                spec.loader.exec_module(mod)
+                return mod
+
+            mod = __get_block_widgets_module()
+
+            import inspect
+            for func_name, func in inspect.getmembers(mod, inspect.isfunction):
+                if func_name.startswith("block_tree_") or func_name == "global_block_tree":
+                    if getattr(func, PRECONDITIONS_MARKER, None) is None:
+                        if func_name.startswith("block_tree_"):
+                            logger.warning(
+                                f"No precondition in block tree function: {func_name}. Default globally active.")
+                        setattr(func, PRECONDITIONS_MARKER, (lambda d: True,))
+                    self._block_trees_funcs.append(func)
+
+        return self._block_trees_funcs
+
     def _getBlockedWidgets(self):
         blocked_widgets = list()
-        for func in self._blockWidgetFuncs:
+        blocked_trees = list()
+        self._ProcessBlockedFuncs(self._blockTreeFuncs, blocked_trees)
+        self._ProcessBlockedFuncs(self._blockWidgetFuncs, blocked_widgets)
+
+
+        return  {
+            'widgets': blocked_widgets,
+            'trees': blocked_trees
+        }
+
+    def _ProcessBlockedFuncs(self, blocked_funcs, blocked_lists):
+        for func in blocked_funcs:
             try:
                 script_driver = self.options.Driver.getScriptDriver()
                 preconds = getattr(func, PRECONDITIONS_MARKER)
@@ -622,11 +670,11 @@ class KeaTestRunner(TextTestRunner):
                         _widgets = [_widgets]
                     for w in _widgets:
                         if isinstance(w, StaticU2UiObject):
-                            blocked_widgets.append(w._getXPath(w.selector))
+                            blocked_lists.append(w._getXPath(w.selector))
                         elif isinstance(w, u2.xpath.XPathSelector):
                             def getXPathRepr(w):
                                 return w._parent.xpath
-                            blocked_widgets.append(getXPathRepr(w))
+                            blocked_lists.append(getXPathRepr(w))
                         else:
                             logger.warning(f"{w} Not supported")
                     # blocked_widgets.extend([
@@ -636,8 +684,6 @@ class KeaTestRunner(TextTestRunner):
                 logger.error(f"error when getting blocked widgets: {e}")
                 import traceback
                 traceback.print_exc()
-
-        return blocked_widgets
 
     def __del__(self):
         """tearDown method. Cleanup the env.
