@@ -119,6 +119,8 @@ class Options:
     output_dir: str = "output"
     # the stamp for log file and result file, default: current time stamp
     log_stamp: str = None
+    # the profiling period to get the coverage result.
+    profile_period: int = None
 
     def __setattr__(self, name, value):
         if value is None:
@@ -370,18 +372,20 @@ class KeaTestRunner(TextTestRunner):
                 check_alive(port=self.scriptDriver.lport)
 
                 end_by_remote = False
-                step = 0
-                while step < self.options.maxStep:
+                self.stepsCount = 0
+                while self.stepsCount < self.options.maxStep:
 
-                    step += 1
+                    self.stepsCount += 1
                     print("[INFO] Sending monkeyEvent {}".format(
-                        f"({step} / {self.options.maxStep})" if self.options.maxStep != float("inf")
-                        else f"({step})"
+                        f"({self.stepsCount} / {self.options.maxStep})" if self.options.maxStep != float("inf")
+                        else f"({self.stepsCount})"
                         )
                     , flush=True)
 
                     try:
-                        propsSatisfiedPrecond = self.getValidProperties(result)
+                        xml_raw = self.stepMonkey()
+                        stat = self._getStat()
+                        propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
                         print(
                             "[INFO] Exploration times up (--running-minutes)."
@@ -478,6 +482,7 @@ class KeaTestRunner(TextTestRunner):
         r = requests.post(
             url=URL,
             json={
+                "steps_count": self.stepsCount,
                 "block_widgets": block_widgets
             }
         )
@@ -497,9 +502,8 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         print(f"[Server INFO] {res}", flush=True)
 
-    def getValidProperties(self, result: JsonResult) -> PropertyStore:
+    def getValidProperties(self, xml_raw: str, result: JsonResult) -> PropertyStore:
 
-        xml_raw = self.stepMonkey()
         staticCheckerDriver = self.options.Driver.getStaticChecker(hierarchy=xml_raw)
 
         validProps: PropertyStore = dict()
@@ -528,6 +532,15 @@ class KeaTestRunner(TextTestRunner):
                     continue
                 validProps[propName] = test
         return validProps
+
+    def _getStat(self):
+        # profile when reaching the profile period
+        if (self.options.profile_period and 
+            self.stepsCount % self.options.profile_period == 0
+        ):
+            URL = f"http://localhost:{self.scriptDriver.lport}/getStat"
+            r = requests.get(URL)
+            res = json.loads(r.content)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT

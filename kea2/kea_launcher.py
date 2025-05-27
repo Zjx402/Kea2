@@ -83,6 +83,14 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         required=False,
         help="the stamp for log file and result file, default: current time stamp",
     )
+    
+    parser.add_argument(
+        "--profile-period",
+        dest="profile_period",
+        type=int,
+        required=False,
+        help="Steps to profile the testing statistics.",
+    )
 
     parser.add_argument(
         "extra",
@@ -120,12 +128,14 @@ def parse_args(argv: List):
     args = parser.parse_args(argv)
     return args
 
+
 def _sanitize_args(args):
     if args.agent == "u2" and not args.driver_name:
         if args.extra == []:
             args.driver_name = "d"
         else:
             raise ValueError("--driver-name should be specified when customizing script in --agent u2")
+
 
 def run(args=None):
     if args is None:
@@ -147,7 +157,8 @@ def run(args=None):
         running_mins=args.running_minutes,
         maxStep=args.max_step,
         throttle=args.throttle_ms,
-        log_stamp=args.log_stamp
+        log_stamp=args.log_stamp,
+        profile_period=args.profile_period,
     )
 
     KeaTestRunner.setOptions(options)
