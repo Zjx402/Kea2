@@ -14,3 +14,5 @@ clean.sh
 
 test/
 tests/
+
+quicktest.py

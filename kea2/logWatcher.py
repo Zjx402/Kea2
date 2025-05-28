@@ -46,17 +46,19 @@ class LogWatcher:
                     exception_body + 
                     "\nSee fastbot.log for details."
                 )
-        statistic_match = PATTERN_STATISTIC.search(buffer)
-        if statistic_match:
-            statistic_body = statistic_match.group(1).strip()
-            if statistic_body:
-                print(
-                    "[INFO] Fastbot exit:\n" + 
-                    statistic_body
-                , flush=True)
+        if self.end_flag:
+            statistic_match = PATTERN_STATISTIC.search(buffer)
+            if statistic_match:
+                statistic_body = statistic_match.group(1).strip()
+                if statistic_body:
+                    print(
+                        "[INFO] Fastbot exit:\n" + 
+                        statistic_body
+                    , flush=True)
 
     def __init__(self, log_file):
         self.log_file = log_file
+        self.end_flag = False
 
         threading.excepthook = thread_excepthook
         t = threading.Thread(target=self.watcher, daemon=True)
@@ -64,6 +66,7 @@ class LogWatcher:
     
     def close(self):
         time.sleep(0.2) # wait for the written logfile close
+        self.end_flag = True
         self.read_log()
 
 
