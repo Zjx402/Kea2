@@ -434,7 +434,6 @@ class KeaTestRunner(TextTestRunner):
 
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
-            self.tearDown()
 
         # Source code from unittest Runner
         # process the result
