@@ -8,7 +8,7 @@
     <img src="https://github.com/user-attachments/assets/58f68b00-cc9c-4620-9e2e-66c43cf7caae" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. The library is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2), and targeting [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
+Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. Kea2's novelty is able to fuse the scripts (usually written by human) with automated UI testing tools, thus allowing many interesting and powerful features. Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2) and targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
 ### Kea2 has three important features:
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
@@ -37,7 +37,7 @@ Kea2, released as a Python library, currently works with:
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated UI testing tool.
 
-In the future, Kea2 will be extended to support
+**Roadmap**: In the future, Kea2 will be extended to support
 - [pytest](https://docs.pytest.org/en/stable/)
 - [Appium](https://github.com/appium/appium), [Hypium]() (for HarmonyOS)
 - other automated UI testing tools (not limited to Fastbot)
