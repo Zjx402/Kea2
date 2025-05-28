@@ -369,7 +369,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | `inf` |
 | --throttle | The delay time (ms) between two monkey events | `200` |
 | --driver-name | The name of driver used in the script. If `--driver-name d` is specified, you should use `d` to interact with a device, e..g, `self.d(..).click()`. |
-| --log-stamp | the stamp for log file and result file, default: current time stamp | |
+| --log-stamp | the stamp for log file and result file. (e.g. `--log-stamp 123` then `fastbot_123.log` and `result_123.json` will be generated.) default: current time stamp | |
 | unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
 
 
