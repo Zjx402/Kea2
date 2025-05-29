@@ -121,6 +121,8 @@ class Options:
     log_stamp: str = None
     # the profiling period to get the coverage result.
     profile_period: int = None
+    # the debug mode
+    debug: bool = False
 
     def __setattr__(self, name, value):
         if value is None:
@@ -276,8 +278,9 @@ def startFastbotService(options: Options) -> threading.Thread:
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
         "--bugreport", "--output-directory", "/sdcard/fastbot_report",
-        "-v", "-v", "-v"
     ]
+
+    shell_command += ["-v", "-v", "-v", "-v"] if options.debug else ["-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 

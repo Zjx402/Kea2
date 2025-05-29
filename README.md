@@ -372,6 +372,12 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | --log-stamp | the stamp for log file and result file. (e.g. `--log-stamp 123` then `fastbot_123.log` and `result_123.json` will be generated.) default: current time stamp | |
 | unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
 
+> Enable debug mode:
+> ```bash
+> # add -d to enable debug mode
+> kea2 -d run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+> ```
+
 
 ### 2. Launch by `unittest.main`
 
