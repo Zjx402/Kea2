@@ -563,7 +563,7 @@ class KeaTestRunner(TextTestRunner):
             """remove the tearDown function in PBT
             """
             def tearDown(self): ...
-            testCase = types.MethodType(tearDown, testCase)
+            testCase.tearDown = types.MethodType(tearDown, testCase)
         
         def iter_tests(suite):
             for test in suite:
