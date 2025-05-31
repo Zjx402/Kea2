@@ -16,7 +16,7 @@ from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject
+from .u2Driver import StaticU2UiObject, selector_to_xpath
 import uiautomator2 as u2
 import types
 
@@ -656,8 +656,8 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = func(self.options.Driver.getStaticChecker())
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
-                        if isinstance(w, StaticU2UiObject):
-                            xpath = w._getXPath(w.selector)
+                        if isinstance(w, StaticU2UiObject) or isinstance(w, u2.UiObject):
+                            xpath = selector_to_xpath(w.selector,True)
                             blocked_set.add(xpath)  # 集合去重
                         elif isinstance(w, u2.xpath.XPathSelector):
                             xpath = w._parent.xpath
