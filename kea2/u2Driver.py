@@ -327,30 +327,26 @@ def forward_port(self, remote: Union[int, str]) -> int:
 
 def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
     """
-    将 u2 的 Selector 转换为符合 Java 安卓控件 XPath 语法的表达式。
+    Convert a u2 Selector into an XPath expression compatible with Java Android UI controls.
 
     Args:
-        selector (u2.Selector): u2 的 Selector 对象
-        is_initial (bool): 是否是最开始的节点，默认为 True
+        selector (u2.Selector): A u2 Selector object
+        is_initial (bool): Whether it is the initial node, defaults to True
 
     Returns:
-        str: 对应的 XPath 表达式
+        str: The corresponding XPath expression
     """
     try:
-        # 初始化 XPath 表达式
         if is_initial:
             xpath = ".//node"
         else:
             xpath = "node"
 
-        # 处理属性条件
         conditions = []
 
-        # 处理 className
         if "className" in selector:
             conditions.insert(0, f"[@class='{selector['className']}']")  # 将 className 条件放在前面
 
-        # 处理 text 相关属性
         if "text" in selector:
             conditions.append(f"[@text='{selector['text']}']")
         elif "textContains" in selector:
@@ -360,7 +356,6 @@ def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
         elif "textStartsWith" in selector:
             conditions.append(f"[starts-with(@text, '{selector['textStartsWith']}')]")
 
-        # 处理 description 相关属性
         if "description" in selector:
             conditions.append(f"[@content-desc='{selector['description']}']")
         elif "descriptionContains" in selector:
@@ -370,19 +365,16 @@ def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
         elif "descriptionStartsWith" in selector:
             conditions.append(f"[starts-with(@content-desc, '{selector['descriptionStartsWith']}')]")
 
-        # 处理 packageName 相关属性
         if "packageName" in selector:
             conditions.append(f"[@package='{selector['packageName']}']")
         elif "packageNameMatches" in selector:
             conditions.append(f"[re:match(@package, '{selector['packageNameMatches']}')]")
 
-        # 处理 resourceId 相关属性
         if "resourceId" in selector:
             conditions.append(f"[@resource-id='{selector['resourceId']}']")
         elif "resourceIdMatches" in selector:
             conditions.append(f"[re:match(@resource-id, '{selector['resourceIdMatches']}')]")
 
-        # 处理布尔属性
         bool_props = ["checkable", "checked", "clickable", "longClickable", "scrollable", "enabled", "focusable",
                       "focused", "selected"]
         for prop in bool_props:
@@ -390,16 +382,13 @@ def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
                 value = "true" if selector[prop] else "false"
                 conditions.append(f"[@{prop}='{value}']")
 
-        # 处理 index 和 instance
         if "index" in selector:
             conditions.append(f"[@index='{selector['index']}']")
         elif "instance" in selector:
             conditions.append(f"[@instance='{selector['instance']}']")
 
-        # 将所有条件合并到 XPath 表达式中
         xpath += "".join(conditions)
 
-        # 处理子选择器（child 和 sibling）
         if "childOrSibling" in selector and selector["childOrSibling"]:
             for i, relation in enumerate(selector["childOrSibling"]):
                 sub_selector = selector["childOrSiblingSelector"][i]
@@ -415,7 +404,7 @@ def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
 
     except Exception as e:
         print(f"Error occurred during selector conversion: {e}")
-        return "//error"  # 返回一个无效的 XPath 表达式，表示转换失败
+        return "//error"
 
 def is_port_in_use(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
