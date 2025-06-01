@@ -135,6 +135,12 @@ class StaticU2UiObject(u2.UiObject):
         xpath = self._getXPath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return len(matched_widgets)
+    
+    def child(self, **kwargs):
+        return StaticU2UiObject(self.session, self.selector.clone().child(**kwargs))
+    
+    def sibling(self, **kwargs):
+        return StaticU2UiObject(self.session, self.selector.clone().sibling(**kwargs))
 
 
 def _get_bounds(raw_bounds):
@@ -375,8 +381,10 @@ def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
         elif "resourceIdMatches" in selector:
             conditions.append(f"[re:match(@resource-id, '{selector['resourceIdMatches']}')]")
 
-        bool_props = ["checkable", "checked", "clickable", "longClickable", "scrollable", "enabled", "focusable",
-                      "focused", "selected"]
+        bool_props = [
+            "checkable", "checked", "clickable", "longClickable", "scrollable",
+            "enabled", "focusable", "focused", "selected", "covered"
+        ]
         for prop in bool_props:
             if prop in selector:
                 value = "true" if selector[prop] else "false"
