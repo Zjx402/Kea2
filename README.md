@@ -191,25 +191,6 @@ For the preceding always-holding property, we can write the following script to 
 
 You can run this example by using the similar command line in Feature 2.
 
-## Maintainers/Contributors
-
-Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse):
-
-- [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
-- Bo Ma ([@majuzi123][])
-- Chen Peng ([@Drifterpc][])
-- [Ting Su](https://tingsu.github.io/) ([@tingsu][])
-
-[@XixianLiang]: https://github.com/XixianLiang
-[@majuzi123]: https://github.com/majuzi123
-[@Drifterpc]: https://github.com/Drifterpc
-[@tingsu]: https://github.com/tingsu
-
-[Zhendong Su](https://people.inf.ethz.ch/suz/), [Yiheng Xiong](https://xyiheng.github.io/), [Xiangchen Shen](https://xiangchenshen.github.io/), Mengqian Xu, [Haiying Sun](https://faculty.ecnu.edu.cn/_s43/shy/main.psp), [Jingling Sun](https://jinglingsun.github.io/), [Jue Wang](https://cv.juewang.info/) have also been actively participated in this project and contributed a lot!
-
-
-Kea2 has been also received many valuable insights, advices, feedbacks and lessons shared by several industrial people from Bytedance (Zhao Zhang, Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu, Yuetang Deng), Huawei, Xiaomi and etc. Kudos!
-
 ### Open-source projects used by Kea2
 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android)
@@ -226,6 +207,23 @@ Kea2 has been also received many valuable insights, advices, feedbacks and lesso
 
 > Guided, Stochastic Model-Based GUI Testing of Android Apps. ESEC/FSE 2017.  [pdf](https://dl.acm.org/doi/10.1145/3106237.3106298)
 
+### Maintainers/Contributors
+
+Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse):
+
+- [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
+- Bo Ma ([@majuzi123][])
+- Chen Peng ([@Drifterpc][])
+- [Ting Su](https://tingsu.github.io/) ([@tingsu][])
+
+[@XixianLiang]: https://github.com/XixianLiang
+[@majuzi123]: https://github.com/majuzi123
+[@Drifterpc]: https://github.com/Drifterpc
+[@tingsu]: https://github.com/tingsu
+
+[Zhendong Su](https://people.inf.ethz.ch/suz/), [Yiheng Xiong](https://xyiheng.github.io/), [Xiangchen Shen](https://xiangchenshen.github.io/), [Mengqian Xu](https://mengqianx.github.io/), [Haiying Sun](https://faculty.ecnu.edu.cn/_s43/shy/main.psp), [Jingling Sun](https://jinglingsun.github.io/), [Jue Wang](https://cv.juewang.info/) have also been actively participated in this project and contributed a lot!
+
+Kea2 has been also received many valuable insights, advices, feedbacks and lessons shared by several industrial people from Bytedance ([Zhao Zhang](https://github.com/zhangzhao4444), Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu, Yuetang Deng), Huawei, Xiaomi and etc. Kudos!
 
 [^1]: 不少UI自动化测试工具提供了“自定义事件序列”能力（如[Fastbot](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BA%8B%E4%BB%B6%E5%BA%8F%E5%88%97) 和[AppCrawler](https://github.com/seveniruby/AppCrawler)），但在实际使用中存在不少问题，如自定义能力有限、使用不灵活等。此前不少Fastbot用户抱怨过其“自定义事件序列”在使用中的问题，如[#209](https://github.com/bytedance/Fastbot_Android/issues/209), [#225](https://github.com/bytedance/Fastbot_Android/issues/225), [#286](https://github.com/bytedance/Fastbot_Android/issues/286)等。
 
