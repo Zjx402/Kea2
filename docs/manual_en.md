@@ -73,14 +73,14 @@ Options:
 | arg | meaning | default | 
 | --- | --- | --- |
 | -s | The serial of your device, which can be found by `adb devices` | |
-| -p | *The tested app's package name (e.g., com.example.app) | 
+| -p | The tested app's package name (e.g., com.example.app) | 
 | -o | The ouput directory for logs and results | `output` |
 | --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.| `u2` |
-| --running-minutes | The time (m) to run Kea2 | `10` |
-| --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | `inf` |
-| --throttle | The delay time (ms) between two monkey events | `200` |
-| --driver-name | The name of driver used in the script. If `--driver-name d` is specified, you should use `d` to interact with a device, e..g, `self.d(..).click()`. |
-| --log-stamp | the stamp for log file and result file. (e.g. `--log-stamp 123` then `fastbot_123.log` and `result_123.json` will be generated.) default: current time stamp | |
+| --running-minutes | The time (in minutes) to run Kea2 | `10` |
+| --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | `inf` (infinite) |
+| --throttle | The delay time (in milliseconds) between two monkey events | `200` |
+| --driver-name | The name of driver used in the kea2's scripts. If `--driver-name d` is specified, you should use `d` to interact with a device, e..g, `self.d(..).click()`. |
+| --log-stamp | the stamp for log file and result file. (e.g., if `--log-stamp 123` is specified, the log files will be named as `fastbot_123.log` and `result_123.json`.) | current time stamp |
 | unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
 
 
