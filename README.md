@@ -101,6 +101,8 @@ Test your app with the full capability of Fastbot for stress testing and finding
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
 ```
 
+理解上述选项含义请查看[文档](docs/manual_en.md#launching-kea2)
+
 > The usage is similar to the the original Fastbot's [shell commands](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command). 
 
 See more options by 
