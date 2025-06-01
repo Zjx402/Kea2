@@ -17,7 +17,7 @@ Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot
 ## Important features
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
 
-- **Feature 2**(自定义测试场景或事件序列[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific UI widgets) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
+- **Feature 2**(自定义测试场景\事件序列\黑白名单[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
 - **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
@@ -27,7 +27,7 @@ Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot
 | --- | --- | --- | ---- |
 | **Finding crashes** | :+1: | :+1: | :+1: |
 | **Finding crashes in deep states** |  | :+1: | :+1: |
-| **Finding non-crashing functional bugs** |  |  | :+1: |
+| **Finding non-crashing functional (logic) bugs** |  |  | :+1: |
 
 
 <div align="center">
@@ -88,7 +88,6 @@ python3 quicktest.py
 ```
 
 If you can see the app `omninotes` is successfully running and tested, Kea2 works!
-
 Otherwise, please help [file a bug report](https://github.com/ecnusse/Kea2/issues) with the error message to us. Thank you!
 
 
@@ -192,11 +191,24 @@ For the preceding always-holding property, we can write the following script to 
 
 You can run this example by using the similar command line in Feature 2.
 
-## Contributors/Maintainers
+## Maintainers/Contributors
 
-Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse).
+Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse):
 
-> Kea2 is inspired by many valuable insights, advices and lessons shared by experienced industrial practitioners from Bytedance (Zhao Zhang, Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu, Yuetang Deng), Huawei, Xiaomi and etc. Kudos!
+- [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
+- Bo Ma ([@majuzi123][])
+- Chen Peng ([@Drifterpc][])
+- [Ting Su](https://tingsu.github.io/) ([@tingsu][])
+
+[@XixianLiang]: https://github.com/XixianLiang
+[@majuzi123]: https://github.com/majuzi123
+[@Drifterpc]: https://github.com/Drifterpc
+[@tingsu]: https://github.com/tingsu
+
+[Zhendong Su](https://people.inf.ethz.ch/suz/), [Yiheng Xiong](https://xyiheng.github.io/), [Xiangchen Shen](https://xiangchenshen.github.io/), Mengqian Xu, [Haiying Sun](https://faculty.ecnu.edu.cn/_s43/shy/main.psp), [Jingling Sun](https://jinglingsun.github.io/), [Jue Wang](https://cv.juewang.info/) have also been actively participated in this project and contributed a lot!
+
+
+Kea2 has been also received many valuable insights, advices, feedbacks and lessons shared by several industrial people from Bytedance (Zhao Zhang, Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu, Yuetang Deng), Huawei, Xiaomi and etc. Kudos!
 
 ### Open-source projects used by Kea2
 
