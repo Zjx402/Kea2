@@ -17,7 +17,7 @@ Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot
 ## Important features
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
 
-- **Feature 2**(自定义测试场景\事件序列\黑白名单[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
+- **Feature 2**(自定义测试场景\事件序列\黑白名单\黑白控件[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
 - **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
 
@@ -190,6 +190,13 @@ For the preceding always-holding property, we can write the following script to 
 >  We use [hypothesis](https://github.com/HypothesisWorks/hypothesis) to generate random texts.
 
 You can run this example by using the similar command line in Feature 2.
+
+
+## Documentations（更多文档）
+
+[更多文档](docs/manual_en.md)：如何定义Kea2脚本、如何启动Kea2、如何查看/理解Kea2的运行结果
+
+[如何黑白控件/区域](docs/backlisting.md)
 
 ### Open-source projects used by Kea2
 
