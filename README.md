@@ -196,7 +196,7 @@ You can run this example by using the similar command line in Feature 2.
 
 [更多文档](docs/manual_en.md)：如何定义Kea2脚本、如何启动Kea2、如何查看/理解Kea2的运行结果
 
-[如何黑白控件/区域](docs/backlisting.md)
+[如何黑白控件/区域](docs/blacklisting.md)
 
 ### Open-source projects used by Kea2
 
