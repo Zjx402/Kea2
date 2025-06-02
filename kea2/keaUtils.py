@@ -16,7 +16,7 @@ from time import sleep
 from .adbUtils import push_file
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject
+from .u2Driver import StaticU2UiObject, selector_to_xpath
 import uiautomator2 as u2
 import types
 
@@ -121,6 +121,8 @@ class Options:
     log_stamp: str = None
     # the profiling period to get the coverage result.
     profile_period: int = None
+    # the debug mode
+    debug: bool = False
 
     def __setattr__(self, name, value):
         if value is None:
@@ -276,8 +278,9 @@ def startFastbotService(options: Options) -> threading.Thread:
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
         "--bugreport", "--output-directory", "/sdcard/fastbot_report",
-        "-v", "-v", "-v"
     ]
+
+    shell_command += ["-v", "-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
@@ -560,7 +563,7 @@ class KeaTestRunner(TextTestRunner):
             """remove the tearDown function in PBT
             """
             def tearDown(self): ...
-            testCase = types.MethodType(tearDown, testCase)
+            testCase.tearDown = types.MethodType(tearDown, testCase)
         
         def iter_tests(suite):
             for test in suite:
@@ -654,8 +657,8 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
                         if isinstance(w, StaticU2UiObject):
-                            xpath = w._getXPath(w.selector)
-                            blocked_set.add(xpath)  # 集合去重
+                            xpath = selector_to_xpath(w.selector, True)
+                            blocked_set.add(xpath)
                         elif isinstance(w, u2.xpath.XPathSelector):
                             xpath = w._parent.xpath
                             blocked_set.add(xpath)

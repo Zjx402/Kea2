@@ -193,6 +193,33 @@ For the preceding always-holding property, we can write the following script to 
 
 You can run this example by using the similar command line in Feature 2.
 
+```bash
+# Launch Kea2 and load one single script quicktest.py.
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+
+# Launch Kea2 and load multiple scripts from the directory mytests/omni_notes
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
+```
+
+| arg | meaning | default | 
+| --- | --- | --- |
+| -s | The serial of your device, which can be found by `adb devices` | |
+| -p | *The tested app's package name (e.g., com.example.app) | 
+| -o | The ouput directory for logs and results | `output` |
+| --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.| `u2` |
+| --running-minutes | The time (m) to run Kea2 | `10` |
+| --max-step | The maxium number of monkey events to send (only available in `--agent u2`) | `inf` |
+| --throttle | The delay time (ms) between two monkey events | `200` |
+| --driver-name | The name of driver used in the script. If `--driver-name d` is specified, you should use `d` to interact with a device, e..g, `self.d(..).click()`. |
+| --log-stamp | the stamp for log file and result file. (e.g. `--log-stamp 123` then `fastbot_123.log` and `result_123.json` will be generated.) default: current time stamp | |
+| unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
+
+> Enable debug mode:
+> ```bash
+> # add -d to enable debug mode
+> kea2 -d run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+> ```
+
 
 ## Documentations（更多文档）
 
