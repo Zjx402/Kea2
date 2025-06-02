@@ -280,7 +280,7 @@ def startFastbotService(options: Options) -> threading.Thread:
         "--bugreport", "--output-directory", "/sdcard/fastbot_report",
     ]
 
-    shell_command += ["-v", "-v", "-v", "-v"] if options.debug else ["-v", "-v", "-v"]
+    shell_command += ["-v", "-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
