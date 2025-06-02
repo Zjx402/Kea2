@@ -44,6 +44,40 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
+## Decorators
+
+### `@precondition`
+
+```python
+@precondition(lambda self: ...)
+def test_func1(self):
+    ...
+```
+
+The decorator `@precondition` takes a function which returns boolean as an arugment. When the function returns `True`, the precondition is satisified and the script will be activated, and Kea2 will run the script based on certain probability defined by the decorator `@prob`.
+
+### `@prob`
+
+```python
+@prob(0.7)
+@precondition(lambda self: ...)
+def test_func1(self):
+    ...
+```
+
+The decorator `@prob` takes a float number as an argument. The number represents the probability of executing the script when the precondition is satisfied. The probability should be between 0 and 1. The default probability is 1 (always execute when precondition satisfied).
+
+### `@max_tries`
+
+```python
+@max_tries(1)
+@precondition(lambda self: ...)
+def test_func1(self):
+    ...
+```
+
+The decorator `@max_tries` takes an integer as an argument. The number represents the maximum number of times the script will be executed when the precondition is satisfied. The default value is `inf` (no limit).
+
 
 ## Launching Kea2
 
