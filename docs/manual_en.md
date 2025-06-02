@@ -65,11 +65,19 @@ def test_func1(self):
     ...
 ```
 
-The decorator `@prob` takes a float number as an argument. The number represents the probability of executing the script when the precondition is satisfied. The probability should be between 0 and 1. The default probability is 1 (always execute when precondition satisfied).
+The decorator `@prob` takes a float number as an argument. The number represents the probability of executing function `test_func1` when its precondition (specified by `@precondition`) is satisfied. The probability value should be between 0 and 1. 
+The default probability value is 1 if `@prob` is not specified. In this case, function `test_func1` will be always executed when its precondition is satisfied.
 
-When multiple properties are satisfied. Kea2 will randomly select one of them to execute based on their probabilities. In practice, we generate a random number `p` between 0 and 1.
-And then we filter the satisfied properties based on `p`. For example, if `p=0.3`, and there are three satisfied properties with probabilities `0.2`, `0.4`, and `0.6`, then the first property `0.2` will be filtered, and the second and third properties (`0.4` & `0.6`) will be kept.
-Then we randomly select one from the remaining properties.
+When the preconditions of multiple functions are satisfied. Kea2 will randomly select one of these functions to execute based on their probability values. 
+Specifically, Kea2 will generate a random value `p` between 0 and 1, and `p` will be used to decide which function to be selected based on the probability values of
+these functions.
+
+For example, if three functions `test_func1`, `test_func2` and `test_func3` whose preconditions are satisified, and
+their probability values are `0.2`, `0.4`, and `0.6`, respectively. 
+- Case 1: If `p` is randomly assigned as `0.3`, `test_func1` will lose the chance of being selected because its probability value `0.2` is smaller than `p`. Kea2 will *randomly* select one function from `test_func2` and `test_func3` to be executed.
+- Case 2: If `p` is randomly assigned as `0.1`, Kea2 will *randomly* select one function from `test_func1`, `test_func2` and `test_func3` to be executed.
+- Case 3: If `p` is randomly assigned as `0.7`, Kea2 will ignore all these three functions `test_func1`, `test_func2` and `test_func3`.
+
 
 ### `@max_tries`
 
