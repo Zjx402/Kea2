@@ -54,7 +54,8 @@ def test_func1(self):
     ...
 ```
 
-The decorator `@precondition` takes a function which returns boolean as an arugment. When the function returns `True`, the precondition is satisified and the script will be activated, and Kea2 will run the script based on certain probability defined by the decorator `@prob`.
+The decorator `@precondition` takes a function which returns boolean as an arugment. When the function returns `True`, the precondition is satisified and function `test_func1` will be activated, and Kea2 will run `test_func1` based on certain probability value defined by the decorator `@prob`.
+The default probability value is 1 if `@prob` is not specified. In this case, function `test_func1` will be always executed when its precondition is satisfied.
 
 ### `@prob`
 
@@ -88,7 +89,7 @@ def test_func1(self):
     ...
 ```
 
-The decorator `@max_tries` takes an integer as an argument. The number represents the maximum number of times the script will be executed when the precondition is satisfied. The default value is `inf` (no limit).
+The decorator `@max_tries` takes an integer as an argument. The number represents the maximum number of times function `test_func1` will be executed when the precondition is satisfied. The default value is `inf` (infinite).
 
 
 ## Launching Kea2
