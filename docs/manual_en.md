@@ -227,3 +227,8 @@ error | How many times does the test method abort during UI tsting due to some u
 
 After executing `Kea2 init`, some configuration files will be generated in the `configs` directory. 
 These configuration files belong to `Fastbot`, and their specific introductions are provided in [Introduction to configuration files](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E4%B8%93%E5%AE%B6%E7%B3%BB%E7%BB%9F).
+
+## Bug report
+We use fastbot to record crash bugs. See the `fastbot_*.log` generated in the output directory. Search `FATAL EXCEPTION` to find out the App crashes.
+
+Crashes are also recorded on your device. [See the Fastbot manual for details](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E7%BB%93%E6%9E%9C%E8%AF%B4%E6%98%8E).
