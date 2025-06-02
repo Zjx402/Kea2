@@ -67,6 +67,10 @@ def test_func1(self):
 
 The decorator `@prob` takes a float number as an argument. The number represents the probability of executing the script when the precondition is satisfied. The probability should be between 0 and 1. The default probability is 1 (always execute when precondition satisfied).
 
+When multiple properties are satisfied. Kea2 will randomly select one of them to execute based on their probabilities. In practice, we generate a random number `p` between 0 and 1.
+And then we filter the satisfied properties based on `p`. For example, if `p=0.3`, and there are three satisfied properties with probabilities 0.1, 0.2, and 0.4, then the first property will be filtered, and the second and third properties will be kept.
+Then we randomly select one from the remaining properties.
+
 ### `@max_tries`
 
 ```python
@@ -102,7 +106,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes
 ```
 
-Options:
+### `kea2 run` Options
 
 | arg | meaning | default | 
 | --- | --- | --- |
@@ -117,6 +121,17 @@ Options:
 | --log-stamp | the stamp for log file and result file. (e.g., if `--log-stamp 123` is specified, the log files will be named as `fastbot_123.log` and `result_123.json`.) | current time stamp |
 | unittest | Specify to load which scripts. This  sub-command `unittest` is fully compatible with unittest. See `python3 -m unittest -h` for more options of unittest. This option is only available in `--agent u2`.
 
+
+### `kea` options
+
+| arg | meaning | default | 
+| --- | --- | --- |
+| -d | Enable debug mode | |
+
+> ```bash
+> # add -d to enable debug mode
+> kea2 -d run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+> ```
 
 ### 2. Launch by `unittest.main`
 

@@ -273,14 +273,16 @@ def startFastbotService(options: Options) -> threading.Thread:
         "exec", "app_process",
         "/system/bin", "com.android.commands.monkey.Monkey",
         "-p", *options.packageNames,
-        "--agent-u2" if options.agent == "u2" else "--agent", 
+        "--agent-u2" if options.agent == "u2" else "--agent",
         "reuseq",
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
         "--bugreport", "--output-directory", "/sdcard/fastbot_report",
     ]
-
-    shell_command += ["-v", "-v", "-v", "-v"]
+    
+    # shell_command += [""]
+    
+    shell_command += ["-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
 
