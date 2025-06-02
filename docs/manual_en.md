@@ -68,7 +68,7 @@ def test_func1(self):
 The decorator `@prob` takes a float number as an argument. The number represents the probability of executing the script when the precondition is satisfied. The probability should be between 0 and 1. The default probability is 1 (always execute when precondition satisfied).
 
 When multiple properties are satisfied. Kea2 will randomly select one of them to execute based on their probabilities. In practice, we generate a random number `p` between 0 and 1.
-And then we filter the satisfied properties based on `p`. For example, if `p=0.3`, and there are three satisfied properties with probabilities 0.1, 0.2, and 0.4, then the first property will be filtered, and the second and third properties will be kept.
+And then we filter the satisfied properties based on `p`. For example, if `p=0.3`, and there are three satisfied properties with probabilities `0.2`, `0.4`, and `0.6`, then the first property `0.2` will be filtered, and the second and third properties (`0.4` & `0.6`) will be kept.
 Then we randomly select one from the remaining properties.
 
 ### `@max_tries`
