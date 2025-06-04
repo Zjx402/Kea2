@@ -118,6 +118,8 @@ def driver_info_logger(args):
         print("  running_minutes:", args.running_minutes, flush=True)
     if args.throttle_ms:
         print("  throttle_ms:", args.throttle_ms, flush=True)
+    if args.log_stamp:
+        print("  log_stamp:", args.log_stamp)
 
 
 def parse_args(argv: List):

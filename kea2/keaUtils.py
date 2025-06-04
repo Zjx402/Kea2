@@ -32,8 +32,8 @@ PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 
 STAMP = TimeStamp().getTimeStamp()
-LOGFILE = f"fastbot_{STAMP}.log"
-RESFILE = f"result_{STAMP}.json"
+LOGFILE: str
+RESFILE: str
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -132,10 +132,11 @@ class Options:
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
+        global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
-            global LOGFILE, RESFILE
-            LOGFILE = f"fastbot_{self.log_stamp}.log"
-            RESFILE = f"result_{self.log_stamp}.json"
+            STAMP = self.log_stamp
+        LOGFILE = f"fastbot_{STAMP}.log"
+        RESFILE = f"result_{STAMP}.json"
         _check_package_installation(self.serial, self.packageNames)
 
 
@@ -376,6 +377,7 @@ class KeaTestRunner(TextTestRunner):
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
+                self._init()
 
                 end_by_remote = False
                 self.stepsCount = 0
@@ -550,6 +552,20 @@ class KeaTestRunner(TextTestRunner):
             URL = f"http://localhost:{self.scriptDriver.lport}/getStat"
             r = requests.get(URL)
             res = json.loads(r.content)
+    
+    def _init(self):
+        URL = f"http://localhost:{self.scriptDriver.lport}/init"
+        r = requests.post(
+            url=URL,
+            json={
+                "takeScreenshots": True,
+                "logStamp": STAMP
+            }
+        )
+        res = r.content.decode(encoding="utf-8")
+        import re
+        device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
+        print(f"[INFO] device outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
