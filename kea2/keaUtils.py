@@ -121,6 +121,8 @@ class Options:
     log_stamp: str = None
     # the profiling period to get the coverage result.
     profile_period: int = None
+    # take screenshots for every step
+    take_screenshots: bool = False
     # the debug mode
     debug: bool = False
 
@@ -558,7 +560,7 @@ class KeaTestRunner(TextTestRunner):
         r = requests.post(
             url=URL,
             json={
-                "takeScreenshots": True,
+                "takeScreenshots": self.options.take_screenshots,
                 "logStamp": STAMP
             }
         )

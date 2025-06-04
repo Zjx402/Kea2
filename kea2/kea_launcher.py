@@ -91,6 +91,14 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         required=False,
         help="Steps to profile the testing statistics.",
     )
+    
+    parser.add_argument(
+        "--take-screenshots",
+        dest="take_screenshots",
+        required=False,
+        action="store_true",
+        help="Take screenshots for every step.",
+    )
 
     parser.add_argument(
         "extra",
@@ -119,7 +127,9 @@ def driver_info_logger(args):
     if args.throttle_ms:
         print("  throttle_ms:", args.throttle_ms, flush=True)
     if args.log_stamp:
-        print("  log_stamp:", args.log_stamp)
+        print("  log_stamp:", args.log_stamp, flush=True)
+    if args.take_screenshots:
+        print("  take_screenshots:", args.take_screenshots, flush=True)
 
 
 def parse_args(argv: List):
@@ -161,6 +171,7 @@ def run(args=None):
         throttle=args.throttle_ms,
         log_stamp=args.log_stamp,
         profile_period=args.profile_period,
+        take_screenshots=args.take_screenshots,
     )
 
     KeaTestRunner.setOptions(options)
