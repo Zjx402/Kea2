@@ -134,6 +134,8 @@ class Options:
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
+        if self.take_screenshots and self.profile_period is None:
+            self.profile_period = 50
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             STAMP = self.log_stamp
@@ -291,11 +293,12 @@ def startFastbotService(options: Options) -> threading.Thread:
         "reuseq",
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
-        "--bugreport", "--output-directory", "/sdcard/fastbot_report",
+        "--bugreport",
     ]
-    
-    # shell_command += [""]
-    
+
+    if options.profile_period:
+        shell_command += ["--profile-period", f"{options.profile_period}"]
+
     shell_command += ["-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
@@ -405,7 +408,6 @@ class KeaTestRunner(TextTestRunner):
 
                     try:
                         xml_raw = self.stepMonkey()
-                        stat = self._getStat()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
                         print(
@@ -568,18 +570,7 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         if res != "OK":
             print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
-        
 
-    def _getStat(self):
-        # profile when reaching the profile period
-        if (self.options.profile_period and 
-            self.stepsCount % self.options.profile_period == 0
-        ):
-            URL = f"http://localhost:{self.scriptDriver.lport}/getStat"
-            r = requests.get(URL)
-            res = json.loads(r.content)
-            return res
-    
     def _init(self):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
         data = {
