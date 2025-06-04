@@ -173,6 +173,11 @@ def getFullPropName(testCase: TestCase):
 
 class JsonResult(TextTestResult):
     res: PBTTestResult
+    
+    lastExecutedInfo: Dict = {
+        "propName": "",
+        "state": "",
+    }
 
     @classmethod
     def setProperties(cls, allProperties: Dict):
@@ -189,6 +194,10 @@ class JsonResult(TextTestResult):
 
     def addExcuted(self, test: TestCase):
         self.res[getFullPropName(test)].executed += 1
+        self.lastExecutedInfo = {
+            "propName": getFullPropName(test),
+            "state": "start",
+        }
 
     def addPrecondSatisfied(self, test: TestCase):
         self.res[getFullPropName(test)].precond_satisfied += 1
@@ -196,10 +205,12 @@ class JsonResult(TextTestResult):
     def addFailure(self, test, err):
         super().addFailure(test, err)
         self.res[getFullPropName(test)].fail += 1
+        self.lastExecutedInfo["state"] = "fail"
 
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
+        self.lastExecutedInfo["state"] = "error"
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
@@ -430,11 +441,13 @@ class KeaTestRunner(TextTestRunner):
                     print("execute property %s." % execPropName, flush=True)
 
                     result.addExcuted(test)
+                    self._logScript(result.lastExecutedInfo)
                     try:
                         test(result)
                     finally:
                         result.printErrors()
 
+                    self._logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
@@ -546,6 +559,17 @@ class KeaTestRunner(TextTestRunner):
                 validProps[propName] = test
         return validProps
 
+    def _logScript(self, execution_info:Dict):
+        URL = f"http://localhost:{self.scriptDriver.lport}/logScript"
+        r = requests.post(
+            url=URL,
+            json=execution_info
+        )
+        res = r.content.decode(encoding="utf-8")
+        if res != "OK":
+            print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
+        
+
     def _getStat(self):
         # profile when reaching the profile period
         if (self.options.profile_period and 
@@ -554,20 +578,23 @@ class KeaTestRunner(TextTestRunner):
             URL = f"http://localhost:{self.scriptDriver.lport}/getStat"
             r = requests.get(URL)
             res = json.loads(r.content)
+            return res
     
     def _init(self):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
+        data = {
+            "takeScreenshots": self.options.take_screenshots,
+            "logStamp": STAMP
+        }
+        print(f"[INFO] Init fastbot: {data}", flush=True)
         r = requests.post(
             url=URL,
-            json={
-                "takeScreenshots": self.options.take_screenshots,
-                "logStamp": STAMP
-            }
+            json=data
         )
         res = r.content.decode(encoding="utf-8")
         import re
         device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] device outputDir: {res}", flush=True)
+        print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
