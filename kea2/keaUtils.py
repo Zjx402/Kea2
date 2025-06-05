@@ -13,12 +13,13 @@ import requests
 from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
-from .adbUtils import push_file
+from .adbUtils import push_file, pull_directory, run_adb_command
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject, selector_to_xpath
 import uiautomator2 as u2
 import types
+import time
 
 PRECONDITIONS_MARKER = "preconds"
 PROP_MARKER = "prop"
@@ -329,6 +330,8 @@ class KeaTestRunner(TextTestRunner):
     options: Options = None
     _block_funcs: Dict[Literal["widgets", "trees"], List[Callable]] = None
     # _block_trees_funcs = None
+    _sync_thread: threading.Thread = None
+    _sync_stop_event: threading.Event = None
 
     @classmethod
     def setOptions(cls, options: Options):
@@ -456,8 +459,20 @@ class KeaTestRunner(TextTestRunner):
                     self.stopMonkey()
                 result.flushResult(outfile=RESFILE)
 
+                # 停止数据同步线程
+                self._stop_sync_thread()
+                
+                # 最后一次拉取测试结果，确保获取所有数据
+                print("[INFO] Performing final test results pull...", flush=True)
+                self.pull_test_results()
+
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
+            
+            # 自动拉取测试结果
+            if self.options.agent != "native" and hasattr(self, 'device_output_dir'):
+                print("[INFO] Pulling test results from device...", flush=True)
+                self.pull_test_results()
 
         # Source code from unittest Runner
         # process the result
@@ -586,6 +601,158 @@ class KeaTestRunner(TextTestRunner):
         import re
         device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
         print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
+        # 保存设备输出目录路径以便之后使用
+        self.device_output_dir = device_output_dir
+        
+        # 启动数据同步线程
+        self._start_sync_thread()
+        
+    def _start_sync_thread(self):
+        """
+        启动数据同步线程，定期从设备拉取测试数据
+        """
+        if self._sync_thread is not None and self._sync_thread.is_alive():
+            print("[WARNING] Sync thread is already running", flush=True)
+            return
+            
+        self._sync_stop_event = threading.Event()
+        self._sync_thread = threading.Thread(
+            target=self._sync_data_from_device,
+            daemon=True
+        )
+        self._sync_thread.start()
+        print("[INFO] Data sync thread started", flush=True)
+        
+    def _stop_sync_thread(self):
+        """
+        停止数据同步线程
+        """
+        if self._sync_thread is not None and self._sync_thread.is_alive():
+            print("[INFO] Stopping data sync thread...", flush=True)
+            self._sync_stop_event.set()
+            self._sync_thread.join(timeout=5)
+            if self._sync_thread.is_alive():
+                print("[WARNING] Sync thread did not terminate gracefully", flush=True)
+            else:
+                print("[INFO] Data sync thread stopped", flush=True)
+                
+    def _sync_data_from_device(self):
+        """
+        数据同步线程函数，定期从设备拉取数据并删除已拉取的数据
+        每个profile_period来进行一次数据的拉取，特别处理screenshots目录
+        """
+        if not hasattr(self, 'device_output_dir') or not self.device_output_dir:
+            print("[ERROR] Device output directory not found. Cannot start sync thread.", flush=True)
+            return
+            
+        local_output_dir = Path(self.options.output_dir).absolute()
+        local_output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 创建专门用于保存截图的目录
+        screenshots_dir = local_output_dir / "screenshots"
+        screenshots_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 记录已拉取的文件列表
+        synced_files = set()
+        synced_screenshots = set()
+        
+        # 使用profile_period作为同步间隔的基础值
+        # 将秒转换为一个合理的间隔，最小10秒，最大60秒
+        sync_interval = min(max(self.options.profile_period * 0.2, 10), 60)
+        print(f"[INFO] Data sync interval set to {sync_interval} seconds based on profile_period", flush=True)
+        
+        while not self._sync_stop_event.is_set():
+            try:
+                # 1. 先处理常规文件
+                list_cmd = ["-s", self.options.serial, "shell", "find", self.device_output_dir, "-type", "f", "-not", "-path", f"{self.device_output_dir}/screenshots/*"]
+                result = run_adb_command(list_cmd)
+                
+                if result and not result.startswith("Error:"):
+                    device_files = [f.strip() for f in result.splitlines() if f.strip()]
+                    
+                    # 过滤出未拉取的文件
+                    new_files = [f for f in device_files if f not in synced_files]
+                    
+                    if new_files:
+                        print(f"[INFO] Found {len(new_files)} new files to sync", flush=True)
+                        
+                        for file_path in new_files:
+                            # 确保本地目录结构与设备上一致
+                            rel_path = os.path.relpath(file_path, self.device_output_dir)
+                            local_file_dir = os.path.dirname(os.path.join(local_output_dir, rel_path))
+                            os.makedirs(local_file_dir, exist_ok=True)
+                            
+                            # 拉取文件
+                            pull_result = run_adb_command([
+                                "-s", self.options.serial, "pull", 
+                                file_path, os.path.join(local_output_dir, rel_path)
+                            ])
+                            
+                            if pull_result and pull_result.startswith("Error:"):
+                                print(f"[WARNING] Failed to pull file {file_path}: {pull_result}", flush=True)
+                                continue
+                                
+                            # 删除已拉取的文件
+                            delete_result = run_adb_command([
+                                "-s", self.options.serial, "shell",
+                                "rm", file_path
+                            ])
+                            
+                            if delete_result and delete_result.startswith("Error:"):
+                                print(f"[WARNING] Failed to delete file {file_path}: {delete_result}", flush=True)
+                                continue
+                                
+                            synced_files.add(file_path)
+                            print(f"[INFO] Synced and deleted file: {rel_path}", flush=True)
+                
+                # 2. 处理screenshots目录
+                list_screenshots_cmd = ["-s", self.options.serial, "shell", "find", f"{self.device_output_dir}/screenshots", "-type", "f", "-name", "*.png"]
+                screenshots_result = run_adb_command(list_screenshots_cmd)
+                
+                if screenshots_result and not screenshots_result.startswith("Error:"):
+                    device_screenshots = [f.strip() for f in screenshots_result.splitlines() if f.strip()]
+                    
+                    # 过滤出未拉取的截图
+                    new_screenshots = [f for f in device_screenshots if f not in synced_screenshots]
+                    
+                    if new_screenshots:
+                        print(f"[INFO] Found {len(new_screenshots)} new screenshots to sync", flush=True)
+                        
+                        for screenshot_path in new_screenshots:
+                            # 获取截图文件名
+                            screenshot_name = os.path.basename(screenshot_path)
+                            local_screenshot_path = os.path.join(screenshots_dir, screenshot_name)
+                            
+                            # 拉取截图
+                            pull_result = run_adb_command([
+                                "-s", self.options.serial, "pull", 
+                                screenshot_path, local_screenshot_path
+                            ])
+                            
+                            if pull_result and pull_result.startswith("Error:"):
+                                print(f"[WARNING] Failed to pull screenshot {screenshot_path}: {pull_result}", flush=True)
+                                continue
+                                
+                            # 删除已拉取的截图
+                            delete_result = run_adb_command([
+                                "-s", self.options.serial, "shell",
+                                "rm", screenshot_path
+                            ])
+                            
+                            if delete_result and delete_result.startswith("Error:"):
+                                print(f"[WARNING] Failed to delete screenshot {screenshot_path}: {delete_result}", flush=True)
+                                continue
+                                
+                            synced_screenshots.add(screenshot_path)
+                            print(f"[INFO] Synced and deleted screenshot: {screenshot_name}", flush=True)
+                
+            except Exception as e:
+                print(f"[ERROR] Error in sync thread: {str(e)}", flush=True)
+                traceback.print_exc()
+                
+            time.sleep(sync_interval)
+            
+        print("[INFO] Sync thread exiting", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
@@ -732,5 +899,68 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        # 确保停止同步线程
+        self._stop_sync_thread()
+        
         if self.options.Driver:
             self.options.Driver.tearDown()
+
+    def pull_test_results(self):
+        """
+        从设备拉取测试结果到本地output目录
+        
+        将设备中的测试结果文件夹(由_init方法获取的device_output_dir)拉取到本地的output目录中，
+        并删除设备上已经拉取的数据
+        
+        Returns:
+            str: 操作结果信息
+        """
+        if not hasattr(self, 'device_output_dir') or not self.device_output_dir:
+            print("[ERROR] Device output directory not found. Was _init() called?", flush=True)
+            return "Error: Device output directory not found"
+        
+        # 确保输出目录存在
+        output_dir = Path(self.options.output_dir).absolute()
+        output_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 确保截图目录存在
+        screenshots_dir = output_dir / "screenshots"
+        screenshots_dir.mkdir(parents=True, exist_ok=True)
+        
+        # 检查设备上是否还有screenshots目录
+        check_screenshots_cmd = ["-s", self.options.serial, "shell", "ls", f"{self.device_output_dir}/screenshots"]
+        check_result = run_adb_command(check_screenshots_cmd)
+        has_screenshots = check_result and not check_result.startswith("No such file") and not check_result.startswith("Error")
+        
+        # 从设备拉取普通文件
+        print(f"[INFO] Pulling test results from {self.device_output_dir} to {output_dir}", flush=True)
+        result = pull_directory(self.device_output_dir, str(output_dir), device=self.options.serial)
+        
+        # 如果有截图目录，单独处理
+        if has_screenshots:
+            print(f"[INFO] Pulling screenshots to {screenshots_dir}", flush=True)
+            # 单独拉取截图目录中的文件到专门的screenshots目录
+            screenshots_pull_cmd = ["-s", self.options.serial, "pull", f"{self.device_output_dir}/screenshots/", str(screenshots_dir)]
+            screenshots_result = run_adb_command(screenshots_pull_cmd)
+            
+            if screenshots_result and screenshots_result.startswith("Error"):
+                print(f"[WARNING] Failed to pull screenshots: {screenshots_result}", flush=True)
+        
+        if result and not result.startswith("Error:"):
+            print(f"[INFO] Test results successfully pulled to {output_dir}", flush=True)
+            
+            # 删除设备上已拉取的数据
+            delete_result = run_adb_command([
+                "-s", self.options.serial, "shell",
+                "rm", "-rf", f"{self.device_output_dir}/*"
+            ])
+            
+            if delete_result and delete_result.startswith("Error:"):
+                print(f"[WARNING] Failed to delete device data: {delete_result}", flush=True)
+                return f"Warning: Test results pulled but failed to delete device data: {delete_result}"
+            else:
+                print(f"[INFO] Device data deleted successfully", flush=True)
+                return f"Success: Test results pulled to {output_dir} and device data deleted"
+        else:
+            print(f"[ERROR] Failed to pull test results: {result}", flush=True)
+            return f"Error: {result}"
