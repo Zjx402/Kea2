@@ -2,6 +2,7 @@ import os
 import sys
 import argparse
 import unittest
+from email.policy import default
 from pathlib import Path
 from typing import List
 
@@ -89,6 +90,7 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="profile_period",
         type=int,
         required=False,
+        default=25,
         help="Steps to profile the testing statistics.",
     )
     
@@ -97,6 +99,7 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="take_screenshots",
         required=False,
         action="store_true",
+        default=True,
         help="Take screenshots for every step.",
     )
 
