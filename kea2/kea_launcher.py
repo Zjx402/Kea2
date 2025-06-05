@@ -99,7 +99,7 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="take_screenshots",
         required=False,
         action="store_true",
-        default=True,
+        default=False,
         help="Take screenshots for every step.",
     )
 

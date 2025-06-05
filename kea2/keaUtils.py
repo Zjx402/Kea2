@@ -121,7 +121,7 @@ class Options:
     # the stamp for log file and result file, default: current time stamp
     log_stamp: str = None
     # the profiling period to get the coverage result.
-    profile_period: int = None
+    profile_period: int = 50
     # take screenshots for every step
     take_screenshots: bool = False
     # the debug mode
@@ -135,8 +135,6 @@ class Options:
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
-        if self.take_screenshots and self.profile_period is None:
-            self.profile_period = 50
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             STAMP = self.log_stamp
@@ -322,7 +320,7 @@ def startFastbotService(options: Options) -> threading.Thread:
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()
     f.close()
-  
+
 
 class KeaTestRunner(TextTestRunner):
 
