@@ -13,7 +13,8 @@ import requests
 from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
-from .adbUtils import push_file, pull_file, adb_shell
+from .adbUtils import push_file
+from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject, selector_to_xpath
@@ -139,6 +140,7 @@ class Options:
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             STAMP = self.log_stamp
+        self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
         RESFILE = f"result_{STAMP}.json"
         _check_package_installation(self.serial, self.packageNames)
@@ -395,11 +397,8 @@ class KeaTestRunner(TextTestRunner):
                 check_alive(port=self.scriptDriver.lport)
                 self._init()
 
-                if self.options.profile_period:
-                    from pathlib import Path
-                    self.local_device_data_dir = Path(self.options.output_dir) / f"test_result"
-                    self.local_device_data_dir.mkdir(parents=True, exist_ok=True)
-                    print(f"[INFO] Local device data directory: {self.local_device_data_dir}", flush=True)
+                resultSyncer = ResultSyncer(self.device_output_dir, self.options.output_dir)
+                resultSyncer.run()
 
                 end_by_remote = False
                 self.stepsCount = 0
@@ -423,7 +422,7 @@ class KeaTestRunner(TextTestRunner):
                         break
 
                     if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
-                        self._sync_device_data()
+                        resultSyncer.sync_event.set()
 
                     print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
 
@@ -464,9 +463,11 @@ class KeaTestRunner(TextTestRunner):
                 if not end_by_remote:
                     self.stopMonkey()
                 result.flushResult(outfile=RESFILE)
+                resultSyncer.close()    
 
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
+            
 
         # Source code from unittest Runner
         # process the result
@@ -741,22 +742,5 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
-        self._sync_device_data()
         if self.options.Driver:
             self.options.Driver.tearDown()
-
-    def _sync_device_data(self):
-        """
-        Sync the device data to the local directory.
-        """
-        try:
-            print(f"[INFO] Syncing data after {self.stepsCount} events", flush=True)
-
-            pull_file(self.device_output_dir, str(self.local_device_data_dir))
-
-            screenshot_cmd = ["find", self.device_output_dir, "-name", "\"*.png\"", "-delete"]
-            adb_shell(screenshot_cmd)
-
-            print(f"[INFO] Data sync completed at step {self.stepsCount}", flush=True)
-        except Exception as e:
-            print(f"[ERROR] Error in data sync: {e}", flush=True)
