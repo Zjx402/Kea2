@@ -1,7 +1,5 @@
 import subprocess
 from typing import List, Optional, Set
-import os
-from pathlib import Path
 from .utils import getLogger
 
 logger = getLogger(__name__)
@@ -148,40 +146,6 @@ def pull_file(remote_path: str, local_path: str, device: Optional[str] = None):
         str: The output from the pull command.
     """
     return run_adb_command(["-s", device, "pull", remote_path, local_path])
-
-
-@ensure_device
-def pull_directory(remote_dir: str, local_dir: str, device: Optional[str] = None):
-    """
-    Pulls an entire directory from the device to a local path.
-    
-    Parameters:
-        remote_dir (str): The directory path on the device.
-        local_dir (str): The local destination directory.
-        device (str, optional): The device serial number. If None, it's resolved automatically when only one device is connected.
-        
-    Returns:
-        str: The output from the pull command.
-    """
-    # Ensure local directory exists
-    os.makedirs(local_dir, exist_ok=True)
-    
-    # 首先获取远程目录的文件列表
-    output = adb_shell(["ls", "-la", remote_dir], device=device)
-    if "No such file or directory" in output or "not found" in output:
-        logger.error(f"Remote directory {remote_dir} does not exist")
-        return f"Error: Remote directory {remote_dir} does not exist"
-    
-    # 使用ADB pull命令拉取整个目录
-    # ADB的pull命令在较新版本中支持拉取整个目录
-    logger.info(f"Pulling directory from {remote_dir} to {local_dir}")
-    try:
-        result = run_adb_command(["-s", device, "pull", remote_dir, local_dir], timeout=60)
-        return result
-    except Exception as e:
-        logger.error(f"Error pulling directory: {e}")
-        return f"Error: {str(e)}"
-
 
 # Forward-related functions
 
