@@ -1,9 +1,6 @@
-import os
 import sys
 import argparse
 import unittest
-from email.policy import default
-from pathlib import Path
 from typing import List
 
 def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
@@ -50,6 +47,7 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="running_minutes",
         type=int,
         required=False,
+        default=10,
         help="Time to run fastbot",
     )
 
@@ -145,7 +143,7 @@ def parse_args(argv: List):
 
 
 def _sanitize_args(args):
-    if args.agent == "u2" and not args.driver_name:
+    if args.agent == "u2" and not args.driverName:
         if args.extra == []:
             args.driver_name = "d"
         else:
@@ -155,9 +153,7 @@ def _sanitize_args(args):
 def run(args=None):
     if args is None:
         args = parse_args(sys.argv[1:])
-
     _sanitize_args(args)
-
     driver_info_logger(args)
     unittest_info_logger(args)
 

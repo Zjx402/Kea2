@@ -16,7 +16,7 @@ from time import sleep
 from .adbUtils import push_file
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
-from .utils import TimeStamp, getProjectRoot, getLogger
+from .utils import TimeStamp, getProjectRoot, getLogger, _sanitize_args
 from .u2Driver import StaticU2UiObject, selector_to_xpath
 import uiautomator2 as u2
 import types
@@ -121,7 +121,7 @@ class Options:
     # the stamp for log file and result file, default: current time stamp
     log_stamp: str = None
     # the profiling period to get the coverage result.
-    profile_period: int = 50
+    profile_period: int = 25
     # take screenshots for every step
     take_screenshots: bool = False
     # the debug mode
@@ -141,6 +141,15 @@ class Options:
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
         RESFILE = f"result_{STAMP}.json"
+
+        self.profile_period = int(self.profile_period)
+        if self.profile_period < 1:
+            raise ValueError("--profile-period should be greater than 0")
+
+        self.throttle_ms = int(self.throttle_ms)
+        if self.throttle_ms < 0:
+            raise ValueError("--throttle should be greater than or equal to 0")
+
         _check_package_installation(self.serial, self.packageNames)
 
 

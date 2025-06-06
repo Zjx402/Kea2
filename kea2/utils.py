@@ -1,6 +1,9 @@
 import logging
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .keaUtils import Options
 
 
 def getLogger(name: str) -> logging.Logger:
@@ -51,3 +54,7 @@ def getProjectRoot():
             return None
         cur_dir = cur_dir.parent
     return cur_dir
+
+
+
+ 
