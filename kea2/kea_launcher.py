@@ -143,7 +143,7 @@ def parse_args(argv: List):
 
 
 def _sanitize_args(args):
-    if args.agent == "u2" and not args.driverName:
+    if args.agent == "u2" and not args.driver_name:
         if args.extra == []:
             args.driver_name = "d"
         else:

@@ -592,7 +592,7 @@ class KeaTestRunner(TextTestRunner):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
         data = {
             "takeScreenshots": self.options.take_screenshots,
-            "logStamp": STAMP
+            "Stamp": STAMP
         }
         print(f"[INFO] Init fastbot: {data}", flush=True)
         r = requests.post(
