@@ -740,5 +740,9 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        try:
+            self.stopMonkey()
+        except Exception as e:
+            pass
         if self.options.Driver:
             self.options.Driver.tearDown()
