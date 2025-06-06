@@ -1,4 +1,3 @@
-
 import threading
 from .adbUtils import adb_shell, pull_file
 from .utils import getLogger
@@ -35,6 +34,12 @@ class ResultSyncer:
         if self.thread and self.thread.is_alive():
             self.thread.join(timeout=10)
         self._sync_device_data()
+        try:
+            logger.debug(f"Removing device output directory: {self.device_output_dir}")
+            remove_device_dir = ["rm", "-rf", self.device_output_dir]
+            adb_shell(remove_device_dir)
+        except Exception as e:
+            logger.error(f"Error removing device output directory: {e}", flush=True)
 
     def _sync_device_data(self):
         """

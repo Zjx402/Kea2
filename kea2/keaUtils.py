@@ -16,7 +16,7 @@ from time import sleep
 from .adbUtils import push_file
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
-from .utils import TimeStamp, getProjectRoot, getLogger, _sanitize_args
+from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject, selector_to_xpath
 import uiautomator2 as u2
 import types
@@ -146,7 +146,7 @@ class Options:
         if self.profile_period < 1:
             raise ValueError("--profile-period should be greater than 0")
 
-        self.throttle_ms = int(self.throttle_ms)
+        self.throttle_ms = int(self.throttle)
         if self.throttle_ms < 0:
             raise ValueError("--throttle should be greater than or equal to 0")
 
