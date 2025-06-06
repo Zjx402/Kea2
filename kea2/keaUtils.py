@@ -146,8 +146,8 @@ class Options:
         if self.profile_period < 1:
             raise ValueError("--profile-period should be greater than 0")
 
-        self.throttle_ms = int(self.throttle)
-        if self.throttle_ms < 0:
+        self.throttle = int(self.throttle)
+        if self.throttle < 0:
             raise ValueError("--throttle should be greater than or equal to 0")
 
         _check_package_installation(self.serial, self.packageNames)
