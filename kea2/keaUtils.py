@@ -14,6 +14,7 @@ from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
 from .adbUtils import push_file
+from .bug_report_generator import BugReportGenerator
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
@@ -749,6 +750,12 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        try:
+            logger.debug("生成测试bug报告")
+            report_generator = BugReportGenerator(self.options.output_dir)
+            report_generator.generate_report()
+        except Exception as e:
+            logger.error(f"生成bug报告时出错: {e}", flush=True)
         try:
             self.stopMonkey()
         except Exception as e:

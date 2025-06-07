@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kea2 测试报告</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            overflow: hidden;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            font-weight: 600;
+            padding: 1rem;
+        }
+        
+        .screenshots-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 15px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #eee;
+        }
+        
+        .screenshots-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .screenshots-container::-webkit-scrollbar-track {
+            background: #eee;
+            border-radius: 10px;
+        }
+        
+        .screenshots-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .screenshot-item {
+            flex: 0 0 auto;
+            width: 250px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .screenshot-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .screenshot-img {
+            width: 250px;
+            height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .screenshot-caption {
+            font-size: 14px;
+            color: #555;
+            padding: 8px 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            font-weight: 500;
+            text-align: center;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-custom {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-custom thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .table-custom th {
+            font-weight: 600;
+            padding: 12px 15px;
+        }
+        
+        .table-custom td {
+            padding: 12px 15px;
+            vertical-align: middle;
+        }
+        
+        .table-custom tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .table-custom tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+        
+        .stat-label {
+            font-size: 0.9rem;
+            color: #666;
+            display: block;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 30px;
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 50px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
+        
+        .value-highlight {
+            color: var(--primary-color);
+        }
+        
+        .value-danger {
+            color: var(--danger-color);
+        }
+        
+        .value-warning {
+            color: var(--warning-color);
+        }
+        
+        .value-success {
+            color: var(--secondary-color);
+        }
+        
+        .summary-card {
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+        
+        .link-button {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .link-button:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        .badge-custom {
+            padding: 5px 10px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.85rem;
+        }
+        
+        /* 添加响应式调整 */
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .screenshot-item {
+                width: 200px;
+            }
+            
+            .screenshot-img {
+                width: 200px;
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 页眉 -->
+    <header class="header text-center">
+        <div class="container">
+            <h1><i class="bi bi-bug"></i> Kea2 测试报告</h1>
+            <p class="lead">测试时间: {{ timestamp }}</p>
+        </div>
+    </header>
+
+    <div class="container mb-5">
+        <!-- 测试摘要 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="summary-card">
+                    <h2 class="section-title">测试摘要</h2>
+                    <div class="row g-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-danger">{{ bugs_found }}</span>
+                                <span class="stat-label">发现的缺陷</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ total_testing_time }}</span>
+                                <span class="stat-label">测试总时长 (秒)</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-activity text-success" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-success">{{ executed_events }}</span>
+                                <span class="stat-label">执行的事件数</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-warning">{{ coverage_percent }}%</span>
+                                <span class="stat-label">覆盖率</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 关键统计数据 -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-stopwatch"></i> 时间统计
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>首次发现缺陷时间:</span>
+                                <span class="value-danger">{{ first_bug_time }} 秒</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                     style="width: calc({{ first_bug_time }} / {{ total_testing_time }} * 100%);" 
+                                     aria-valuenow="{{ first_bug_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>首次满足前置条件时间:</span>
+                                <span class="value-success">{{ first_precondition_time }} 秒</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: calc({{ first_precondition_time }} / {{ total_testing_time }} * 100%);" 
+                                     aria-valuenow="{{ first_precondition_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="d-flex justify-content-between">
+                                <span>测试总时长:</span>
+                                <span class="value-primary">{{ total_testing_time }} 秒</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
+                                     aria-valuenow="{{ total_testing_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-bar-chart"></i> 覆盖率统计
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>覆盖率:</span>
+                                <span class="value-warning">{{ coverage_percent }}%</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ coverage_percent }}%;" 
+                                     aria-valuenow="{{ coverage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-6 text-center">
+                                <div class="stat-value value-primary">{{ total_activities_count }}</div>
+                                <div class="stat-label">总活动数</div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="stat-value value-success">{{ tested_activities_count }}</div>
+                                <div class="stat-label">已测试活动数</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 截图部分 -->
+        <div class="mb-5">
+            <h2 class="section-title">测试截图</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="screenshots-container" id="screenshots">
+                        {% for screenshot in screenshots %}
+                        <div class="screenshot-item">
+                            <a href="{{ screenshot.path }}" target="_blank">
+                                <img src="{{ screenshot.path }}" class="screenshot-img" id="{{ screenshot.id }}">
+                            </a>
+                            <div class="screenshot-caption">{{ screenshot.caption }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 覆盖率趋势图 -->
+        <div class="mb-5">
+            <h2 class="section-title">覆盖率趋势</h2>
+            <div class="chart-container">
+                <canvas id="coverageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- 属性违规列表 -->
+        <div class="mb-5">
+            <h2 class="section-title">属性违规情况</h2>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>属性名称</th>
+                            <th>前置条件页面</th>
+                            <th>交互场景页面</th>
+                            <th>后置条件页面</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for violation in property_violations %}
+                        <tr>
+                            <td>{{ violation.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ violation.property_name }}</span></td>
+                            <td><a href="#{{ violation.precondition_page }}" class="link-button">{{ violation.precondition_page }}</a></td>
+                            <td><a href="#{{ violation.interaction_pages[0] }}" class="link-button">{{ violation.interaction_pages[0] }} ~ {{ violation.interaction_pages[1] }}</a></td>
+                            <td><a href="#{{ violation.postcondition_page }}" class="link-button">{{ violation.postcondition_page }}</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 属性检查统计 -->
+        <div class="mb-5">
+            <h2 class="section-title">属性检查统计</h2>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>序号</th>
+                            <th>属性名称</th>
+                            <th>前置条件满足次数</th>
+                            <th>前置条件检查次数</th>
+                            <th>后置条件违反次数</th>
+                            <th>UI对象未找到次数</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for stat in property_stats %}
+                        <tr>
+                            <td>{{ stat.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ stat.property_name }}</span></td>
+                            <td>{{ stat.precond_satisfied }}</td>
+                            <td>{{ stat.precond_checked }}</td>
+                            <td><span class="badge bg-danger text-white">{{ stat.postcond_violated }}</span></td>
+                            <td><span class="badge bg-warning text-dark">{{ stat.ui_not_found }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white text-center py-4">
+        <div class="container">
+            <p class="mb-0">Kea2 测试报告 | 生成时间: {{ timestamp }}</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 绘制覆盖率趋势图
+        document.addEventListener('DOMContentLoaded', function() {
+            var coverageData = {{ coverage_data|safe }};
+            var steps = coverageData.map(function(item) { return item.steps; });
+            var coverages = coverageData.map(function(item) { return item.coverage; });
+            var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
+
+            var ctx = document.getElementById('coverageChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: steps,
+                    datasets: [
+                        {
+                            label: '覆盖率 (%)',
+                            data: coverages,
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: '已测试活动数',
+                            data: testedActivities,
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        label += context.parsed.y.toFixed(2) + '%';
+                                    } else {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: '步骤数',
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '覆盖率 (%)',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                borderDash: [5, 5]
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: '已测试活动数',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            // 滚动功能
+            const screenshots = document.getElementById('screenshots');
+            if (screenshots) {
+                screenshots.addEventListener('wheel', function(e) {
+                    if (e.deltaY !== 0) {
+                        e.preventDefault();
+                        screenshots.scrollLeft += e.deltaY;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
