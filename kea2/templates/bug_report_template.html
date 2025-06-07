@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="zh-CN">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kea2 测试报告</title>
+    <title>Kea2 Test Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -218,7 +218,48 @@
             font-size: 0.85rem;
         }
         
-        /* 添加响应式调整 */
+        .activity-list {
+            max-height: 300px;
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 10px;
+            background-color: rgba(255,255,255,0.5);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #eee;
+        }
+        
+        .activity-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .activity-list::-webkit-scrollbar-track {
+            background: #eee;
+            border-radius: 10px;
+        }
+        
+        .activity-list::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .activity-item {
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-bottom: 5px;
+            font-size: 0.9rem;
+            word-break: break-all;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+        }
+        
+        .activity-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transform: translateX(3px);
+        }
+        
+        /* Responsive adjustments */
         @media (max-width: 768px) {
             .stat-value {
                 font-size: 1.5rem;
@@ -237,47 +278,47 @@
 </head>
 
 <body>
-    <!-- 页眉 -->
+    <!-- Header -->
     <header class="header text-center">
         <div class="container">
-            <h1><i class="bi bi-bug"></i> Kea2 测试报告</h1>
-            <p class="lead">测试时间: {{ timestamp }}</p>
+            <h1><i class="bi bi-bug"></i> Kea2 Test Report</h1>
+            <p class="lead">Test Time: {{ timestamp }}</p>
         </div>
     </header>
 
     <div class="container mb-5">
-        <!-- 测试摘要 -->
+        <!-- Test Summary -->
         <div class="row mb-4">
             <div class="col-12">
                 <div class="summary-card">
-                    <h2 class="section-title">测试摘要</h2>
+                    <h2 class="section-title">Test Summary</h2>
                     <div class="row g-4">
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-danger">{{ bugs_found }}</span>
-                                <span class="stat-label">发现的缺陷</span>
+                                <span class="stat-label">Bugs Found</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-highlight">{{ total_testing_time }}</span>
-                                <span class="stat-label">测试总时长 (秒)</span>
+                                <span class="stat-label">Total Testing Time (sec)</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-activity text-success" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-success">{{ executed_events }}</span>
-                                <span class="stat-label">执行的事件数</span>
+                                <span class="stat-label">Executed Events</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-warning">{{ coverage_percent }}%</span>
-                                <span class="stat-label">覆盖率</span>
+                                <span class="stat-label">Coverage</span>
                             </div>
                         </div>
                     </div>
@@ -285,18 +326,18 @@
             </div>
         </div>
 
-        <!-- 关键统计数据 -->
+        <!-- Key Statistics -->
         <div class="row g-4 mb-4">
             <div class="col-md-6">
                 <div class="stats-card">
                     <div class="card-header bg-primary text-white">
-                        <i class="bi bi-stopwatch"></i> 时间统计
+                        <i class="bi bi-stopwatch"></i> Time Statistics
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
-                                <span>首次发现缺陷时间:</span>
-                                <span class="value-danger">{{ first_bug_time }} 秒</span>
+                                <span>First Bug Discovery Time:</span>
+                                <span class="value-danger">{{ first_bug_time }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-danger" role="progressbar" 
@@ -306,8 +347,8 @@
                         </div>
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
-                                <span>首次满足前置条件时间:</span>
-                                <span class="value-success">{{ first_precondition_time }} 秒</span>
+                                <span>First Precondition Satisfaction Time:</span>
+                                <span class="value-success">{{ first_precondition_time }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-success" role="progressbar" 
@@ -317,8 +358,8 @@
                         </div>
                         <div>
                             <h5 class="d-flex justify-content-between">
-                                <span>测试总时长:</span>
-                                <span class="value-primary">{{ total_testing_time }} 秒</span>
+                                <span>Total Testing Time:</span>
+                                <span class="value-primary">{{ total_testing_time }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
@@ -331,12 +372,12 @@
             <div class="col-md-6">
                 <div class="stats-card">
                     <div class="card-header bg-success text-white">
-                        <i class="bi bi-bar-chart"></i> 覆盖率统计
+                        <i class="bi bi-bar-chart"></i> Coverage Statistics
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
-                                <span>覆盖率:</span>
+                                <span>Coverage:</span>
                                 <span class="value-warning">{{ coverage_percent }}%</span>
                             </h5>
                             <div class="progress">
@@ -348,11 +389,11 @@
                         <div class="row mt-4">
                             <div class="col-6 text-center">
                                 <div class="stat-value value-primary">{{ total_activities_count }}</div>
-                                <div class="stat-label">总活动数</div>
+                                <div class="stat-label">Total Activities</div>
                             </div>
                             <div class="col-6 text-center">
                                 <div class="stat-value value-success">{{ tested_activities_count }}</div>
-                                <div class="stat-label">已测试活动数</div>
+                                <div class="stat-label">Tested Activities</div>
                             </div>
                         </div>
                     </div>
@@ -360,9 +401,96 @@
             </div>
         </div>
 
-        <!-- 截图部分 -->
+        <!-- Tested Activities List -->
         <div class="mb-5">
-            <h2 class="section-title">测试截图</h2>
+            <h2 class="section-title">Activities Coverage</h2>
+            
+            <div class="row g-4">
+                <!-- Tested Activities Panel -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})</span>
+                                <span class="badge bg-light text-dark">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                {% if tested_activities|length > 0 %}
+                                    <div id="tested-activities-container">
+                                        {% for activity in tested_activities %}
+                                            <div class="activity-item tested-activity" data-page="1">
+                                                <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                {{ activity }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <!-- Pagination for Tested Activities -->
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <nav aria-label="Tested Activities Pagination">
+                                            <ul class="pagination pagination-sm" id="tested-pagination">
+                                                <!-- Pagination will be generated by JavaScript -->
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        No tested activities detected
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- All Activities Panel -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-app"></i> All Activities ({{ total_activities|length }})</span>
+                                <span class="badge bg-light text-dark">Coverage: {{ coverage_percent }}%</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="activity-list">
+                                {% if total_activities|length > 0 %}
+                                    <div id="all-activities-container">
+                                        {% for activity in total_activities %}
+                                            <div class="activity-item all-activity" data-page="1">
+                                                {% if activity in tested_activities %}
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                {% else %}
+                                                    <i class="bi bi-dash-circle text-secondary me-2"></i>
+                                                {% endif %}
+                                                {{ activity }}
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                    <!-- Pagination for All Activities -->
+                                    <div class="d-flex justify-content-center mt-3">
+                                        <nav aria-label="All Activities Pagination">
+                                            <ul class="pagination pagination-sm" id="all-pagination">
+                                                <!-- Pagination will be generated by JavaScript -->
+                                            </ul>
+                                        </nav>
+                                    </div>
+                                {% else %}
+                                    <div class="alert alert-warning">
+                                        No activities information available
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshots Section -->
+        <div class="mb-5">
+            <h2 class="section-title">Test Screenshots</h2>
             <div class="card">
                 <div class="card-body">
                     <div class="screenshots-container" id="screenshots">
@@ -379,31 +507,31 @@
             </div>
         </div>
 
-        <!-- 覆盖率趋势图 -->
+        <!-- Coverage Trend Chart -->
         <div class="mb-5">
-            <h2 class="section-title">覆盖率趋势</h2>
+            <h2 class="section-title">Coverage Trend</h2>
             <div class="chart-container">
                 <canvas id="coverageChart"></canvas>
             </div>
         </div>
 
-        <!-- 属性违规列表 -->
+        <!-- Property Violations List -->
         <div class="mb-5">
-            <h2 class="section-title">属性违规情况</h2>
+            <h2 class="section-title">Property Violations</h2>
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
                         <tr>
-                            <th>序号</th>
-                            <th>属性名称</th>
-                            <th>前置条件页面</th>
-                            <th>交互场景页面</th>
-                            <th>后置条件页面</th>
+                            <th>Index</th>
+                            <th>Property Name</th>
+                            <th>Precondition Page</th>
+                            <th>Interaction Scenario Pages</th>
+                            <th>Postcondition Page</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="property-violations-container">
                         {% for violation in property_violations %}
-                        <tr>
+                        <tr class="property-violation-row" data-page="1">
                             <td>{{ violation.index }}</td>
                             <td><span class="badge bg-light text-dark badge-custom">{{ violation.property_name }}</span></td>
                             <td><a href="#{{ violation.precondition_page }}" class="link-button">{{ violation.precondition_page }}</a></td>
@@ -413,57 +541,93 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                
+                <!-- Pagination for Property Violations -->
+                <div class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Property Violations Pagination">
+                        <ul class="pagination pagination-sm" id="violations-pagination">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
 
-        <!-- 属性检查统计 -->
+        <!-- Property Checking Statistics -->
         <div class="mb-5">
-            <h2 class="section-title">属性检查统计</h2>
+            <h2 class="section-title">Property Checking Statistics</h2>
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
                         <tr>
-                            <th>序号</th>
-                            <th>属性名称</th>
-                            <th>前置条件满足次数</th>
-                            <th>前置条件检查次数</th>
-                            <th>后置条件违反次数</th>
-                            <th>UI对象未找到次数</th>
+                            <th>Index</th>
+                            <th>Property Name</th>
+                            <th>Precondition Satisfied Times</th>
+                            <th>Precondition Checked Times</th>
+                            <th>Postcondition Violated Times</th>
+                            <th>Error Times</th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody id="property-stats-container">
                         {% for stat in property_stats %}
-                        <tr>
+                        <tr class="property-stat-row" data-page="1">
                             <td>{{ stat.index }}</td>
                             <td><span class="badge bg-light text-dark badge-custom">{{ stat.property_name }}</span></td>
                             <td>{{ stat.precond_satisfied }}</td>
                             <td>{{ stat.precond_checked }}</td>
                             <td><span class="badge bg-danger text-white">{{ stat.postcond_violated }}</span></td>
-                            <td><span class="badge bg-warning text-dark">{{ stat.ui_not_found }}</span></td>
+                            <td><span class="badge bg-warning text-dark">{{ stat.error }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
+                
+                <!-- Pagination for Property Checking Statistics -->
+                <div class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Property Stats Pagination">
+                        <ul class="pagination pagination-sm" id="stats-pagination">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- 页脚 -->
+    <!-- Footer -->
     <footer class="bg-dark text-white text-center py-4">
         <div class="container">
-            <p class="mb-0">Kea2 测试报告 | 生成时间: {{ timestamp }}</p>
+            <p class="mb-0">Kea2 Test Report | Generated at: {{ timestamp }}</p>
         </div>
     </footer>
 
     <!-- JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // 绘制覆盖率趋势图
+        // Draw coverage trend chart
         document.addEventListener('DOMContentLoaded', function() {
             var coverageData = {{ coverage_data|safe }};
+            console.log("Coverage data points:", coverageData.length);
+            
+            // 确保数据按steps排序
+            coverageData.sort(function(a, b) {
+                return a.steps - b.steps;
+            });
+            
             var steps = coverageData.map(function(item) { return item.steps; });
             var coverages = coverageData.map(function(item) { return item.coverage; });
             var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
+            
+            // 添加0点数据，确保图表从原点开始
+            if (steps.length > 0 && steps[0] > 0) {
+                steps.unshift(0);
+                coverages.unshift(0);
+                testedActivities.unshift(0);
+            }
+            
+            // 检查数据点
+            console.log("Steps with zero point:", steps);
+            console.log("Coverage values with zero point:", coverages);
 
             var ctx = document.getElementById('coverageChart').getContext('2d');
             var chart = new Chart(ctx, {
@@ -472,24 +636,28 @@
                     labels: steps,
                     datasets: [
                         {
-                            label: '覆盖率 (%)',
-                            data: coverages,
+                            label: 'Coverage (%)',
+                            data: coverages.map((value, index) => ({x: steps[index], y: value})),
                             borderColor: '#3498db',
                             backgroundColor: 'rgba(52, 152, 219, 0.1)',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
-                            yAxisID: 'y'
+                            yAxisID: 'y',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         },
                         {
-                            label: '已测试活动数',
-                            data: testedActivities,
+                            label: 'Tested Activities',
+                            data: testedActivities.map((value, index) => ({x: steps[index], y: value})),
                             borderColor: '#2ecc71',
                             backgroundColor: 'rgba(46, 204, 113, 0.1)',
                             borderWidth: 3,
                             fill: true,
                             tension: 0.4,
-                            yAxisID: 'y1'
+                            yAxisID: 'y1',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
                         }
                     ]
                 },
@@ -534,14 +702,22 @@
                     },
                     scales: {
                         x: {
+                            type: 'linear',
+                            beginAtZero: true,
                             grid: {
                                 display: false
                             },
                             title: {
                                 display: true,
-                                text: '步骤数',
+                                text: 'Steps Count',
                                 font: {
                                     size: 14
+                                }
+                            },
+                            ticks: {
+                                stepSize: Math.max(10, Math.ceil(Math.max(...steps) / 10)),
+                                callback: function(value) {
+                                    return value;
                                 }
                             }
                         },
@@ -549,7 +725,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '覆盖率 (%)',
+                                text: 'Coverage (%)',
                                 font: {
                                     size: 14
                                 }
@@ -563,7 +739,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: '已测试活动数',
+                                text: 'Tested Activities',
                                 font: {
                                     size: 14
                                 }
@@ -588,7 +764,133 @@
                 }
             });
             
-            // 滚动功能
+            // Initialize pagination for Activities lists
+            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', {{ items_per_page }});
+            initPagination('all-activities-container', 'all-activity', 'all-pagination', {{ items_per_page }});
+            
+            // Initialize pagination for Property tables
+            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', {{ items_per_page }});
+            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', {{ items_per_page }});
+            
+            // Pagination function
+            function initPagination(containerId, itemClass, paginationId, itemsPerPage) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const items = container.getElementsByClassName(itemClass);
+                const totalItems = items.length;
+                const totalPages = Math.ceil(totalItems / itemsPerPage);
+                
+                // Create pagination
+                const paginationElement = document.getElementById(paginationId);
+                if (!paginationElement) return;
+                
+                // Clear pagination
+                paginationElement.innerHTML = '';
+                
+                // Previous button
+                if (totalPages > 1) {
+                    const prevLi = document.createElement('li');
+                    prevLi.className = 'page-item disabled';
+                    prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                    paginationElement.appendChild(prevLi);
+                    
+                    // Add page numbers
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageLi = document.createElement('li');
+                        pageLi.className = i === 1 ? 'page-item active' : 'page-item';
+                        pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                        pageLi.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
+                        });
+                        paginationElement.appendChild(pageLi);
+                    }
+                    
+                    // Next button
+                    const nextLi = document.createElement('li');
+                    nextLi.className = 'page-item';
+                    nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                    paginationElement.appendChild(nextLi);
+                    
+                    // Initialize page 1
+                    goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                    
+                    // Add event listeners to prev/next buttons
+                    if (paginationElement.firstChild) {
+                        paginationElement.firstChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) - 1;
+                                if (pageNum >= 1) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (paginationElement.lastChild) {
+                        paginationElement.lastChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) + 1;
+                                if (pageNum <= totalPages) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                }
+            }
+            
+            // Function to handle page navigation
+            function goToPage(pageNumber, containerId, itemClass, itemsPerPage, paginationId) {
+                const container = document.getElementById(containerId);
+                const items = container.getElementsByClassName(itemClass);
+                const paginationElement = document.getElementById(paginationId);
+                
+                // Update pagination active state
+                if (paginationElement) {
+                    const pageItems = paginationElement.getElementsByClassName('page-item');
+                    for (let i = 0; i < pageItems.length; i++) {
+                        if (pageItems[i].textContent.trim() === pageNumber.toString()) {
+                            pageItems[i].className = 'page-item active';
+                        } else if (pageItems[i].textContent.trim() !== '«' && pageItems[i].textContent.trim() !== '»') {
+                            pageItems[i].className = 'page-item';
+                        }
+                    }
+                    
+                    // Update prev/next buttons
+                    if (pageNumber === 1) {
+                        paginationElement.firstChild.className = 'page-item disabled';
+                    } else {
+                        paginationElement.firstChild.className = 'page-item';
+                    }
+                    
+                    const totalPages = Math.ceil(items.length / itemsPerPage);
+                    if (pageNumber === totalPages) {
+                        paginationElement.lastChild.className = 'page-item disabled';
+                    } else {
+                        paginationElement.lastChild.className = 'page-item';
+                    }
+                }
+                
+                // Show/hide items based on page number
+                const startIndex = (pageNumber - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+                
+                for (let i = 0; i < items.length; i++) {
+                    if (i >= startIndex && i < endIndex) {
+                        items[i].style.display = '';
+                    } else {
+                        items[i].style.display = 'none';
+                    }
+                }
+            }
+            
+            // Scroll functionality
             const screenshots = document.getElementById('screenshots');
             if (screenshots) {
                 screenshots.addEventListener('wheel', function(e) {

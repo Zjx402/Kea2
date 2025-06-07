@@ -751,11 +751,11 @@ class KeaTestRunner(TextTestRunner):
         """tearDown method. Cleanup the env.
         """
         try:
-            logger.debug("生成测试bug报告")
+            logger.debug("Generating test bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
         except Exception as e:
-            logger.error(f"生成bug报告时出错: {e}", flush=True)
+            logger.error(f"Error generating bug report: {e}", flush=True)
         try:
             self.stopMonkey()
         except Exception as e:
