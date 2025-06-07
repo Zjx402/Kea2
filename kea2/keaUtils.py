@@ -14,6 +14,7 @@ from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
 from .adbUtils import push_file
+from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject, selector_to_xpath
@@ -32,8 +33,8 @@ PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 
 STAMP = TimeStamp().getTimeStamp()
-LOGFILE = f"fastbot_{STAMP}.log"
-RESFILE = f"result_{STAMP}.json"
+LOGFILE: str
+RESFILE: str
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -120,7 +121,9 @@ class Options:
     # the stamp for log file and result file, default: current time stamp
     log_stamp: str = None
     # the profiling period to get the coverage result.
-    profile_period: int = None
+    profile_period: int = 25
+    # take screenshots for every step
+    take_screenshots: bool = False
     # the debug mode
     debug: bool = False
 
@@ -132,10 +135,21 @@ class Options:
     def __post_init__(self):
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
+        global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
-            global LOGFILE, RESFILE
-            LOGFILE = f"fastbot_{self.log_stamp}.log"
-            RESFILE = f"result_{self.log_stamp}.json"
+            STAMP = self.log_stamp
+        self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
+        LOGFILE = f"fastbot_{STAMP}.log"
+        RESFILE = f"result_{STAMP}.json"
+
+        self.profile_period = int(self.profile_period)
+        if self.profile_period < 1:
+            raise ValueError("--profile-period should be greater than 0")
+
+        self.throttle = int(self.throttle)
+        if self.throttle < 0:
+            raise ValueError("--throttle should be greater than or equal to 0")
+
         _check_package_installation(self.serial, self.packageNames)
 
 
@@ -170,6 +184,11 @@ def getFullPropName(testCase: TestCase):
 
 class JsonResult(TextTestResult):
     res: PBTTestResult
+    
+    lastExecutedInfo: Dict = {
+        "propName": "",
+        "state": "",
+    }
 
     @classmethod
     def setProperties(cls, allProperties: Dict):
@@ -186,6 +205,10 @@ class JsonResult(TextTestResult):
 
     def addExcuted(self, test: TestCase):
         self.res[getFullPropName(test)].executed += 1
+        self.lastExecutedInfo = {
+            "propName": getFullPropName(test),
+            "state": "start",
+        }
 
     def addPrecondSatisfied(self, test: TestCase):
         self.res[getFullPropName(test)].precond_satisfied += 1
@@ -193,10 +216,12 @@ class JsonResult(TextTestResult):
     def addFailure(self, test, err):
         super().addFailure(test, err)
         self.res[getFullPropName(test)].fail += 1
+        self.lastExecutedInfo["state"] = "fail"
 
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
+        self.lastExecutedInfo["state"] = "error"
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
@@ -277,11 +302,12 @@ def startFastbotService(options: Options) -> threading.Thread:
         "reuseq",
         "--running-minutes", f"{options.running_mins}",
         "--throttle", f"{options.throttle}",
-        "--bugreport", "--output-directory", "/sdcard/fastbot_report",
+        "--bugreport",
     ]
-    
-    # shell_command += [""]
-    
+
+    if options.profile_period:
+        shell_command += ["--profile-period", f"{options.profile_period}"]
+
     shell_command += ["-v", "-v", "-v"]
 
     full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
@@ -303,7 +329,7 @@ def startFastbotService(options: Options) -> threading.Thread:
 def close_on_exit(proc: subprocess.Popen, f: IO):
     proc.wait()
     f.close()
-  
+
 
 class KeaTestRunner(TextTestRunner):
 
@@ -376,6 +402,10 @@ class KeaTestRunner(TextTestRunner):
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 check_alive(port=self.scriptDriver.lport)
+                self._init()
+
+                resultSyncer = ResultSyncer(self.device_output_dir, self.options.output_dir)
+                resultSyncer.run()
 
                 end_by_remote = False
                 self.stepsCount = 0
@@ -390,7 +420,6 @@ class KeaTestRunner(TextTestRunner):
 
                     try:
                         xml_raw = self.stepMonkey()
-                        stat = self._getStat()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
                         print(
@@ -398,6 +427,9 @@ class KeaTestRunner(TextTestRunner):
                         , flush=True)
                         end_by_remote = True
                         break
+
+                    if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
+                        resultSyncer.sync_event.set()
 
                     print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
 
@@ -426,19 +458,23 @@ class KeaTestRunner(TextTestRunner):
                     print("execute property %s." % execPropName, flush=True)
 
                     result.addExcuted(test)
+                    self._logScript(result.lastExecutedInfo)
                     try:
                         test(result)
                     finally:
                         result.printErrors()
 
+                    self._logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
                     self.stopMonkey()
                 result.flushResult(outfile=RESFILE)
+                resultSyncer.close()    
 
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
+            
 
         # Source code from unittest Runner
         # process the result
@@ -542,14 +578,31 @@ class KeaTestRunner(TextTestRunner):
                 validProps[propName] = test
         return validProps
 
-    def _getStat(self):
-        # profile when reaching the profile period
-        if (self.options.profile_period and 
-            self.stepsCount % self.options.profile_period == 0
-        ):
-            URL = f"http://localhost:{self.scriptDriver.lport}/getStat"
-            r = requests.get(URL)
-            res = json.loads(r.content)
+    def _logScript(self, execution_info:Dict):
+        URL = f"http://localhost:{self.scriptDriver.lport}/logScript"
+        r = requests.post(
+            url=URL,
+            json=execution_info
+        )
+        res = r.content.decode(encoding="utf-8")
+        if res != "OK":
+            print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
+
+    def _init(self):
+        URL = f"http://localhost:{self.scriptDriver.lport}/init"
+        data = {
+            "takeScreenshots": self.options.take_screenshots,
+            "Stamp": STAMP
+        }
+        print(f"[INFO] Init fastbot: {data}", flush=True)
+        r = requests.post(
+            url=URL,
+            json=data
+        )
+        res = r.content.decode(encoding="utf-8")
+        import re
+        self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
+        print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
@@ -696,5 +749,9 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        try:
+            self.stopMonkey()
+        except Exception as e:
+            pass
         if self.options.Driver:
             self.options.Driver.tearDown()

@@ -20,9 +20,12 @@ class LogWatcher:
         self.buffer = ""
         self.last_pos = 0
 
-        while True:
+        while not self.end_flag:
             self.read_log()
             time.sleep(poll_interval)
+        
+        time.sleep(0.2)
+        self.read_log()
         
     def read_log(self):
         time.sleep(0.02)
@@ -65,9 +68,7 @@ class LogWatcher:
         t.start()
     
     def close(self):
-        time.sleep(0.2) # wait for the written logfile close
         self.end_flag = True
-        self.read_log()
 
 
 if __name__ == "__main__":

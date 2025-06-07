@@ -1,8 +1,6 @@
-import os
 import sys
 import argparse
 import unittest
-from pathlib import Path
 from typing import List
 
 def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.ArgumentParser]"):
@@ -49,6 +47,7 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="running_minutes",
         type=int,
         required=False,
+        default=10,
         help="Time to run fastbot",
     )
 
@@ -89,7 +88,17 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         dest="profile_period",
         type=int,
         required=False,
+        default=25,
         help="Steps to profile the testing statistics.",
+    )
+    
+    parser.add_argument(
+        "--take-screenshots",
+        dest="take_screenshots",
+        required=False,
+        action="store_true",
+        default=False,
+        help="Take screenshots for every step.",
     )
 
     parser.add_argument(
@@ -118,6 +127,10 @@ def driver_info_logger(args):
         print("  running_minutes:", args.running_minutes, flush=True)
     if args.throttle_ms:
         print("  throttle_ms:", args.throttle_ms, flush=True)
+    if args.log_stamp:
+        print("  log_stamp:", args.log_stamp, flush=True)
+    if args.take_screenshots:
+        print("  take_screenshots:", args.take_screenshots, flush=True)
 
 
 def parse_args(argv: List):
@@ -140,9 +153,7 @@ def _sanitize_args(args):
 def run(args=None):
     if args is None:
         args = parse_args(sys.argv[1:])
-
     _sanitize_args(args)
-
     driver_info_logger(args)
     unittest_info_logger(args)
 
@@ -159,6 +170,7 @@ def run(args=None):
         throttle=args.throttle_ms,
         log_stamp=args.log_stamp,
         profile_period=args.profile_period,
+        take_screenshots=args.take_screenshots,
     )
 
     KeaTestRunner.setOptions(options)

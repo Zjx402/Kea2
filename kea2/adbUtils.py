@@ -147,7 +147,6 @@ def pull_file(remote_path: str, local_path: str, device: Optional[str] = None):
     """
     return run_adb_command(["-s", device, "pull", remote_path, local_path])
 
-
 # Forward-related functions
 
 
