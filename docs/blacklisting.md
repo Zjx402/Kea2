@@ -76,3 +76,92 @@ def block_tree_sth(d: "Device"):
             d(description="trees to block")]
 ```
 
+
+### Supported Methods for UI Element Identification
+
+When configuring the blacklist, you can precisely locate specific UI elements in the current window by combining various attributes. These attributes can be flexibly used together to achieve accurate blocking.
+
+For example, to locate a UI element with text "Alarm" and class name `android.widget.Button`:
+
+```python
+d(text="Alarm", className="android.widget.Button")
+```
+
+#### Supported Attributes
+
+Commonly used attributes are listed below. For detailed usage, please refer to the official Android UiSelector documentation:
+
+- **Text-related attributes**  
+  `text`, `textContains`, `textStartsWith`
+
+- **Class-related attributes**  
+  `className`
+
+- **Description-related attributes**  
+  `description`, `descriptionContains`, `descriptionStartsWith`
+
+- **State-related attributes**  
+  `checkable`, `checked`, `clickable`, `longClickable`, `scrollable`, `enabled`, `focusable`, `focused`, `selected`
+
+- **Package name related attributes**  
+  `packageName`
+
+- **Resource ID related attributes**  
+  `resourceId`
+
+- **Index related attributes**  
+  `index`, `instance`
+
+#### Locating Children and Siblings
+
+Besides directly locating target elements, you can locate child or sibling elements for more complex queries.
+
+- **Locate child or grandchild elements**  
+  For example, locate an item named "Wi-Fi" inside a list view:
+
+  ```python
+  d(className="android.widget.ListView").child(text="Wi-Fi")
+  ```
+
+- **Locate sibling elements**  
+  For example, find an `android.widget.ImageView` sibling next to an element with text "Settings":
+
+  ```python
+  d(text="Settings").sibling(className="android.widget.ImageView")
+  ```
+
+---
+
+### Unsupported Methods
+
+> ⚠️ Please avoid using the following methods as they are **not supported** for blacklist configuration:
+
+- Positional relations based queries:  
+
+  ```python
+  d(A).left(B)    # Select B to the left of A
+  d(A).right(B)   # Select B to the right of A
+  d(A).up(B)      # Select B above A
+  d(A).down(B)    # Select B below A
+  ```
+
+- Child querying methods such as `child_by_text`, `child_by_description`, and `child_by_instance`. For example:
+
+  ```python
+  d(className="android.widget.ListView", resourceId="android:id/list") \
+    .child_by_text("Bluetooth", className="android.widget.LinearLayout")
+  
+  d(className="android.widget.ListView", resourceId="android:id/list") \
+    .child_by_text(
+      "Bluetooth",
+      allow_scroll_search=True,  # default False
+      className="android.widget.LinearLayout"
+    )
+  ```
+
+- Regular expression matching parameters:  
+  `textMatches`, `classNameMatches`, `descriptionMatches`, `packageNameMatches`, `resourceIdMatches`
+
+
+Please avoid using these unsupported methods to ensure your blacklist configurations are applied correctly.
+
