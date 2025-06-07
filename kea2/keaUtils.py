@@ -17,7 +17,7 @@ from .adbUtils import push_file
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject, selector_to_xpath
+from .u2Driver import StaticU2UiObject
 import uiautomator2 as u2
 import types
 
@@ -712,8 +712,9 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
                         if isinstance(w, StaticU2UiObject):
-                            xpath = selector_to_xpath(w.selector, True)
-                            blocked_set.add(xpath)
+                            xpath = w.selector_to_xpath(w.selector, True)
+                            if xpath != '//error':
+                                blocked_set.add(xpath)
                         elif isinstance(w, u2.xpath.XPathSelector):
                             xpath = w._parent.xpath
                             blocked_set.add(xpath)
@@ -724,7 +725,7 @@ class KeaTestRunner(TextTestRunner):
                 traceback.print_exc()
             return blocked_set
 
-        res = {
+        result = {
             "widgets": set(),
             "trees": set()
         }
@@ -732,18 +733,18 @@ class KeaTestRunner(TextTestRunner):
 
         for func in self._blockWidgetFuncs["widgets"]:
             widgets = _get_xpath_widgets(func)
-            res["widgets"].update(widgets)
+            result["widgets"].update(widgets)
 
 
         for func in self._blockWidgetFuncs["trees"]:
             trees = _get_xpath_widgets(func)
-            res["trees"].update(trees)
+            result["trees"].update(trees)
 
 
-        res["widgets"] = list(res["widgets"] - res["trees"])
-        res["trees"] = list(res["trees"])
+        result["widgets"] = list(result["widgets"] - result["trees"])
+        result["trees"] = list(result["trees"])
 
-        return res
+        return result
 
 
     def __del__(self):
