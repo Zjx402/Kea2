@@ -191,11 +191,13 @@ For the preceding always-holding property, we can write the following script to 
 ```
 >  We use [hypothesis](https://github.com/HypothesisWorks/hypothesis) to generate random texts.
 
-You can run this example by using the similar command line in Feature 2.
+You can run this example by using the similar command line in Feature 2. `--take-screenshots` is recommanded to replay the functional bug.
+
+> Notes: `--take-screenshots` will need more disk space on PC.
 
 ```bash
 # Launch Kea2 and load one single script quicktest.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -p quicktest.py
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d --take-screenshots unittest discover -p quicktest.py
 ```
 
 ## Documentations（更多文档）
