@@ -564,8 +564,11 @@ class KeaTestRunner(TextTestRunner):
                     if not precond(test):
                         valid = False
                         break
+                except u2.UiObjectNotFoundError as e:
+                    valid = False
+                    break
                 except Exception as e:
-                    print(f"[ERROR] Error when checking precond: {getFullPropName(test)}", flush=True)
+                    logger.error(f"Error when checking precond: {getFullPropName(test)}")
                     traceback.print_exc()
                     valid = False
                     break

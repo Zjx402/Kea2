@@ -201,6 +201,9 @@ class StaticU2UiObject(u2.UiObject):
     
     def sibling(self, **kwargs):
         return StaticU2UiObject(self.session, self.selector.clone().sibling(**kwargs))
+    
+    def __getattr__(self, attr):
+        return getattr(super(), attr)
 
 
 def _get_bounds(raw_bounds):
@@ -287,7 +290,9 @@ class U2StaticDevice(u2.Device):
         self._script_driver = script_driver
 
     def __call__(self, **kwargs):
-        return StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
+        ui = StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
+        ui.jsonrpc = self._script_driver.jsonrpc
+        return ui
 
     @property
     def xpath(self) -> u2.xpath.XPathEntry:
