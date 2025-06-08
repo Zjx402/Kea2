@@ -107,14 +107,13 @@ class BugReportGenerator:
         fail_screenshot = None  # Screenshot name at test failure
         
         # For storing time data
-        first_precond_time = None  # Time of the first ScriptInfo entry
-        first_fail_time = None     # Time of the second ScriptInfo entry
+        first_precond_time = None  # Time of the first ScriptInfo entry with state=start
+        first_fail_time = None     # Time of the first ScriptInfo entry with state=fail
 
         if steps_log_path.exists():
             with open(steps_log_path, "r", encoding="utf-8") as f:
                 # First read all steps
                 steps = []
-                script_info_count = 0  # Count ScriptInfo type entries
                 
                 for line in f:
                     try:
@@ -123,11 +122,19 @@ class BugReportGenerator:
                         
                         # Extract time from ScriptInfo entries
                         if step_data.get("Type") == "ScriptInfo":
-                            script_info_count += 1
-                            if script_info_count == 1:  # First ScriptInfo (precondition)
-                                first_precond_time = step_data.get("Time")
-                            elif script_info_count == 2:  # Second ScriptInfo (fail)
-                                first_fail_time = step_data.get("Time")
+                            try:
+                                info = json.loads(step_data.get("Info", "{}")) if isinstance(step_data.get("Info"), str) else step_data.get("Info", {})
+                                state = info.get("state", "")
+                                
+                                # Record the first ScriptInfo with state=start as precondition time
+                                if state == "start" and first_precond_time is None:
+                                    first_precond_time = step_data.get("Time")
+                                
+                                # Record the first ScriptInfo with state=fail as fail time
+                                elif state == "fail" and first_fail_time is None:
+                                    first_fail_time = step_data.get("Time")
+                            except Exception as e:
+                                logger.error(f"Error parsing ScriptInfo: {e}")
                     except:
                         pass
 
