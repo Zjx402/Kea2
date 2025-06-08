@@ -195,9 +195,12 @@ You can run this example by using the similar command line in Feature 2.
 
 ## Documentations（更多文档）
 
-[更多文档](docs/manual_en.md)，包括了：Kea2的案例教程（基于微信介绍）、Kea2脚本的定义方法、Kea2的启动方式/命令行选项、查看/理解Kea2的运行结果
-
-[如何黑白控件/区域](docs/blacklisting.md)
+[更多文档](docs/manual_en.md)，包括了：
+- Kea2的案例教程（基于微信介绍）、
+- Kea2脚本的定义方法，支持的脚本装饰器(如`@precondition`、`@prob`、`@max_tries`)、
+- Kea2的启动方式、命令行选项
+- 查看/理解Kea2的运行结果（如界面截图、测试覆盖率、脚本执行成功与否）。
+- [如何黑白控件/区域](docs/blacklisting.md)
 
 ## Open-source projects used by Kea2
 
