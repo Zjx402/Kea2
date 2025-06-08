@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import threading
 import traceback
-from typing import IO, Callable, Any, Dict, List, Literal, NewType, Union
+from typing import IO, Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -32,6 +32,10 @@ logger = getLogger(__name__)
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
+PropertyExecutionInfo = TypedDict(
+    "PropertyExecutionInfo",
+    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"]}
+)
 
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
@@ -186,7 +190,7 @@ def getFullPropName(testCase: TestCase):
 class JsonResult(TextTestResult):
     res: PBTTestResult
     
-    lastExecutedInfo: Dict = {
+    lastExecutedInfo: PropertyExecutionInfo = {
         "propName": "",
         "state": "",
     }
