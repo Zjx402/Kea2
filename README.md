@@ -191,28 +191,21 @@ For the preceding always-holding property, we can write the following script to 
 ```
 >  We use [hypothesis](https://github.com/HypothesisWorks/hypothesis) to generate random texts.
 
-You can run this example by using the similar command line in Feature 2. `--take-screenshots` is recommanded to replay the functional bug.
-
-> Notes: `--take-screenshots` will need more disk space on PC.
-
-```bash
-# Launch Kea2 and load one single script quicktest.py.
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d --take-screenshots unittest discover -p quicktest.py
-```
+You can run this example by using the similar command line in Feature 2. 
 
 ## Documentations（更多文档）
 
-[更多文档](docs/manual_en.md)：如何定义Kea2脚本、如何启动Kea2、如何查看/理解Kea2的运行结果
+[更多文档](docs/manual_en.md)，包括了：Kea2的案例教程（基于微信介绍）、Kea2脚本的定义方法、Kea2的启动方式/命令行选项、查看/理解Kea2的运行结果
 
 [如何黑白控件/区域](docs/blacklisting.md)
 
-### Open-source projects used by Kea2
+## Open-source projects used by Kea2
 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android)
 - [uiautomator2](https://github.com/openatx/uiautomator2)
 - [hypothesis](https://github.com/HypothesisWorks/hypothesis)
 
-### Relevant papers of Kea2
+## Relevant papers of Kea2
 
 > General and Practical Property-based Testing for Android Apps. ASE 2024. [pdf](https://dl.acm.org/doi/10.1145/3691620.3694986)
 
