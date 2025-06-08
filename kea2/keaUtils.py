@@ -224,6 +224,10 @@ class JsonResult(TextTestResult):
         self.res[getFullPropName(test)].error += 1
         self.lastExecutedInfo["state"] = "error"
 
+    def updateExectedInfo(self, test):
+        if self.lastExecutedInfo["state"] == "start":
+            self.lastExecutedInfo["state"] = "pass"
+
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
 
@@ -464,7 +468,8 @@ class KeaTestRunner(TextTestRunner):
                         test(result)
                     finally:
                         result.printErrors()
-
+                    
+                    result.updateExectedInfo()
                     self._logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
