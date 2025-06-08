@@ -25,6 +25,7 @@ class BugReportGenerator:
         self.result_dir = Path(result_dir)
         self.log_timestamp = self.result_dir.name.split("_", 1)[1]
         self.screenshots_dir = self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
+        self.take_screenshots = self._detect_screenshots_setting()
         
         # Set up Jinja2 environment
         # First try to load templates from the package
@@ -375,6 +376,28 @@ class BugReportGenerator:
 
         return data
 
+    def _detect_screenshots_setting(self):
+        """
+        Detect if screenshots were enabled during test run.
+        Returns True if screenshots were taken, False otherwise.
+        """
+        # Method 1: Check if screenshots directory exists and has content
+        if self.screenshots_dir.exists() and any(self.screenshots_dir.glob("screenshot-*.png")):
+            return True
+            
+        # Method 2: Try to read init config from logs
+        fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
+        if fastbot_log_path:
+            try:
+                with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
+                    log_content = f.read()
+                    if '"takeScreenshots": true' in log_content:
+                        return True
+            except Exception:
+                pass
+                
+        return False
+
     def _generate_html_report(self, data):
         """
         Generate HTML format bug report
@@ -432,7 +455,8 @@ class BugReportGenerator:
                 'screenshots': screenshots,
                 'property_violations': data["property_violations"],
                 'property_stats': data["property_stats"],
-                'coverage_data': coverage_trend_json
+                'coverage_data': coverage_trend_json,
+                'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
             }
             
             # Check if template exists, if not create it
