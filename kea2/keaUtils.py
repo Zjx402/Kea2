@@ -228,7 +228,7 @@ class JsonResult(TextTestResult):
         self.res[getFullPropName(test)].error += 1
         self.lastExecutedInfo["state"] = "error"
 
-    def updateExectedInfo(self, test):
+    def updateExectedInfo(self):
         if self.lastExecutedInfo["state"] == "start":
             self.lastExecutedInfo["state"] = "pass"
 
