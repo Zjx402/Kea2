@@ -331,8 +331,8 @@
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ total_testing_time }}</span>
-                                <span class="stat-label">Total Testing Time (sec)</span>
+                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|round(2) }} sec</span>
+                                <span class="stat-label">Total Testing Time</span>
                             </div>
                         </div>
                         <div class="col-md-3 col-sm-6">
@@ -365,7 +365,7 @@
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
                                 <span>First Bug Discovery Time:</span>
-                                <span class="value-danger">{{ first_bug_time }} sec</span>
+                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|round(2) }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-danger" role="progressbar" 
@@ -376,7 +376,7 @@
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
                                 <span>First Precondition Satisfaction Time:</span>
-                                <span class="value-success">{{ first_precondition_time }} sec</span>
+                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|round(2) }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-success" role="progressbar" 
@@ -387,7 +387,7 @@
                         <div>
                             <h5 class="d-flex justify-content-between">
                                 <span>Total Testing Time:</span>
-                                <span class="value-primary">{{ total_testing_time }} sec</span>
+                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|round(2) }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
@@ -672,7 +672,7 @@
                     labels: steps,
                     datasets: [
                         {
-                            label: 'Coverage (%)',
+                            label: 'Activity Coverage (%)',
                             data: coverages.map((value, index) => ({x: steps[index], y: value})),
                             borderColor: '#3498db',
                             backgroundColor: 'rgba(52, 152, 219, 0.1)',
@@ -761,7 +761,7 @@
                             beginAtZero: true,
                             title: {
                                 display: true,
-                                text: 'Coverage (%)',
+                                text: 'Activity Coverage (%)',
                                 font: {
                                     size: 14
                                 }
