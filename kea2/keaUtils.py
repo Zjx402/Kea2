@@ -707,10 +707,21 @@ class KeaTestRunner(TextTestRunner):
            """
         def _get_xpath_widgets(func):
             blocked_set = set()
-            try:
-                script_driver = self.options.Driver.getScriptDriver()
-                preconds = getattr(func, PRECONDITIONS_MARKER, [])
-                if all(precond(script_driver) for precond in preconds):
+            script_driver = self.options.Driver.getScriptDriver()
+            preconds = getattr(func, PRECONDITIONS_MARKER, [])
+
+            def preconds_pass(preconds):
+                try:
+                    return all(precond(script_driver) for precond in preconds)
+                except u2.UiObjectNotFoundError as e:
+                    return False
+                except Exception as e:
+                    logger.error(f"Error processing precond. Check if precond: {e}")
+                    traceback.print_exc()
+                    return False
+            
+            if preconds_pass(preconds):
+                try:
                     _widgets = func(self.options.Driver.getStaticChecker())
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
@@ -723,9 +734,10 @@ class KeaTestRunner(TextTestRunner):
                             blocked_set.add(xpath)
                         else:
                             logger.warning(f"{w} Not supported")
-            except Exception as e:
-                logger.error(f"Error processing blocked widgets: {e}")
-                traceback.print_exc()
+                except Exception as e:
+                    logger.error(f"Error processing blocked widgets in: {func}")
+                    logger.error(e)
+                    traceback.print_exc()
             return blocked_set
 
         result = {
@@ -733,16 +745,13 @@ class KeaTestRunner(TextTestRunner):
             "trees": set()
         }
 
-
         for func in self._blockWidgetFuncs["widgets"]:
             widgets = _get_xpath_widgets(func)
             result["widgets"].update(widgets)
 
-
         for func in self._blockWidgetFuncs["trees"]:
             trees = _get_xpath_widgets(func)
             result["trees"].update(trees)
-
 
         result["widgets"] = list(result["widgets"] - result["trees"])
         result["trees"] = list(result["trees"])
