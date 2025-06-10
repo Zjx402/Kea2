@@ -331,7 +331,7 @@
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|round(2) }} sec</span>
+                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
                                 <span class="stat-label">Total Testing Time</span>
                             </div>
                         </div>
@@ -346,7 +346,7 @@
                             <div class="text-center">
                                 <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-warning">{{ coverage_percent }}%</span>
-                                <span class="stat-label">Coverage</span>
+                                <span class="stat-label">Activity Coverage</span>
                             </div>
                         </div>
                     </div>
@@ -365,7 +365,7 @@
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
                                 <span>First Bug Discovery Time:</span>
-                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|round(2) }} sec</span>
+                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|int }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-danger" role="progressbar" 
@@ -376,7 +376,7 @@
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
                                 <span>First Precondition Satisfaction Time:</span>
-                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|round(2) }} sec</span>
+                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|int }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-success" role="progressbar" 
@@ -387,7 +387,7 @@
                         <div>
                             <h5 class="d-flex justify-content-between">
                                 <span>Total Testing Time:</span>
-                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|round(2) }} sec</span>
+                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
                             </h5>
                             <div class="progress">
                                 <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
@@ -405,7 +405,7 @@
                     <div class="card-body">
                         <div class="mb-3">
                             <h5 class="d-flex justify-content-between">
-                                <span>Coverage:</span>
+                                <span>Activity Coverage:</span>
                                 <span class="value-warning">{{ coverage_percent }}%</span>
                             </h5>
                             <div class="progress">

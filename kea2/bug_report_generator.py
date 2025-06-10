@@ -165,8 +165,10 @@ class BugReportGenerator:
                                 # Extract 'method' attribute for Script type
                                 caption = f"{info_obj.get('method', 'N/A')}"
                             elif step_type == "ScriptInfo":
-                                # Extract 'state' attribute for ScriptInfo type
-                                caption = f"{info_obj.get('state', 'N/A')}"
+                                # Extract 'propName' and 'state' attributes for ScriptInfo type
+                                prop_name = info_obj.get('propName', '')
+                                state = info_obj.get('state', 'N/A')
+                                caption = f"{prop_name} {state}" if prop_name else f"{state}"
 
                             data["screenshot_info"][screenshot] = {
                                 "type": step_type,
@@ -256,7 +258,7 @@ class BugReportGenerator:
                     
                     # Calculate total test time (in seconds)
                     if start_time and end_time:
-                        data["total_testing_time"] = round((end_time - start_time).total_seconds(), 2)
+                        data["total_testing_time"] = int((end_time - start_time).total_seconds())
             except Exception as e:
                 logger.error(f"Error parsing fastbot log file: {e}")
                 logger.error(f"Error details: {str(e)}")
@@ -267,7 +269,7 @@ class BugReportGenerator:
             if first_precond_time:
                 try:
                     precond_time = datetime.datetime.strptime(first_precond_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_precondition_time"] = round((precond_time - start_time).total_seconds(), 2)
+                    data["first_precondition_time"] = int((precond_time - start_time).total_seconds())
                 except Exception as e:
                     logger.error(f"Error parsing precond_time: {e}")
             
@@ -275,7 +277,7 @@ class BugReportGenerator:
             if first_fail_time:
                 try:
                     fail_time = datetime.datetime.strptime(first_fail_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_bug_time"] = round((fail_time - start_time).total_seconds(), 2)
+                    data["first_bug_time"] = int((fail_time - start_time).total_seconds())
                 except Exception as e:
                     logger.error(f"Error parsing fail_time: {e}")
 
