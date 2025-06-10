@@ -13,7 +13,6 @@ build
 clean.sh
 
 test/
-tests/
 
 output/
 quicktest.py
