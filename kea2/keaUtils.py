@@ -4,7 +4,7 @@ from pathlib import Path
 import subprocess
 import threading
 import traceback
-from typing import IO, Callable, Any, Dict, List, Literal, NewType, Union
+from typing import IO, Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -14,6 +14,7 @@ from .absDriver import AbstractDriver
 from functools import wraps
 from time import sleep
 from .adbUtils import push_file
+from .bug_report_generator import BugReportGenerator
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
@@ -31,6 +32,10 @@ logger = getLogger(__name__)
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
+PropertyExecutionInfo = TypedDict(
+    "PropertyExecutionInfo",
+    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"]}
+)
 
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
@@ -185,7 +190,7 @@ def getFullPropName(testCase: TestCase):
 class JsonResult(TextTestResult):
     res: PBTTestResult
     
-    lastExecutedInfo: Dict = {
+    lastExecutedInfo: PropertyExecutionInfo = {
         "propName": "",
         "state": "",
     }
@@ -222,6 +227,10 @@ class JsonResult(TextTestResult):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
         self.lastExecutedInfo["state"] = "error"
+
+    def updateExectedInfo(self):
+        if self.lastExecutedInfo["state"] == "start":
+            self.lastExecutedInfo["state"] = "pass"
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
@@ -463,7 +472,8 @@ class KeaTestRunner(TextTestRunner):
                         test(result)
                     finally:
                         result.printErrors()
-
+                    
+                    result.updateExectedInfo()
                     self._logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
@@ -749,6 +759,12 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        try:
+            logger.debug("Generating test bug report")
+            report_generator = BugReportGenerator(self.options.output_dir)
+            report_generator.generate_report()
+        except Exception as e:
+            logger.error(f"Error generating bug report: {e}", flush=True)
         try:
             self.stopMonkey()
         except Exception as e:

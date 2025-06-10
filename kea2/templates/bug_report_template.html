@@ -1,0 +1,937 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kea2 Test Report</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --warning-color: #f39c12;
+            --danger-color: #e74c3c;
+            --dark-color: #2c3e50;
+            --light-color: #ecf0f1;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background-color: #f8f9fa;
+            color: #333;
+            line-height: 1.6;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 2.5rem 0;
+            margin-bottom: 3rem;
+            border-radius: 0 0 20px 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stats-card {
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            overflow: hidden;
+            padding: 1rem;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .card-header {
+            font-weight: 600;
+            padding: 1.25rem 1.5rem;
+        }
+        
+        .card-body {
+            padding: 1.5rem;
+        }
+        
+        .screenshots-container {
+            display: flex;
+            overflow-x: auto;
+            gap: 15px;
+            padding: 15px 0;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #eee;
+        }
+        
+        .screenshots-container::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .screenshots-container::-webkit-scrollbar-track {
+            background: #eee;
+            border-radius: 10px;
+        }
+        
+        .screenshots-container::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .screenshot-item {
+            flex: 0 0 auto;
+            width: 250px;
+            position: relative;
+            transition: transform 0.2s;
+        }
+        
+        .screenshot-item:hover {
+            transform: scale(1.03);
+        }
+        
+        .screenshot-img {
+            width: 250px;
+            height: 400px;
+            object-fit: contain;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+        }
+        
+        .screenshot-caption {
+            font-size: 14px;
+            color: #555;
+            padding: 8px 4px;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            font-weight: 500;
+            text-align: center;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-custom {
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+        }
+        
+        .table-custom thead {
+            background-color: var(--primary-color);
+            color: white;
+        }
+        
+        .table-custom th {
+            font-weight: 600;
+            padding: 15px 20px;
+        }
+        
+        .table-custom td {
+            padding: 15px 20px;
+            vertical-align: middle;
+        }
+        
+        .table-custom tbody tr:nth-of-type(odd) {
+            background-color: rgba(0, 0, 0, 0.02);
+        }
+        
+        .table-custom tbody tr:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+        
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 700;
+            display: block;
+            margin-bottom: 0.8rem;
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #666;
+            display: block;
+            margin-top: 5px;
+        }
+        
+        .chart-container {
+            background-color: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            margin-bottom: 40px;
+        }
+        
+        .section-title {
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px;
+            font-weight: 600;
+            color: var(--dark-color);
+        }
+        
+        .section-title::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            height: 3px;
+            width: 50px;
+            background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+            border-radius: 3px;
+        }
+        
+        /* 增加板块间距 */
+        .section-block {
+            margin-bottom: 70px;
+        }
+        
+        .value-highlight {
+            color: var(--primary-color);
+        }
+        
+        .value-danger {
+            color: var(--danger-color);
+        }
+        
+        .value-warning {
+            color: var(--warning-color);
+        }
+        
+        .value-success {
+            color: var(--secondary-color);
+        }
+        
+        .summary-card {
+            border-radius: 12px;
+            background-color: white;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            padding: 30px;
+            margin-bottom: 40px;
+        }
+        
+        .link-button {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .link-button:hover {
+            color: var(--secondary-color);
+            text-decoration: underline;
+        }
+        
+        .badge-custom {
+            padding: 6px 12px;
+            border-radius: 50px;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin: 0 2px;
+        }
+        
+        .activity-list {
+            height: 300px; /* 固定高度 */
+            overflow-y: auto;
+            border-radius: 8px;
+            border: 1px solid rgba(0,0,0,0.1);
+            padding: 15px;
+            background-color: rgba(255,255,255,0.5);
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #eee;
+            margin-bottom: 15px; /* 为翻页按钮留出空间 */
+        }
+        
+        .activity-list::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .activity-list::-webkit-scrollbar-track {
+            background: #eee;
+            border-radius: 10px;
+        }
+        
+        .activity-list::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        .activities-container {
+            display: flex;
+            flex-direction: column;
+            height: 400px; /* 容器总高度 */
+        }
+        
+        .pagination-container {
+            padding: 10px 0;
+            background-color: white;
+            border-radius: 0 0 8px 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        
+        .activity-item {
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 10px;
+            font-size: 0.95rem;
+            word-break: break-all;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            line-height: 1.5;
+        }
+        
+        .activity-item:hover {
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transform: translateX(3px);
+        }
+        
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .screenshot-item {
+                width: 200px;
+            }
+            
+            .screenshot-img {
+                width: 200px;
+                height: 320px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header class="header text-center">
+        <div class="container">
+            <h1><i class="bi bi-bug"></i> Kea2 Test Report</h1>
+            <p class="lead">Test Time: {{ timestamp }}</p>
+        </div>
+    </header>
+
+    <div class="container mb-5">
+        <!-- Test Summary -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="summary-card">
+                    <h2 class="section-title">Test Summary</h2>
+                    <div class="row g-4">
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-danger">{{ bugs_found }}</span>
+                                <span class="stat-label">Bugs Found</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
+                                <span class="stat-label">Total Testing Time</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-activity text-success" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-success">{{ executed_events }}</span>
+                                <span class="stat-label">Executed Events</span>
+                            </div>
+                        </div>
+                        <div class="col-md-3 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-warning">{{ coverage_percent }}%</span>
+                                <span class="stat-label">Activity Coverage</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Key Statistics -->
+        <div class="row g-4 mb-4">
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <div class="card-header bg-primary text-white">
+                        <i class="bi bi-stopwatch"></i> Time Statistics
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>First Bug Discovery Time:</span>
+                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|int }} sec</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-danger" role="progressbar" 
+                                     style="width: calc({{ first_bug_time }} / {{ total_testing_time }} * 100%);" 
+                                     aria-valuenow="{{ first_bug_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>First Precondition Satisfaction Time:</span>
+                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|int }} sec</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-success" role="progressbar" 
+                                     style="width: calc({{ first_precondition_time }} / {{ total_testing_time }} * 100%);" 
+                                     aria-valuenow="{{ first_precondition_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                        <div>
+                            <h5 class="d-flex justify-content-between">
+                                <span>Total Testing Time:</span>
+                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
+                                     aria-valuenow="{{ total_testing_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="stats-card">
+                    <div class="card-header bg-success text-white">
+                        <i class="bi bi-bar-chart"></i> Coverage Statistics
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <h5 class="d-flex justify-content-between">
+                                <span>Activity Coverage:</span>
+                                <span class="value-warning">{{ coverage_percent }}%</span>
+                            </h5>
+                            <div class="progress">
+                                <div class="progress-bar bg-warning" role="progressbar" 
+                                     style="width: {{ coverage_percent }}%;" 
+                                     aria-valuenow="{{ coverage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
+                            </div>
+                        </div>
+                        <div class="row mt-4">
+                            <div class="col-6 text-center">
+                                <div class="stat-value value-primary">{{ total_activities_count }}</div>
+                                <div class="stat-label">Total Activities</div>
+                            </div>
+                            <div class="col-6 text-center">
+                                <div class="stat-value value-success">{{ tested_activities_count }}</div>
+                                <div class="stat-label">Tested Activities</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tested Activities List -->
+        <div class="section-block">
+            <h2 class="section-title">Activities Coverage</h2>
+            
+            <div class="row g-4">
+                <!-- Tested Activities Panel -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-success text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})</span>
+                                <span class="badge bg-light text-dark">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="activities-container">
+                                <div class="activity-list">
+                                    {% if tested_activities|length > 0 %}
+                                        <div id="tested-activities-container">
+                                            {% for activity in tested_activities %}
+                                                <div class="activity-item tested-activity" data-page="1">
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    {{ activity }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            No tested activities detected
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Pagination for Tested Activities -->
+                                <div class="pagination-container d-flex justify-content-center">
+                                    <nav aria-label="Tested Activities Pagination">
+                                        <ul class="pagination pagination-sm" id="tested-pagination">
+                                            <!-- Pagination will be generated by JavaScript -->
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- All Activities Panel -->
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-header bg-primary text-white">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <span><i class="bi bi-app"></i> All Activities ({{ total_activities|length }})</span>
+                                <span class="badge bg-light text-dark">Coverage: {{ coverage_percent }}%</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="activities-container">
+                                <div class="activity-list">
+                                    {% if total_activities|length > 0 %}
+                                        <div id="all-activities-container">
+                                            {% for activity in total_activities %}
+                                                <div class="activity-item all-activity" data-page="1">
+                                                    {% if activity in tested_activities %}
+                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-dash-circle text-secondary me-2"></i>
+                                                    {% endif %}
+                                                    {{ activity }}
+                                                </div>
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        <div class="alert alert-warning">
+                                            No activities information available
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <!-- Pagination for All Activities -->
+                                <div class="pagination-container d-flex justify-content-center">
+                                    <nav aria-label="All Activities Pagination">
+                                        <ul class="pagination pagination-sm" id="all-pagination">
+                                            <!-- Pagination will be generated by JavaScript -->
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screenshots Section -->
+        {% if take_screenshots %}
+        <div class="section-block">
+            <h2 class="section-title">Test Screenshots</h2>
+            <div class="card">
+                <div class="card-body">
+                    <div class="screenshots-container" id="screenshots">
+                        {% for screenshot in screenshots %}
+                        <div class="screenshot-item">
+                            <a href="{{ screenshot.path }}" target="_blank">
+                                <img src="{{ screenshot.path }}" class="screenshot-img" id="{{ screenshot.id }}">
+                            </a>
+                            <div class="screenshot-caption">{{ screenshot.caption }}</div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Coverage Trend Chart -->
+        <div class="section-block">
+            <h2 class="section-title">Coverage Trend</h2>
+            <div class="chart-container">
+                <canvas id="coverageChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Property Violations List -->
+        {% if take_screenshots %}
+        <div class="section-block">
+            <h2 class="section-title">Property Violations</h2>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Property Name</th>
+                            <th>Precondition Page</th>
+                            <th>Interaction Scenario Pages</th>
+                            <th>Postcondition Page</th>
+                        </tr>
+                    </thead>
+                    <tbody id="property-violations-container">
+                        {% for violation in property_violations %}
+                        <tr class="property-violation-row" data-page="1">
+                            <td>{{ violation.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ violation.property_name }}</span></td>
+                            <td><a href="#{{ violation.precondition_page }}" class="link-button">{{ violation.precondition_page }}</a></td>
+                            <td><a href="#{{ violation.interaction_pages[0] }}" class="link-button">{{ violation.interaction_pages[0] }} ~ {{ violation.interaction_pages[1] }}</a></td>
+                            <td><a href="#{{ violation.postcondition_page }}" class="link-button">{{ violation.postcondition_page }}</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Pagination for Property Violations -->
+                <div class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Property Violations Pagination">
+                        <ul class="pagination pagination-sm" id="violations-pagination">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Property Checking Statistics -->
+        <div class="section-block">
+            <h2 class="section-title">Property Checking Statistics</h2>
+            <div class="table-responsive">
+                <table class="table table-custom">
+                    <thead>
+                        <tr>
+                            <th>Index</th>
+                            <th>Property Name</th>
+                            <th>Precondition Satisfied</th>
+                            <th>Executed</th>
+                            <th>Fails</th>
+                            <th>Errors</th>
+                        </tr>
+                    </thead>
+                    <tbody id="property-stats-container">
+                        {% for stat in property_stats %}
+                        <tr class="property-stat-row" data-page="1">
+                            <td>{{ stat.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ stat.property_name }}</span></td>
+                            <td>{{ stat.precond_satisfied }}</td>
+                            <td>{{ stat.precond_checked }}</td>
+                            <td><span class="badge bg-danger text-white">{{ stat.postcond_violated }}</span></td>
+                            <td><span class="badge bg-warning text-dark">{{ stat.error }}</span></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                
+                <!-- Pagination for Property Checking Statistics -->
+                <div class="d-flex justify-content-center mt-3">
+                    <nav aria-label="Property Stats Pagination">
+                        <ul class="pagination pagination-sm" id="stats-pagination">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="bg-dark text-white text-center py-4">
+        <div class="container">
+            <p class="mb-0">Kea2 Test Report | Generated at: {{ timestamp }}</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Draw coverage trend chart
+        document.addEventListener('DOMContentLoaded', function() {
+            var coverageData = {{ coverage_data|safe }};
+            console.log("Coverage data points:", coverageData.length);
+
+            coverageData.sort(function(a, b) {
+                return a.steps - b.steps;
+            });
+            
+            var steps = coverageData.map(function(item) { return item.steps; });
+            var coverages = coverageData.map(function(item) { return item.coverage; });
+            var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
+
+            if (steps.length > 0 && steps[0] > 0) {
+                steps.unshift(0);
+                coverages.unshift(0);
+                testedActivities.unshift(0);
+            }
+
+            console.log("Steps with zero point:", steps);
+            console.log("Coverage values with zero point:", coverages);
+
+            var ctx = document.getElementById('coverageChart').getContext('2d');
+            var chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: steps,
+                    datasets: [
+                        {
+                            label: 'Activity Coverage (%)',
+                            data: coverages.map((value, index) => ({x: steps[index], y: value})),
+                            borderColor: '#3498db',
+                            backgroundColor: 'rgba(52, 152, 219, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        },
+                        {
+                            label: 'Tested Activities',
+                            data: testedActivities.map((value, index) => ({x: steps[index], y: value})),
+                            borderColor: '#2ecc71',
+                            backgroundColor: 'rgba(46, 204, 113, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            yAxisID: 'y1',
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    var label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.datasetIndex === 0) {
+                                        label += context.parsed.y.toFixed(2) + '%';
+                                    } else {
+                                        label += context.parsed.y;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            beginAtZero: true,
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Steps Count',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                stepSize: Math.max(10, Math.ceil(Math.max(...steps) / 10)),
+                                callback: function(value) {
+                                    return value;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Activity Coverage (%)',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                borderDash: [5, 5]
+                            }
+                        },
+                        y1: {
+                            position: 'right',
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tested Activities',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
+            // Initialize pagination for Activities lists
+            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', {{ items_per_page }});
+            initPagination('all-activities-container', 'all-activity', 'all-pagination', {{ items_per_page }});
+            
+            // Initialize pagination for Property tables
+            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', {{ items_per_page }});
+            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', {{ items_per_page }});
+            
+            // Pagination function
+            function initPagination(containerId, itemClass, paginationId, itemsPerPage) {
+                const container = document.getElementById(containerId);
+                if (!container) return;
+                
+                const items = container.getElementsByClassName(itemClass);
+                const totalItems = items.length;
+                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+                
+                // Create pagination
+                const paginationElement = document.getElementById(paginationId);
+                if (!paginationElement) return;
+                
+                // Clear pagination
+                paginationElement.innerHTML = '';
+                
+                // Previous button
+                const prevLi = document.createElement('li');
+                prevLi.className = 'page-item disabled';
+                prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                paginationElement.appendChild(prevLi);
+                
+                // Add page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageLi = document.createElement('li');
+                    pageLi.className = i === 1 ? 'page-item active' : 'page-item';
+                    pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                    pageLi.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
+                    });
+                    paginationElement.appendChild(pageLi);
+                }
+                
+                // Next button
+                const nextLi = document.createElement('li');
+                nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
+                nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                paginationElement.appendChild(nextLi);
+                
+                // Initialize page 1
+                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                
+                // Add event listeners to prev/next buttons
+                if (paginationElement.firstChild) {
+                    paginationElement.firstChild.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const activePage = paginationElement.querySelector('.active');
+                        if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
+                            const pageNum = parseInt(activePage.textContent) - 1;
+                            if (pageNum >= 1) {
+                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                            }
+                        }
+                    });
+                }
+                
+                if (paginationElement.lastChild) {
+                    paginationElement.lastChild.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const activePage = paginationElement.querySelector('.active');
+                        if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
+                            const pageNum = parseInt(activePage.textContent) + 1;
+                            if (pageNum <= totalPages) {
+                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Function to handle page navigation
+            function goToPage(pageNumber, containerId, itemClass, itemsPerPage, paginationId) {
+                const container = document.getElementById(containerId);
+                const items = container.getElementsByClassName(itemClass);
+                const paginationElement = document.getElementById(paginationId);
+                
+                // Update pagination active state
+                if (paginationElement) {
+                    const pageItems = paginationElement.getElementsByClassName('page-item');
+                    for (let i = 0; i < pageItems.length; i++) {
+                        if (pageItems[i].textContent.trim() === pageNumber.toString()) {
+                            pageItems[i].className = 'page-item active';
+                        } else if (pageItems[i].textContent.trim() !== '«' && pageItems[i].textContent.trim() !== '»') {
+                            pageItems[i].className = 'page-item';
+                        }
+                    }
+                    
+                    // Update prev/next buttons
+                    if (pageNumber === 1) {
+                        paginationElement.firstChild.className = 'page-item disabled';
+                    } else {
+                        paginationElement.firstChild.className = 'page-item';
+                    }
+                    
+                    const totalPages = Math.ceil(items.length / itemsPerPage);
+                    if (pageNumber === totalPages) {
+                        paginationElement.lastChild.className = 'page-item disabled';
+                    } else {
+                        paginationElement.lastChild.className = 'page-item';
+                    }
+                }
+                
+                // Show/hide items based on page number
+                const startIndex = (pageNumber - 1) * itemsPerPage;
+                const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+                
+                for (let i = 0; i < items.length; i++) {
+                    if (i >= startIndex && i < endIndex) {
+                        items[i].style.display = '';
+                    } else {
+                        items[i].style.display = 'none';
+                    }
+                }
+            }
+            
+            // Scroll functionality
+            const screenshots = document.getElementById('screenshots');
+            if (screenshots) {
+                screenshots.addEventListener('wheel', function(e) {
+                    if (e.deltaY !== 0) {
+                        e.preventDefault();
+                        screenshots.scrollLeft += e.deltaY;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html> 
