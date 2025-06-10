@@ -2,12 +2,11 @@
 
 We support blacklisting specific UI widgets/regions so that Fastbot can avoid interacting with these widgets during fuzzing. 
 
-We support two granularity levels for blacklisting:
+We support two levels for blacklisting:
 
-- Widget Blocking: Block individual UI widgets.
+- Widget Blocking: Only set the specified attributes (clickable, long-clickable, scrollable, checkable, enabled, focusable) of the widget you pass in to false. Use this method when you want to disable some single widget.
 
-- Tree Blocking : Block a UI widget trees by specifying its root node.
-It can block the root node and all its descendants.
+- Tree Blocking: Treat the passed-in widget as the root node of a subtree, and set the above attributes to false for the root node and all its descendant nodes in the subtree. Use this method when you want to disable all widgets within a certain area by simply passing the root node of that area to disable the entire subtree of widgets under it.
 
 We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
 
@@ -110,7 +109,7 @@ Commonly used attributes are listed below. For detailed usage, please refer to t
   `resourceId`
 
 - **Index related attributes**  
-  `index`, `instance`
+  `index`
 
 #### Locating Children and Siblings
 
@@ -157,6 +156,11 @@ Besides directly locating target elements, you can locate child or sibling eleme
       allow_scroll_search=True,  # default False
       className="android.widget.LinearLayout"
     )
+  ```
+- Using instance parameter to locate elements. For example, avoid:
+
+ ```python
+    d(className="android.widget.Button", instance=2)
   ```
 
 - Regular expression matching parameters:  
