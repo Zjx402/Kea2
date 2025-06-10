@@ -644,8 +644,7 @@
         document.addEventListener('DOMContentLoaded', function() {
             var coverageData = {{ coverage_data|safe }};
             console.log("Coverage data points:", coverageData.length);
-            
-            // 确保数据按steps排序
+
             coverageData.sort(function(a, b) {
                 return a.steps - b.steps;
             });
@@ -653,15 +652,13 @@
             var steps = coverageData.map(function(item) { return item.steps; });
             var coverages = coverageData.map(function(item) { return item.coverage; });
             var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
-            
-            // 添加0点数据，确保图表从原点开始
+
             if (steps.length > 0 && steps[0] > 0) {
                 steps.unshift(0);
                 coverages.unshift(0);
                 testedActivities.unshift(0);
             }
-            
-            // 检查数据点
+
             console.log("Steps with zero point:", steps);
             console.log("Coverage values with zero point:", coverages);
 
