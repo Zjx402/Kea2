@@ -719,7 +719,7 @@ class KeaTestRunner(TextTestRunner):
                     logger.error(f"Error processing precond. Check if precond: {e}")
                     traceback.print_exc()
                     return False
-            
+
             if preconds_pass(preconds):
                 try:
                     _widgets = func(self.options.Driver.getStaticChecker())
@@ -733,7 +733,7 @@ class KeaTestRunner(TextTestRunner):
                             xpath = w._parent.xpath
                             blocked_set.add(xpath)
                         else:
-                            logger.warning(f"{w} Not supported")
+                            logger.error(f"block widget defined in {func.__name__} Not supported.")
                 except Exception as e:
                     logger.error(f"Error processing blocked widgets in: {func}")
                     logger.error(e)
