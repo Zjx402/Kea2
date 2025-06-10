@@ -5,7 +5,7 @@
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
 <div>
-    <img src="https://github.com/user-attachments/assets/dad0dbf5-b5d3-414b-a627-281a0fa40cf1" style="border-radius: 14px; width: 20%; height: 20%;"/> 
+    <img src="https://github.com/user-attachments/assets/1a64635b-a8f2-40f1-8f16-55e47b1d74e7" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
 ## About
