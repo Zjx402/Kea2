@@ -255,8 +255,8 @@ class KeaTestRunner(TextTestRunner):
         global LOGFILE, RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)
-        logger.debug(f"Log file: {LOGFILE}")
-        logger.debug(f"Result file: {RESFILE}")
+        logger.info(f"Log file: {LOGFILE}")
+        logger.info(f"Result file: {RESFILE}")
 
     def run(self, test):
 
@@ -293,9 +293,10 @@ class KeaTestRunner(TextTestRunner):
                         message=r"Please use assert\w+ instead.",
                     )
 
-            log_watcher = LogWatcher(LOGFILE)
             fb = FastbotManager(self.options, LOGFILE)
             fb.start()
+
+            log_watcher = LogWatcher(LOGFILE)
             
             if self.options.agent == "u2":
                 # initialize the result.json file
