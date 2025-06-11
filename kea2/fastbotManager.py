@@ -116,10 +116,22 @@ class FastbotManager:
 
         # process handler
         proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
-        t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
+        t = threading.Thread(target=self.close_on_exit, args=(proc, outfile), daemon=True)
         t.start()
 
         return t
+
+    def close_on_exit(self, proc: subprocess.Popen, f: IO):
+        self.return_code = proc.wait()
+        f.close()
+        if self.return_code != 0:
+            raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}]")
+
+    def get_return_code(self):
+        if self.thread:
+            logger.info("Waiting for Fastbot to exit.")
+            self.thread.join()
+        return self.return_code
 
     def start(self):
         self.thread = self._startFastbotService()
@@ -129,8 +141,4 @@ class FastbotManager:
             self.thread.join()
 
 
-def close_on_exit(proc: subprocess.Popen, f: IO):
-        return_code = proc.wait()
-        f.close()
-        if return_code != 0:
-            raise RuntimeError(f"Fastbot Error: Terminated with [code {return_code}]")
+

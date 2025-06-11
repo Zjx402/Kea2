@@ -315,21 +315,21 @@ class KeaTestRunner(TextTestRunner):
                 while self.stepsCount < self.options.maxStep:
 
                     self.stepsCount += 1
-                    print("[INFO] Sending monkeyEvent {}".format(
+                    logger.info("Sending monkeyEvent {}".format(
                         f"({self.stepsCount} / {self.options.maxStep})" if self.options.maxStep != float("inf")
                         else f"({self.stepsCount})"
                         )
-                    , flush=True)
+                    )
 
                     try:
                         xml_raw = self.stepMonkey()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
-                        print(
-                            "[INFO] Exploration times up (--running-minutes)."
-                        , flush=True)
-                        end_by_remote = True
-                        break
+                        if fb.get_return_code() == 0:
+                            logger.info("[INFO] Exploration times up (--running-minutes).")
+                            end_by_remote = True
+                            break
+                        raise RuntimeError("Fastbot Aborted.")
 
                     if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
                         resultSyncer.sync_event.set()
