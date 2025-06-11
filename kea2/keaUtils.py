@@ -239,14 +239,13 @@ class KeaTestRunner(TextTestRunner):
     allProperties: PropertyStore
     options: Options = None
     _block_funcs: Dict[Literal["widgets", "trees"], List[Callable]] = None
-    # _block_trees_funcs = None
 
     @classmethod
     def setOptions(cls, options: Options):
         if not isinstance(options.packageNames, list) and len(options.packageNames) > 0:
             raise ValueError("packageNames should be given in a list.")
         if options.Driver is not None and options.agent == "native":
-            print("[Warning] Can not use any Driver when runing native mode.", flush=True)
+            logger.warning("[Warning] Can not use any Driver when runing native mode.")
             options.Driver = None
         cls.options = options
 
@@ -265,7 +264,7 @@ class KeaTestRunner(TextTestRunner):
         self.collectAllProperties(test)
 
         if len(self.allProperties) == 0:
-            print("[Warning] No property has been found.", flush=True)
+            logger.warning("[Warning] No property has been found.")
 
         self._setOuputDir()
 
@@ -294,7 +293,6 @@ class KeaTestRunner(TextTestRunner):
                         message=r"Please use assert\w+ instead.",
                     )
 
-            # t = activateFastbot(options=self.options)
             log_watcher = LogWatcher(LOGFILE)
             fb = FastbotManager(self.options, LOGFILE)
             fb.start()
