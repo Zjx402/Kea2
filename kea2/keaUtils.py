@@ -1,10 +1,8 @@
 import json
 import os
 from pathlib import Path
-import subprocess
-import threading
 import traceback
-from typing import IO, Callable, Any, Dict, List, Literal, NewType, Union
+from typing import Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -12,12 +10,12 @@ from dataclasses import dataclass, asdict
 import requests
 from .absDriver import AbstractDriver
 from functools import wraps
-from time import sleep
-from .adbUtils import push_file
+from .bug_report_generator import BugReportGenerator
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
 from .u2Driver import StaticU2UiObject
+from .fastbotManager import FastbotManager
 import uiautomator2 as u2
 import types
 
@@ -31,6 +29,10 @@ logger = getLogger(__name__)
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
+PropertyExecutionInfo = TypedDict(
+    "PropertyExecutionInfo",
+    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"]}
+)
 
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
@@ -185,7 +187,7 @@ def getFullPropName(testCase: TestCase):
 class JsonResult(TextTestResult):
     res: PBTTestResult
     
-    lastExecutedInfo: Dict = {
+    lastExecutedInfo: PropertyExecutionInfo = {
         "propName": "",
         "state": "",
     }
@@ -223,112 +225,12 @@ class JsonResult(TextTestResult):
         self.res[getFullPropName(test)].error += 1
         self.lastExecutedInfo["state"] = "error"
 
+    def updateExectedInfo(self):
+        if self.lastExecutedInfo["state"] == "start":
+            self.lastExecutedInfo["state"] = "pass"
+
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
-
-
-def activateFastbot(options: Options, port=None) -> threading.Thread:
-    """
-    activate fastbot.
-    :params: options: the running setting for fastbot
-    :params: port: the listening port for script driver
-    :return: the fastbot daemon thread
-    """
-    cur_dir = Path(__file__).parent
-    push_file(
-        Path.joinpath(cur_dir, "assets/monkeyq.jar"),
-        "/sdcard/monkeyq.jar",
-        device=options.serial
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"),
-        "/sdcard/fastbot-thirdpart.jar",
-        device=options.serial,
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/framework.jar"), 
-        "/sdcard/framework.jar",
-        device=options.serial
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
-        "/data/local/tmp",
-        device=options.serial
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
-        "/data/local/tmp",
-        device=options.serial
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/fastbot_libs/x86"),
-        "/data/local/tmp",
-        device=options.serial
-    )
-    push_file(
-        Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"),
-        "/data/local/tmp",
-        device=options.serial
-    )
-
-    t = startFastbotService(options)
-    print("[INFO] Running Fastbot...", flush=True)
-
-    return t
-
-
-def check_alive(port):
-    """
-    check if the script driver and proxy server are alive.
-    """
-    for _ in range(10):
-        sleep(2)
-        try:
-            requests.get(f"http://localhost:{port}/ping")
-            return
-        except requests.ConnectionError:
-            print("[INFO] waiting for connection.", flush=True)
-            pass
-    raise RuntimeError("Failed to connect fastbot")
-
-
-def startFastbotService(options: Options) -> threading.Thread:
-    shell_command = [
-        "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
-        "exec", "app_process",
-        "/system/bin", "com.android.commands.monkey.Monkey",
-        "-p", *options.packageNames,
-        "--agent-u2" if options.agent == "u2" else "--agent",
-        "reuseq",
-        "--running-minutes", f"{options.running_mins}",
-        "--throttle", f"{options.throttle}",
-        "--bugreport",
-    ]
-
-    if options.profile_period:
-        shell_command += ["--profile-period", f"{options.profile_period}"]
-
-    shell_command += ["-v", "-v", "-v"]
-
-    full_cmd = ["adb"] + (["-s", options.serial] if options.serial else []) + ["shell"] + shell_command
-
-    outfile = open(LOGFILE, "w", encoding="utf-8", buffering=1)
-
-    print("[INFO] Options info: {}".format(asdict(options)), flush=True)
-    print("[INFO] Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)), flush=True)
-    print("[INFO] Fastbot log will be saved to {}".format(outfile.name), flush=True)
-
-    # process handler
-    proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
-    t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
-    t.start()
-
-    return t
-
-
-def close_on_exit(proc: subprocess.Popen, f: IO):
-    proc.wait()
-    f.close()
 
 
 class KeaTestRunner(TextTestRunner):
@@ -337,14 +239,13 @@ class KeaTestRunner(TextTestRunner):
     allProperties: PropertyStore
     options: Options = None
     _block_funcs: Dict[Literal["widgets", "trees"], List[Callable]] = None
-    # _block_trees_funcs = None
 
     @classmethod
     def setOptions(cls, options: Options):
         if not isinstance(options.packageNames, list) and len(options.packageNames) > 0:
             raise ValueError("packageNames should be given in a list.")
         if options.Driver is not None and options.agent == "native":
-            print("[Warning] Can not use any Driver when runing native mode.", flush=True)
+            logger.warning("[Warning] Can not use any Driver when runing native mode.")
             options.Driver = None
         cls.options = options
 
@@ -363,7 +264,7 @@ class KeaTestRunner(TextTestRunner):
         self.collectAllProperties(test)
 
         if len(self.allProperties) == 0:
-            print("[Warning] No property has been found.", flush=True)
+            logger.warning("[Warning] No property has been found.")
 
         self._setOuputDir()
 
@@ -392,16 +293,16 @@ class KeaTestRunner(TextTestRunner):
                         message=r"Please use assert\w+ instead.",
                     )
 
-            t = activateFastbot(options=self.options)
             log_watcher = LogWatcher(LOGFILE)
-            if self.options.agent == "native":
-                t.join()
-            else:
+            fb = FastbotManager(self.options, LOGFILE)
+            fb.start()
+            
+            if self.options.agent == "u2":
                 # initialize the result.json file
                 result.flushResult(outfile=RESFILE)
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
-                check_alive(port=self.scriptDriver.lport)
+                fb.check_alive(port=self.scriptDriver.lport)
                 self._init()
 
                 resultSyncer = ResultSyncer(self.device_output_dir, self.options.output_dir)
@@ -412,21 +313,21 @@ class KeaTestRunner(TextTestRunner):
                 while self.stepsCount < self.options.maxStep:
 
                     self.stepsCount += 1
-                    print("[INFO] Sending monkeyEvent {}".format(
+                    logger.info("Sending monkeyEvent {}".format(
                         f"({self.stepsCount} / {self.options.maxStep})" if self.options.maxStep != float("inf")
                         else f"({self.stepsCount})"
                         )
-                    , flush=True)
+                    )
 
                     try:
                         xml_raw = self.stepMonkey()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
-                        print(
-                            "[INFO] Exploration times up (--running-minutes)."
-                        , flush=True)
-                        end_by_remote = True
-                        break
+                        if fb.get_return_code() == 0:
+                            logger.info("[INFO] Exploration times up (--running-minutes).")
+                            end_by_remote = True
+                            break
+                        raise RuntimeError("Fastbot Aborted.")
 
                     if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
                         resultSyncer.sync_event.set()
@@ -464,17 +365,18 @@ class KeaTestRunner(TextTestRunner):
                     finally:
                         result.printErrors()
 
+                    result.updateExectedInfo()
                     self._logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
                     self.stopMonkey()
                 result.flushResult(outfile=RESFILE)
-                resultSyncer.close()    
-
+                resultSyncer.close()
+                
+            fb.join()
             print(f"Finish sending monkey events.", flush=True)
             log_watcher.close()
-            
 
         # Source code from unittest Runner
         # process the result
@@ -622,7 +524,7 @@ class KeaTestRunner(TextTestRunner):
             """
             def tearDown(self): ...
             testCase.tearDown = types.MethodType(tearDown, testCase)
-        
+
         def iter_tests(suite):
             for test in suite:
                 if isinstance(test, TestSuite):
@@ -762,6 +664,12 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
+        try:
+            logger.debug("Generating test bug report")
+            report_generator = BugReportGenerator(self.options.output_dir)
+            report_generator.generate_report()
+        except Exception as e:
+            logger.error(f"Error generating bug report: {e}", flush=True)
         try:
             self.stopMonkey()
         except Exception as e:
