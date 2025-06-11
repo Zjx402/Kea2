@@ -113,10 +113,7 @@ class StaticU2UiObject(u2.UiObject):
             """
         try:
 
-            if is_initial:
-                xpath = ".//node"
-            else:
-                xpath = "node"
+            xpath = ".//node" if is_initial else "node"
 
             conditions = []
 
@@ -152,7 +149,7 @@ class StaticU2UiObject(u2.UiObject):
                 raise NotImplementedError("'resourceIdMatches' syntax is not supported")
 
             bool_props = ["checkable", "checked", "clickable", "longClickable", "scrollable", "enabled", "focusable",
-                          "focused", "selected"]
+                          "focused", "selected", "covered"]
             for prop in bool_props:
                 if prop in selector:
                     value = "true" if selector[prop] else "false"
@@ -166,14 +163,15 @@ class StaticU2UiObject(u2.UiObject):
             if "childOrSibling" in selector and selector["childOrSibling"]:
                 for i, relation in enumerate(selector["childOrSibling"]):
                     sub_selector = selector["childOrSiblingSelector"][i]
-                    sub_xpath = self.selector_to_xpath(sub_selector, False)  # 递归处理子选择器
+                    sub_xpath = self.selector_to_xpath(sub_selector, False)
 
                     if relation == "child":
                         xpath += f"//{sub_xpath}"
                     elif relation == "sibling":
-                        xpath_initial = xpath
-                        xpath = '(' + xpath_initial + f"/following-sibling::{sub_xpath} | " + xpath_initial + f"/preceding-sibling::{sub_xpath})"
-
+                        cur_root = xpath
+                        following_sibling = cur_root + f"/following-sibling::{sub_xpath}"
+                        preceding_sibling = cur_root + f"/preceding-sibling::{sub_xpath}"
+                        xpath = f"({following_sibling} | {preceding_sibling})"
             if "instance" in selector:
                 xpath = f"({xpath})[{selector['instance'] + 1}]"
 
@@ -187,12 +185,12 @@ class StaticU2UiObject(u2.UiObject):
     @property
     def exists(self):
         dict.update(self.selector, {"covered": "false"})
-        xpath = self.selector_to_xpath(self.selector,True)
+        xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
 
     def __len__(self):
-        xpath = self.selector_to_xpath(self.selector,True)
+        xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return len(matched_widgets)
     

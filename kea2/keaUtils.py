@@ -726,7 +726,7 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
                         if isinstance(w, StaticU2UiObject):
-                            xpath = w.selector_to_xpath(w.selector, True)
+                            xpath = w.selector_to_xpath(w.selector)
                             if xpath != '//error':
                                 blocked_set.add(xpath)
                         elif isinstance(w, u2.xpath.XPathSelector):
