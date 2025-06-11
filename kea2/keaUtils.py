@@ -336,8 +336,10 @@ def startFastbotService(options: Options) -> threading.Thread:
 
 
 def close_on_exit(proc: subprocess.Popen, f: IO):
-    proc.wait()
+    return_code = proc.wait()
     f.close()
+    if return_code != 0:
+        raise RuntimeError(f"Fastbot Error: Terminated with code [{return_code}]")
 
 
 class KeaTestRunner(TextTestRunner):
