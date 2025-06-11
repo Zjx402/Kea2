@@ -1,0 +1,136 @@
+from dataclasses import asdict
+import subprocess
+import threading
+import requests
+from time import sleep
+from .adbUtils import push_file
+from pathlib import Path
+from .utils import getLogger
+
+from typing import IO, TYPE_CHECKING
+if TYPE_CHECKING:
+    from .keaUtils import Options
+
+
+logger = getLogger(__name__)
+
+
+class FastbotManager:
+    def __init__(self, options: "Options", log_file: str):
+        self.options:"Options" = options
+        self.log_file: str = log_file
+        self.port = None
+        self.thread = None
+
+
+    def _activateFastbot(self, options: "Options") -> threading.Thread:
+        """
+        activate fastbot.
+        :params: options: the running setting for fastbot
+        :params: port: the listening port for script driver
+        :return: the fastbot daemon thread
+        """
+        cur_dir = Path(__file__).parent
+        push_file(
+            Path.joinpath(cur_dir, "assets/monkeyq.jar"),
+            "/sdcard/monkeyq.jar",
+            device=options.serial
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"),
+            "/sdcard/fastbot-thirdpart.jar",
+            device=options.serial,
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/framework.jar"), 
+            "/sdcard/framework.jar",
+            device=options.serial
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
+            "/data/local/tmp",
+            device=options.serial
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
+            "/data/local/tmp",
+            device=options.serial
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/fastbot_libs/x86"),
+            "/data/local/tmp",
+            device=options.serial
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"),
+            "/data/local/tmp",
+            device=options.serial
+        )
+
+        t = self._startFastbotService(options)
+        logger.info("Running Fastbot...")
+
+        return t
+
+
+    def check_alive(self, port):
+        """
+        check if the script driver and proxy server are alive.
+        """
+        for _ in range(10):
+            sleep(2)
+            try:
+                requests.get(f"http://localhost:{port}/ping")
+                return
+            except requests.ConnectionError:
+                logger.info("waiting for connection.")
+                pass
+        raise RuntimeError("Failed to connect fastbot")
+
+
+    def _startFastbotService(self) -> threading.Thread:
+        shell_command = [
+            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+            "exec", "app_process",
+            "/system/bin", "com.android.commands.monkey.Monkey",
+            "-p", *self.options.packageNames,
+            "--agent-u2" if self.options.agent == "u2" else "--agent",
+            "reuseq",
+            "--running-minutes", f"{self.options.running_mins}",
+            "--throttle", f"{self.options.throttle}",
+            "--bugreport",
+        ]
+
+        if self.options.profile_period:
+            shell_command += ["--profile-period", f"{self.options.profile_period}"]
+
+        shell_command += ["-v", "-v", "-v"]
+
+        full_cmd = ["adb"] + (["-s", self.options.serial] if self.options.serial else []) + ["shell"] + shell_command
+
+        outfile = open(self.log_file, "w", encoding="utf-8", buffering=1)
+
+        logger.info("Options info: {}".format(asdict(self.options)))
+        logger.info("Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
+        logger.info("Fastbot log will be saved to {}".format(outfile.name))
+
+        # process handler
+        proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
+        t = threading.Thread(target=close_on_exit, args=(proc, outfile), daemon=True)
+        t.start()
+
+        return t
+
+    def start(self):
+        self.thread = self._startFastbotService()
+
+    def join(self):
+        if self.thread:
+            self.thread.join()
+
+
+def close_on_exit(proc: subprocess.Popen, f: IO):
+        return_code = proc.wait()
+        f.close()
+        if return_code != 0:
+            raise RuntimeError(f"Fastbot Error: Terminated with [code {return_code}]")
