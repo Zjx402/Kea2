@@ -324,8 +324,9 @@ class KeaTestRunner(TextTestRunner):
                         xml_raw = self.stepMonkey()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
+                        logger.info("Connection refused by remote.")
                         if fb.get_return_code() == 0:
-                            logger.info("[INFO] Exploration times up (--running-minutes).")
+                            logger.info("Exploration times up (--running-minutes).")
                             end_by_remote = True
                             break
                         raise RuntimeError("Fastbot Aborted.")
@@ -653,7 +654,7 @@ class KeaTestRunner(TextTestRunner):
         """tearDown method. Cleanup the env.
         """
         try:
-            logger.debug("Generating test bug report")
+            logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
         except Exception as e:
