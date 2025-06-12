@@ -23,13 +23,14 @@ class FastbotManager:
         self.thread = None
 
 
-    def _activateFastbot(self, options: "Options") -> threading.Thread:
+    def _activateFastbot(self) -> threading.Thread:
         """
         activate fastbot.
         :params: options: the running setting for fastbot
         :params: port: the listening port for script driver
         :return: the fastbot daemon thread
         """
+        options = self.options
         cur_dir = Path(__file__).parent
         push_file(
             Path.joinpath(cur_dir, "assets/monkeyq.jar"),
@@ -67,7 +68,7 @@ class FastbotManager:
             device=options.serial
         )
 
-        t = self._startFastbotService(options)
+        t = self._startFastbotService()
         logger.info("Running Fastbot...")
 
         return t
@@ -134,7 +135,7 @@ class FastbotManager:
         return self.return_code
 
     def start(self):
-        self.thread = self._startFastbotService()
+        self.thread = self._activateFastbot()
 
     def join(self):
         if self.thread:
