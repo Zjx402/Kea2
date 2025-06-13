@@ -126,6 +126,8 @@ class Options:
     profile_period: int = 25
     # take screenshots for every step
     take_screenshots: bool = False
+    # The root of output dir on device
+    device_output_root: str = "/sdcard"
     # the debug mode
     debug: bool = False
 
@@ -496,7 +498,8 @@ class KeaTestRunner(TextTestRunner):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
         data = {
             "takeScreenshots": self.options.take_screenshots,
-            "Stamp": STAMP
+            "Stamp": STAMP,
+            "deviceOutputRoot": self.options.device_output_root,
         }
         print(f"[INFO] Init fastbot: {data}", flush=True)
         r = requests.post(
@@ -506,7 +509,7 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         import re
         self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
+        print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
