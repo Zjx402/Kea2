@@ -141,6 +141,12 @@ class Options:
             self.Driver.setDeviceSerial(self.serial)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
+            illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
+            for char in illegal_chars:
+                if char in self.log_stamp:
+                    raise ValueError(
+                        f"char: `{char}` is illegal in --log-stamp. current stamp: {self.log_stamp}"
+                    )
             STAMP = self.log_stamp
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
