@@ -657,14 +657,16 @@ class KeaTestRunner(TextTestRunner):
         """tearDown method. Cleanup the env.
         """
         try:
+            self.stopMonkey()
+        except Exception as e:
+            pass
+
+        if self.options.Driver:
+            self.options.Driver.tearDown()
+
+        try:
             logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
         except Exception as e:
             logger.error(f"Error generating bug report: {e}", flush=True)
-        try:
-            self.stopMonkey()
-        except Exception as e:
-            pass
-        if self.options.Driver:
-            self.options.Driver.tearDown()

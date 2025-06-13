@@ -180,7 +180,7 @@ def run(args=None):
         log_stamp=args.log_stamp,
         profile_period=args.profile_period,
         take_screenshots=args.take_screenshots,
-        device_output_root=args.device_output_dir
+        device_output_root=args.device_output_root
     )
 
     KeaTestRunner.setOptions(options)
