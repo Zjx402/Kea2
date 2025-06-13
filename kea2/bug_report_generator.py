@@ -323,6 +323,8 @@ class BugReportGenerator:
                 if lines:
                     # Collect coverage trend data
                     for line in lines:
+                        if not line.strip():
+                            continue
                         try:
                             coverage_data = json.loads(line)
                             data["coverage_trend"].append({
