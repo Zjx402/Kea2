@@ -126,7 +126,7 @@ class FastbotManager:
         self.return_code = proc.wait()
         f.close()
         if self.return_code != 0:
-            raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}]")
+            raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}] See {self.log_file} for details.")
 
     def get_return_code(self):
         if self.thread:

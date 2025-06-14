@@ -91,6 +91,15 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         default=25,
         help="Steps to profile the testing statistics.",
     )
+
+    parser.add_argument(
+        "--device-output-root",
+        dest="device_output_root",
+        type=str,
+        required=False,
+        default="/sdcard",
+        help="The root of device output dir. (Saving tmp log files and screenshots)",
+    )
     
     parser.add_argument(
         "--take-screenshots",
@@ -171,6 +180,7 @@ def run(args=None):
         log_stamp=args.log_stamp,
         profile_period=args.profile_period,
         take_screenshots=args.take_screenshots,
+        device_output_root=args.device_output_root
     )
 
     KeaTestRunner.setOptions(options)
