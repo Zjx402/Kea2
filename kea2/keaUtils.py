@@ -110,6 +110,8 @@ class Options:
     packageNames: List[str]
     # target device
     serial: str = None
+    # target device with transport_id
+    transport_id: str = None
     # test agent. "native" for stage 1 and "u2" for stage 1~3
     agent: Literal["u2", "native"] = "u2"
     # max step in exploration (availble in stage 2~3)
@@ -137,8 +139,13 @@ class Options:
         super().__setattr__(name, value)
 
     def __post_init__(self):
-        if self.serial and self.Driver:
-            self.Driver.setDeviceSerial(self.serial)
+        if self.Driver:
+            target_device = dict()
+            if self.serial:
+                target_device["serial"] = self.serial
+            if self.transport_id:
+                target_device["transport_id"] = self.transport_id
+            self.Driver.setDevice(target_device)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']

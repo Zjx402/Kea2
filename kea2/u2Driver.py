@@ -1,10 +1,15 @@
+import datetime
+import json
 import random
 import socket
+import requests
 import uiautomator2 as u2
+import adbutils
 import types
 import rtree
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
+from http.client import HTTPResponse
 from lxml import etree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
@@ -35,7 +40,12 @@ class U2ScriptDriver(AbstractScriptDriver):
     """
 
     deviceSerial: str = None
+    transportId: str = None
     d = None
+
+    @classmethod
+    def setTransportId(cls, transportId):
+        cls.transportId = transportId
 
     @classmethod
     def setDeviceSerial(cls, deviceSerial):
@@ -43,26 +53,24 @@ class U2ScriptDriver(AbstractScriptDriver):
 
     def getInstance(self):
         if self.d is None:
-            self.d = (
-                u2.connect() if self.deviceSerial is None
-                else u2.connect(self.deviceSerial)
-            )
+            adb = adbutils.device(serial=self.deviceSerial, transport_id=self.transportId)
+            self.d = u2.connect(adb)
 
-            def get_u2_forward_port() -> int:
-                """rewrite forward_port mothod to avoid the relocation of port
-                :return: the new forward port
-                """
-                print("Rewriting forward_port method", flush=True)
-                self.d._dev.forward_port = types.MethodType(
-                                forward_port, self.d._dev)
-                lport = self.d._dev.forward_port(8090)
-                setattr(self.d._dev, "msg", "meta")
-                print(f"[U2] local port: {lport}", flush=True)
-                return lport
+            # def get_u2_forward_port() -> int:
+            #     """rewrite forward_port mothod to avoid the relocation of port
+            #     :return: the new forward port
+            #     """
+            #     print("Rewriting forward_port method", flush=True)
+            #     self.d._dev.forward_port = types.MethodType(
+            #                     forward_port, self.d._dev)
+            #     lport = self.d._dev.forward_port(8090)
+            #     setattr(self.d._dev, "msg", "meta")
+            #     print(f"[U2] local port: {lport}", flush=True)
+            #     return lport
 
-            self._remove_remote_port(8090)
-            self.d.lport = get_u2_forward_port()
-            self._remove_remote_port(9008)
+            # self._remove_remote_port(8090)
+            # self.d.lport = get_u2_forward_port()
+            # self._remove_remote_port(9008)
 
         return self.d
 
@@ -76,10 +84,11 @@ class U2ScriptDriver(AbstractScriptDriver):
                 remove_forward(local_spec=forward_local, device=self.deviceSerial)
 
     def tearDown(self):
-        logger.debug("U2Driver tearDown: stop_uiautomator")
-        self.d.stop_uiautomator()
-        logger.debug("U2Driver tearDown: remove forward")
-        self._remove_remote_port(8090)
+        # logger.debug("U2Driver tearDown: stop_uiautomator")
+        # self.d.stop_uiautomator()
+        # logger.debug("U2Driver tearDown: remove forward")
+        # self._remove_remote_port(8090)
+        pass
 
 """
 The definition of U2StaticChecker
@@ -290,8 +299,11 @@ class U2Driver(AbstractDriver):
     staticChecker = None
 
     @classmethod
-    def setDeviceSerial(cls, deviceSerial):
-        U2ScriptDriver.setDeviceSerial(deviceSerial)
+    def setDevice(cls, kwarg):
+        if kwarg.get("serial"):
+            U2ScriptDriver.setDeviceSerial(kwarg["serial"])
+        if kwarg.get("transport_id"):
+            U2ScriptDriver.setTransportId(kwarg["transport_id"])
 
     @classmethod
     def getScriptDriver(self):
@@ -324,7 +336,7 @@ def forward_port(self, remote: Union[int, str]) -> int:
                 and f.remote == remote
                 and f.local.startswith("tcp:")
             ):  # yapf: disable
-                return int(f.local[len("tcp:") :])
+                return int(f.local[len("tcp:"):])
         local_port = get_free_port()
         self.forward("tcp:" + str(local_port), remote)
         logger.debug(f"forwading port: tcp:{local_port} -> {remote}")
@@ -435,3 +447,67 @@ def get_free_port():
             if not is_port_in_use(port):
                 return port
         raise RuntimeError("No free port found")
+
+
+
+
+from uiautomator2.core import AdbHTTPConnection
+from uiautomator2.exceptions import HTTPError, HTTPTimeoutError
+
+# This is my custom HTTP request function to send requests to uiautomator2 server
+def _http_request(dev: adbutils.AdbDevice, method: str, path: str, data: Dict[str, Any] = None, timeout=10, print_request: bool = False) -> HTTPResponse:
+    """Send http request to uiautomator2 server"""
+    try:
+        logger.debug("http request %s %s %s", method, path, data)
+
+        # https://stackoverflow.com/questions/2386299/running-sites-on-localhost-is-extremely-slow
+        # so here use 127.0.0.1 instead of localhost
+        if print_request:
+            start_time = datetime.datetime.now()
+            current_time = start_time.strftime("%H:%M:%S.%f")[:-3]
+            url = f"http://127.0.0.1:8090{path}"
+            fields = [current_time, f"$ curl -X {method}", url]
+            if data:
+                fields.append(f"-d '{json.dumps(data)}'")
+            print(f"# http timeout={timeout}")
+            print(" ".join(fields))
+        
+        # set Accept-Encoding to empty to avoid gzip compression
+        # nanohttpd gzip has resource leaks
+        # https://github.com/NanoHttpd/nanohttpd/issues/492
+        # https://blog.csdn.net/fcp12138/article/details/80436644
+        headers = {
+            'User-Agent': 'uiautomator2',
+            'Accept-Encoding': '',
+            'Content-Type': 'application/json'
+        }
+        conn = AdbHTTPConnection(dev, port=8090)
+        conn.timeout = timeout
+        try:
+            if not data:
+                conn.request(method, path, headers=headers)
+            else:
+                conn.request(method, path, json.dumps(data), headers=headers)
+        except adbutils.AdbError as e:
+            raise HTTPError(f"Unable to make http request through adb")
+        _response = conn.getresponse()
+        content = bytearray()
+        while chunk := _response.read(4096):
+            content.extend(chunk)
+        if _response.status != 200:
+            raise HTTPError(f"HTTP request failed: {_response.status} {_response.reason}")
+        response = HTTPResponse(content)
+
+        if print_request:
+            end_time = datetime.datetime.now()
+            current_time = end_time.strftime("%H:%M:%S.%f")[:-3]
+            print(f"{current_time} Response >>>")
+            print(response.text.rstrip())
+            print(f"<<< END timed_used = %.3f\n" % (end_time - start_time).total_seconds())
+        return response
+    except requests.Timeout as e:
+        raise HTTPTimeoutError(f"HTTP request timeout: {e}") from e
+    except requests.RequestException as e:
+        raise HTTPError(f"HTTP request failed: {e}") from e
+
+u2.core._http_request = _http_request
