@@ -1,6 +1,6 @@
 import subprocess
 from typing import List, Optional, Set
-from .utils import getLogger
+from kea2.utils import getLogger
 
 logger = getLogger(__name__)
 
@@ -37,7 +37,7 @@ def get_devices():
     Returns:
         list: A list of device serial numbers.
     """
-    output = run_adb_command(["devices"])
+    output = run_adb_command(["devices", "-l"])
     devices = []
     if output:
         lines = output.splitlines()
@@ -59,21 +59,23 @@ def ensure_device(func):
     """
     def wrapper(*args, **kwargs):
         devices = get_devices()
-        if kwargs.get("device") is None:
+        if kwargs.get("device") is None and kwargs.get("transport_id") is None:
             if not devices:
                 raise RuntimeError("No connected devices.")
             if len(devices) > 1:
                 raise RuntimeError("Multiple connected devices detected. Please specify a device.")
             kwargs["device"] = devices[0]
-        if kwargs["device"] not in devices:
+        if kwargs.get("device"):
             output = run_adb_command(["-s", kwargs["device"], "get-state"])
-            if output.strip() != "device":
-                raise RuntimeError(f"[ERROR] {kwargs['device']} not connected. Please check.\n{output}")
+        elif kwargs.get("transport_id"):
+            output = run_adb_command(["-t", kwargs["transport_id"], "get-state"])
+        if output.strip() != "device":
+            raise RuntimeError(f"[ERROR] {kwargs['device']} not connected. Please check.\n{output}")
         return func(*args, **kwargs)
     return wrapper
 
 @ensure_device
-def adb_shell(cmd: List[str], device:Optional[str]=None):
+def adb_shell(cmd: List[str], device:Optional[str]=None, transport_id:Optional[str]=None):
     """
     run adb shell commands
 
@@ -81,11 +83,15 @@ def adb_shell(cmd: List[str], device:Optional[str]=None):
         cmd (List[str])
         device (str, optional): The device serial number. If None, it's resolved automatically when only one device is connected.
     """
-    return run_adb_command(["-s", device, "shell"] + cmd)
+    if device:
+        return run_adb_command(["-s", device, "shell"] + cmd)
+    if transport_id:
+        return run_adb_command(["-t", transport_id, "shell"] + cmd)
+        
 
 
 @ensure_device
-def install_app(apk_path: str, device: Optional[str]=None):
+def install_app(apk_path: str, device: Optional[str]=None, transport_id:Optional[str]=None):
     """
     Installs an APK application on the specified device.
     
@@ -96,11 +102,14 @@ def install_app(apk_path: str, device: Optional[str]=None):
     Returns:
         str: The output from the install command.
     """
-    return run_adb_command(["-s", device, "install", apk_path])
+    if device:
+        return run_adb_command(["-s", device, "install", apk_path])
+    if transport_id:
+        return run_adb_command(["-t", transport_id, "install", apk_path])
 
 
 @ensure_device
-def uninstall_app(package_name: str, device: Optional[str] = None):
+def uninstall_app(package_name: str, device: Optional[str] = None, transport_id:Optional[str]=None):
     """
     Uninstalls an app from the specified device.
     
@@ -111,11 +120,13 @@ def uninstall_app(package_name: str, device: Optional[str] = None):
     Returns:
         str: The output from the uninstall command.
     """
-    return run_adb_command(["-s", device, "uninstall", package_name])
-
+    if device:
+        return run_adb_command(["-s", device, "uninstall", package_name])
+    if transport_id:
+        return run_adb_command(["-t", transport_id, "uninstall", package_name])
 
 @ensure_device
-def push_file(local_path: str, remote_path: str, device: Optional[str] = None):
+def push_file(local_path: str, remote_path: str, device: Optional[str] = None, transport_id:Optional[str]=None):
     """
     Pushes a file to the specified device.
     
@@ -129,11 +140,14 @@ def push_file(local_path: str, remote_path: str, device: Optional[str] = None):
     """
     local_path = str(local_path)
     remote_path = str(remote_path)
-    return run_adb_command(["-s", device, "push", local_path, remote_path])
+    if device:
+        return run_adb_command(["-s", device, "push", local_path, remote_path])
+    if transport_id:
+        return run_adb_command(["-t", transport_id, "push", local_path, remote_path])
 
 
 @ensure_device
-def pull_file(remote_path: str, local_path: str, device: Optional[str] = None):
+def pull_file(remote_path: str, local_path: str, device: Optional[str] = None, transport_id:Optional[str]=None):
     """
     Pulls a file from the device to a local path.
     
@@ -145,7 +159,10 @@ def pull_file(remote_path: str, local_path: str, device: Optional[str] = None):
     Returns:
         str: The output from the pull command.
     """
-    return run_adb_command(["-s", device, "pull", remote_path, local_path])
+    if device:
+        return run_adb_command(["-s", device, "pull", remote_path, local_path])
+    if transport_id:
+        return run_adb_command(["-t", transport_id, "pull", remote_path, local_path])
 
 # Forward-related functions
 
@@ -223,7 +240,7 @@ def remove_all_forwards(device: Optional[str] = None):
 
 
 @ensure_device
-def get_packages(device: Optional[str] = None) -> Set[str]:
+def get_packages(device: Optional[str]=None, transport_id: Optional[str]=None) -> Set[str]:
     """
     Retrieves packages that match the specified regular expression pattern.
     
@@ -236,7 +253,10 @@ def get_packages(device: Optional[str] = None) -> Set[str]:
     """
     import re
     
-    cmd = ["-s", device, "shell", "pm", "list", "packages"]
+    if device:
+        cmd = ["-s", device, "shell", "pm", "list", "packages"]
+    if transport_id:
+        cmd = ["-t", transport_id, "shell", "pm", "list", "packages"]
     output = run_adb_command(cmd)
     
     packages = set()
@@ -252,6 +272,7 @@ def get_packages(device: Optional[str] = None) -> Set[str]:
 
 if __name__ == '__main__':
     # For testing: print the list of currently connected devices.
+    adb_shell(["ls", "vendor"], transport_id="2")
     devices = get_devices()
     if devices:
         print("Connected devices:", flush=True)
