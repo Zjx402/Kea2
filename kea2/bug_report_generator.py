@@ -1,9 +1,8 @@
-import os
 import json
 import datetime
 import re
 from pathlib import Path
-import shutil
+import cv2
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
 from .utils import getLogger
 
@@ -26,7 +25,7 @@ class BugReportGenerator:
         self.log_timestamp = self.result_dir.name.split("_", 1)[1]
         self.screenshots_dir = self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
         self.take_screenshots = self._detect_screenshots_setting()
-        
+
         # Set up Jinja2 environment
         # First try to load templates from the package
         try:
@@ -38,16 +37,16 @@ class BugReportGenerator:
             # If unable to load from package, load from current directory's templates folder
             current_dir = Path(__file__).parent
             templates_dir = current_dir / "templates"
-            
+
             # Ensure template directory exists
             if not templates_dir.exists():
                 templates_dir.mkdir(parents=True, exist_ok=True)
-                
+
             self.jinja_env = Environment(
                 loader=FileSystemLoader(templates_dir),
                 autoescape=select_autoescape(['html', 'xml'])
             )
-            
+
             # If template file doesn't exist, it will be created on first report generation
 
     def generate_report(self):
@@ -106,36 +105,47 @@ class BugReportGenerator:
         property_violations = {}  # Store multiple violation records for each property: {property_name: [{start, end, screenshot}, ...]}
         start_screenshot = None  # Screenshot name at the start of testing
         fail_screenshot = None  # Screenshot name at test failure
-        
+
         # For storing time data
         first_precond_time = None  # Time of the first ScriptInfo entry with state=start
-        first_fail_time = None     # Time of the first ScriptInfo entry with state=fail
+        first_fail_time = None  # Time of the first ScriptInfo entry with state=fail
 
         if steps_log_path.exists():
             with open(steps_log_path, "r", encoding="utf-8") as f:
                 # First read all steps
                 steps = []
-                
+
                 for line in f:
                     try:
                         step_data = json.loads(line)
                         steps.append(step_data)
-                        
+                        info = json.loads(step_data.get("Info", "{}")) if isinstance(step_data.get("Info"),
+                                                                                     str) else step_data.get("Info", {})
                         # Extract time from ScriptInfo entries
                         if step_data.get("Type") == "ScriptInfo":
                             try:
-                                info = json.loads(step_data.get("Info", "{}")) if isinstance(step_data.get("Info"), str) else step_data.get("Info", {})
                                 state = info.get("state", "")
-                                
                                 # Record the first ScriptInfo with state=start as precondition time
                                 if state == "start" and first_precond_time is None:
                                     first_precond_time = step_data.get("Time")
-                                
+
                                 # Record the first ScriptInfo with state=fail as fail time
                                 elif state == "fail" and first_fail_time is None:
                                     first_fail_time = step_data.get("Time")
                             except Exception as e:
                                 logger.error(f"Error parsing ScriptInfo: {e}")
+
+                        elif step_data.get("Type") == "Monkey":
+                            try:
+                                act = info.get("act", "")
+                                pos = info.get("pos")
+                                screenshot_name = step_data.get("Screenshot", "")
+                                if act in ["CLICK", "LONG_CLICK"] and pos and screenshot_name:
+                                    screenshot_path = self.screenshots_dir / screenshot_name
+                                    if screenshot_path.exists():
+                                        self._mark_screenshot_interaction(screenshot_path, act, pos)
+                            except Exception as e:
+                                logger.error(f"Error processing Monkey step: {e}")
                     except:
                         pass
 
@@ -230,10 +240,10 @@ class BugReportGenerator:
                                         current_test = {}
                         except:
                             pass
-        
+
         # Calculate test time
         start_time = None
-        
+
         # Parse fastbot log file to get start time
         fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
         if fastbot_log_path:
@@ -247,22 +257,22 @@ class BugReportGenerator:
                     if start_match:
                         start_time_str = start_match.group(1)
                         start_time = datetime.datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    
+
                     # Extract test end time (last timestamp)
                     end_matches = re.findall(r'\[Fastbot\]\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]',
-                                         log_content)
+                                             log_content)
                     end_time = None
                     if end_matches:
                         end_time_str = end_matches[-1]
                         end_time = datetime.datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    
+
                     # Calculate total test time (in seconds)
                     if start_time and end_time:
                         data["total_testing_time"] = int((end_time - start_time).total_seconds())
             except Exception as e:
                 logger.error(f"Error parsing fastbot log file: {e}")
                 logger.error(f"Error details: {str(e)}")
-        
+
         # Calculate first_bug_time and first_precondition_time from steps.log data
         if start_time:
             # If first_precond_time exists, calculate first_precondition_time
@@ -272,7 +282,7 @@ class BugReportGenerator:
                     data["first_precondition_time"] = int((precond_time - start_time).total_seconds())
                 except Exception as e:
                     logger.error(f"Error parsing precond_time: {e}")
-            
+
             # If first_fail_time exists, calculate first_bug_time
             if first_fail_time:
                 try:
@@ -333,10 +343,10 @@ class BugReportGenerator:
                         except Exception as e:
                             logger.error(f"Error parsing coverage data: {e}")
                             continue
-                    
+
                     # Ensure sorted by steps
                     data["coverage_trend"].sort(key=lambda x: x["steps"])
-                    
+
                     try:
                         # Read last line to get final coverage data
                         coverage_data = json.loads(lines[-1])
@@ -386,7 +396,7 @@ class BugReportGenerator:
         # Method 1: Check if screenshots directory exists and has content
         if self.screenshots_dir.exists() and any(self.screenshots_dir.glob("screenshot-*.png")):
             return True
-            
+
         # Method 2: Try to read init config from logs
         fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
         if fastbot_log_path:
@@ -397,7 +407,7 @@ class BugReportGenerator:
                         return True
             except Exception:
                 pass
-                
+
         return False
 
     def _generate_html_report(self, data):
@@ -411,7 +421,7 @@ class BugReportGenerator:
 
             if self.screenshots_dir.exists():
                 screenshot_files = sorted(self.screenshots_dir.glob("screenshot-*.png"),
-                                     key=lambda x: int(x.name.split("-")[1].split(".")[0]))
+                                          key=lambda x: int(x.name.split("-")[1].split(".")[0]))
 
                 for i, screenshot in enumerate(screenshot_files, 1):
                     screenshot_name = screenshot.name
@@ -427,19 +437,19 @@ class BugReportGenerator:
                         'path': f"{relative_path}/{screenshot_name}",
                         'caption': caption
                     })
-            
+
             # Format timestamp for display
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
+
             # Ensure coverage_trend has data
             if not data["coverage_trend"]:
                 logger.warning("No coverage trend data")
                 data["coverage_trend"] = [{"steps": 0, "coverage": 0, "tested_activities_count": 0}]
-            
+
             # Convert coverage_trend to JSON string, ensuring all data points are included
             coverage_trend_json = json.dumps(data["coverage_trend"])
             logger.debug(f"Number of coverage trend data points: {len(data['coverage_trend'])}")
-            
+
             # Prepare template data
             template_data = {
                 'timestamp': timestamp,
@@ -452,7 +462,7 @@ class BugReportGenerator:
                 'total_activities_count': len(data["total_activities"]),
                 'tested_activities_count': len(data["tested_activities"]),
                 'tested_activities': data["tested_activities"],  # Pass list of tested Activities
-                'total_activities': data["total_activities"],    # Pass list of all Activities
+                'total_activities': data["total_activities"],  # Pass list of all Activities
                 'items_per_page': 10,  # Items to display per page
                 'screenshots': screenshots,
                 'property_violations': data["property_violations"],
@@ -460,18 +470,58 @@ class BugReportGenerator:
                 'coverage_data': coverage_trend_json,
                 'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
             }
-            
+
             # Check if template exists, if not create it
             template_path = Path(__file__).parent / "templates" / "bug_report_template.html"
             if not template_path.exists():
                 logger.warning("Template file does not exist, creating default template...")
-            
+
             # Use Jinja2 to render template
             template = self.jinja_env.get_template("bug_report_template.html")
             html_content = template.render(**template_data)
-            
+
             return html_content
-            
+
         except Exception as e:
             logger.error(f"Error rendering template: {e}")
             raise
+
+    def _mark_screenshot_interaction(self, screenshot_path, action_type, position):
+        """
+        Mark interaction on screenshot with colored rectangle
+        
+        Args:
+            screenshot_path (Path): Path to the screenshot file
+            action_type (str): Type of action ('CLICK' or 'LONG_CLICK')
+            position (list): Position coordinates [x1, y1, x2, y2]
+        
+        Returns:
+            bool: True if marking was successful, False otherwise
+        """
+        try:
+            # Read the image
+            img = cv2.imread(str(screenshot_path))
+            if img is None:
+                logger.warning(f"Could not read image: {screenshot_path}")
+                return False
+            
+            # Validate position format
+            if not isinstance(position, (list, tuple)) or len(position) != 4:
+                logger.warning(f"Invalid position format: {position}")
+                return False
+            
+            x1, y1, x2, y2 = int(position[0]), int(position[1]), int(position[2]), int(position[3])
+            
+            # Choose color based on action type: CLICK uses red, LONG_CLICK uses blue
+            if action_type == "CLICK":
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 5)
+            elif action_type == "LONG_CLICK":
+                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
+
+            # Save with overwrite
+            cv2.imwrite(str(screenshot_path), img)
+            return True
+            
+        except Exception as e:
+            logger.error(f"Error marking screenshot {screenshot_path}: {e}")
+            return False
