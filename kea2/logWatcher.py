@@ -2,6 +2,10 @@ import re
 import os
 import threading
 import time
+from .utils import getLogger
+
+
+logger = getLogger(__name__)
 
 
 PATTERN_EXCEPTION = re.compile(r"\[Fastbot\].+Internal\serror\n([\s\S]*)")
@@ -16,7 +20,7 @@ def thread_excepthook(args):
 
 class LogWatcher:
 
-    def watcher(self, poll_interval=1):
+    def watcher(self, poll_interval=0.5):
         self.buffer = ""
         self.last_pos = 0
 
@@ -28,7 +32,6 @@ class LogWatcher:
         self.read_log()
         
     def read_log(self):
-        time.sleep(0.02)
         with open(self.log_file, 'r', encoding='utf-8') as f:
             f.seek(self.last_pos)
             new_data = f.read()
@@ -60,15 +63,19 @@ class LogWatcher:
                     , flush=True)
 
     def __init__(self, log_file):
+        logger.info(f"Watching log: {log_file}")
         self.log_file = log_file
         self.end_flag = False
 
         threading.excepthook = thread_excepthook
-        t = threading.Thread(target=self.watcher, daemon=True)
-        t.start()
+        self.t = threading.Thread(target=self.watcher, daemon=True)
+        self.t.start()
     
     def close(self):
+        logger.info("Close: LogWatcher")
         self.end_flag = True
+        if self.t:
+            self.t.join()
 
 
 if __name__ == "__main__":

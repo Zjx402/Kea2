@@ -67,7 +67,7 @@ class BugReportGenerator:
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
-            logger.debug(f"Bug report generated: {report_path}")
+            logger.info(f"Bug report saved to: {report_path}")
 
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
@@ -333,6 +333,8 @@ class BugReportGenerator:
                 if lines:
                     # Collect coverage trend data
                     for line in lines:
+                        if not line.strip():
+                            continue
                         try:
                             coverage_data = json.loads(line)
                             data["coverage_trend"].append({
