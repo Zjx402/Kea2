@@ -140,7 +140,7 @@ class BugReportGenerator:
                                 act = info.get("act", "")
                                 pos = info.get("pos")
                                 screenshot_name = step_data.get("Screenshot", "")
-                                if act in ["CLICK", "LONG_CLICK"] and pos and screenshot_name:
+                                if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL") and pos and screenshot_name:
                                     screenshot_path = self.screenshots_dir / screenshot_name
                                     if screenshot_path.exists():
                                         self._mark_screenshot_interaction(screenshot_path, act, pos)
@@ -519,6 +519,8 @@ class BugReportGenerator:
                 cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 5)
             elif action_type == "LONG_CLICK":
                 cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
+            elif action_type.startswith("SCROLL"):
+                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 5)
 
             # Save with overwrite
             cv2.imwrite(str(screenshot_path), img)
