@@ -336,8 +336,14 @@ class U2StaticChecker(AbstractStaticChecker):
 
     def setHierarchy(self, hierarchy: str):
         if hierarchy is None:
+            logger.warning("Hierarchy is None, using current device hierarchy.")
             return
-        self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
+        if isinstance(hierarchy, str):
+            self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
+        elif isinstance(hierarchy, etree._Element):
+            self.d.xml = hierarchy
+        elif isinstance(hierarchy, etree._ElementTree):
+            self.d.xml = hierarchy.getroot()
         _HindenWidgetFilter(self.d.xml)
 
     def getInstance(self, hierarchy: str=None):
