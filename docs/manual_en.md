@@ -11,7 +11,7 @@ Kea2 uses [Unittest](https://docs.python.org/3/library/unittest.html) to manage 
 
 Kea2 uses [Uiautomator2](https://github.com/openatx/uiautomator2) to manipulate android devices. Refer to [Uiautomator2's docs](https://github.com/openatx/uiautomator2?tab=readme-ov-file#quick-start) for more details. 
 
-Basically, you can write Kea2's scripts by following two steps: 
+Basically, you can write Kea2's scripts by following two steps:
 
 1. Create a test class which extends `unittest.TestCase`.
 
