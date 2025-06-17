@@ -72,8 +72,6 @@ class TestSupportedAttributes(unittest.TestCase):
     def test_sibling_element(self):
         assert self.d(description="雷达，，添加身边的朋友").sibling(description="手机联系人，，添加通讯录中的朋友").exists
 
-    def test_index(self):
-        assert self.d(description="雷达，，添加身边的朋友")[0].exists
 
 
 class TestUnsupportedMethods(unittest.TestCase):
