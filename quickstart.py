@@ -9,7 +9,7 @@ from kea2.u2Driver import U2Driver
 class Omni_Notes_Sample(unittest.TestCase):
 
     def setUp(self):
-        self.d = u2.connect()
+        self.d = u2.connect() 
 
     @prob(0.7)  # The probability of executing the function when precondition is satisfied.
     @precondition(

@@ -5,7 +5,7 @@ from pathlib import Path
 CONFIG_PATH = Path(".github/translation-list.yml")
 
 with open(CONFIG_PATH, "r") as f:
-    monitored = set(yaml.safe_load(f)["monitored_files"])
+    monitored = dict(yaml.safe_load(f)["monitored_files"]).keys()
 
 # get changed file list in this commit
 changed_files = subprocess.check_output(
