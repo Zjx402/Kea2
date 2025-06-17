@@ -16,8 +16,6 @@ def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: P
     if not os.path.exists(input_path):
         print(f"❌ File {input_path} not found.")
         return
-    
-    print(f"⌛ Translation start: {input_path.name}")
 
     with open(input_path, "r", encoding="utf-8") as f:
         original_content = f.read()
@@ -40,7 +38,7 @@ if __name__ == "__main__":
 
     if(len(files)==0):
         print("No monitored file changed. Skipping translation.")
-        exit
+        exit(0)
 
     openai_translator = OpenaiTranslator(api_key=OPENAI_API_KEY)
     
