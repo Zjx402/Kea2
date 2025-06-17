@@ -54,7 +54,7 @@ In the future, Kea2 will be extended to support
 
 Running environment:
 - support Windows, MacOS and Linux
-- python 3.8+, Android 4.4+ (Android SDK installed)
+- python 3.8+, Android 5.0+ (Android SDK installed)
 - **VPN closed** (Features 2 and 3 required)
 
 Install Kea2 by `pip`:
