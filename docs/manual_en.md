@@ -28,7 +28,7 @@ By default, only the test method starts with `test_` will be found by unittest. 
 
 Note that if a test method is not decorated with `@precondition`.
 This test method will never be activated during automated UI testing, and will be treated as a normal `unittset` test method.
-Thus, you need to explicitly specify `@precondition(lambda self: True)` when the test method should be always executed. When a test method is not decorated with `@prob`, the default probability is 1 (always execute when precondition satisfied). 
+Thus, you need to explicitly specify `@precondition(lambda self: True)` when the test method should be always executed. When a test method is not decorated with `@prob`, the default probability is 1 (always execute when precondition satisfied).  
 
 ```python
 import unittest
