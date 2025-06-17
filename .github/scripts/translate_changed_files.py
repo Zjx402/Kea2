@@ -1,12 +1,13 @@
-import os
 import yaml
+import os
 import sys
 from pathlib import Path
 from gpt_translator import OpenaiTranslator
 
 
-OPENAI_API_KEY = os.getenv("API_KEY")
 CONFIG_PATH = Path(".github/translation-list.yml")
+OPENAI_API_KEY = os.getenv("API_KEY")
+
 
 def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: Path) -> None:
     """
