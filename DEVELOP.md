@@ -10,7 +10,7 @@ Currently, we have an algorithm in `@precondition` decorator and `widgets.block.
 
 If you need to specify `parent-child` relation ship in `@precondition`, specify it in xpath.
 
-for example: 
+for example:  
 
 ```python
 # Do not use:
