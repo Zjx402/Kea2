@@ -8,7 +8,7 @@
     <img src="https://github.com/user-attachments/assets/1a64635b-a8f2-40f1-8f16-55e47b1d74e7" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-## About
+## About 
 
 Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. Kea2's novelty is able to fuse the scripts (usually written by human) with automated UI testing tools, thus allowing many interesting and powerful features. 
 
