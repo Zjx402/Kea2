@@ -7,7 +7,7 @@ We support two granularity levels for blacklisting:
 - Widget Blocking: Block individual UI widgets.
 
 - Tree Blocking : Block a UI widget trees by specifying its root node.
-It can block the root node and all its descendants.
+It can block the root node and all its descendants. 
 
 We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
 

@@ -12,7 +12,7 @@
 
 Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. Kea2's novelty is able to fuse the scripts (usually written by human) with automated UI testing tools, thus allowing many interesting and powerful features. 
 
-Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2) and targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
+Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2) and targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps. 
 
 ## Important features
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
