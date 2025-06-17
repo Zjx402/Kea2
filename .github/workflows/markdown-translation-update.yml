@@ -36,7 +36,7 @@ jobs:
         run: |
           echo "🔍 Loading translation list..."
           python .github/scripts/identify_changed_files.py > changed_files.txt
-          if [ -s changed_files.txt ]; then
+          if [ -s "./changed_files.txt" ]; then
             echo "any_changed=true" >> "$GITHUB_OUTPUT"
           else
             echo "any_changed=false" >> "$GITHUB_OUTPUT"
