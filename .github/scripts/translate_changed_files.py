@@ -1,21 +1,17 @@
 import os
+import yaml
 import sys
 from pathlib import Path
 from gpt_translator import OpenaiTranslator
 
 
 OPENAI_API_KEY = os.getenv("API_KEY")
-
+CONFIG_PATH = Path(".github/translation-list.yml")
 
 def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: Path) -> None:
     """
     Translate a Markdown file and write the result to another file.
     """
-
-    # Read original file content
-    if not os.path.exists(input_path):
-        print(f"❌ File {input_path} not found.")
-        return
 
     with open(input_path, "r", encoding="utf-8") as f:
         original_content = f.read()
@@ -27,8 +23,6 @@ def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: P
     with output_path.open("w", encoding="utf-8") as f:
         f.write(translated_content)
 
-    print(f"✅ Translation complete: {input_path.name} → {output_path.name}")
-
 
 if __name__ == "__main__":
 
@@ -37,16 +31,20 @@ if __name__ == "__main__":
         files = [line.strip() for line in f.readlines() if line.strip()]
 
     if(len(files)==0):
-        print("No monitored file changed. Skipping translation.")
         exit(0)
 
     openai_translator = OpenaiTranslator(api_key=OPENAI_API_KEY)
-    
-    print(f"found {len(files)} untranslated files.")
 
+    with open(CONFIG_PATH, "r") as f:
+        file_mapping = dict(yaml.safe_load(f)["monitored_files"])
+    
     for fname in files:
         translate_file(
             openai_translator,
             Path(fname),
-            Path(fname).with_name(Path(fname).stem + "_cn.md") # output path
-        )
+            Path(file_mapping[fname])) # output
+        
+    translated = [file_mapping[f] for f in files]
+
+    if translated:
+        print("\n".join(translated))
