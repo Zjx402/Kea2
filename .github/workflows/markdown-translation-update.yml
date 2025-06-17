@@ -4,7 +4,6 @@ on:
   push:
     paths:
       - '**.md'
-      - '.github/translation-list.yml'
 
 permissions:
   contents: write
