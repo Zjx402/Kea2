@@ -7,7 +7,7 @@ from gpt_translator import OpenaiTranslator
 OPENAI_API_KEY = os.getenv("API_KEY")
 
 
-def translate_file(translator:OpenaiTranslator, input_path: str, output_path: str) -> None:
+def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: Path) -> None:
     """
     Translate a Markdown file and write the result to another file.
     """
@@ -44,6 +44,6 @@ if __name__ == "__main__":
     for fname in files:
         translate_file(
             openai_translator,
-            fname,
+            Path(fname),
             Path(fname).with_name(Path(fname).stem + "_cn.md") # output path
         )
