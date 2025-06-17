@@ -33,12 +33,17 @@ def translate_file(translator:OpenaiTranslator, input_path: Path, output_path: P
 
 
 if __name__ == "__main__":
-    openai_translator = OpenaiTranslator(api_key=OPENAI_API_KEY)
-    
+
     # argv[1] is the file list needed translation
     with open(sys.argv[1], "r", encoding="utf-8") as f:
         files = [line.strip() for line in f.readlines() if line.strip()]
 
+    if(len(files)==0):
+        print("No monitored file changed. Skipping translation.")
+        exit
+
+    openai_translator = OpenaiTranslator(api_key=OPENAI_API_KEY)
+    
     print(f"found {len(files)} untranslated files.")
 
     for fname in files:

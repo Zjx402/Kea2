@@ -13,8 +13,6 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
-    outputs:
-      detect_any_changed: ${{ steps.detect.outputs.any_changed }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -36,20 +34,10 @@ jobs:
         run: |
           echo "🔍 Loading translation list..."
           python .github/scripts/identify_changed_files.py > changed_files.txt
-          if [ -s "./changed_files.txt" ]; then
-            echo "any_changed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "any_changed=false" >> "$GITHUB_OUTPUT"
-          fi
           echo "✅ Done. Changed monitored files:"
           cat changed_files.txt
 
-      - name: Exit if no relevant changes
-        if: "!contains(steps.detect.outputs.any_changed, 'true')"
-        run: echo "No monitored file changed. Skipping translation."
-
       - name: Translate changed files
-        if: contains(steps.detect.outputs.any_changed, 'true')
         run: |
           python .github/scripts/translate_changed_files.py changed_files.txt
         env:
