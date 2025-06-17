@@ -192,7 +192,7 @@ class StaticU2UiObject(u2.UiObject):
 
     @property
     def exists(self):
-        dict.update(self.selector, {"covered": False})
+        set_covered_to_deepest_node(self.selector)
         xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
@@ -428,3 +428,25 @@ def get_free_port():
             if not is_port_in_use(port):
                 return port
         raise RuntimeError("No free port found")
+
+def set_covered_to_deepest_node(selector: u2.Selector):
+
+    def find_deepest_nodes(node):
+        deepest_node = None
+        is_leaf = True
+        if "childOrSibling" in node and node["childOrSibling"]:
+            for i, relation in enumerate(node["childOrSibling"]):
+                sub_selector = node["childOrSiblingSelector"][i]
+                deepest_node = find_deepest_nodes(sub_selector)
+                is_leaf = False
+
+        if is_leaf:
+            deepest_node = node
+        return deepest_node
+
+    deepest_node = find_deepest_nodes(selector)
+
+    if deepest_node is not None:
+        dict.update(deepest_node, {"covered": False})
+
+
