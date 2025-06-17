@@ -2,6 +2,8 @@ name: Translate Monitored Documents on Update
 
 on:
   push:
+    branches:
+      - 'main'
     paths:
       - '**.md'
 
@@ -38,7 +40,10 @@ jobs:
 
       - name: Translate changed files
         run: |
-          python .github/scripts/translate_changed_files.py changed_files.txt
+          echo "⌛ Translating, please wait..."
+          python .github/scripts/translate_changed_files.py changed_files.txt > translated_files.txt
+          echo "✅ Done. Translated files:"
+          cat translated_files.txt
         env:
           API_KEY: ${{ secrets.OPENAI_API_KEY }}
 
@@ -49,7 +54,7 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           BRANCH="translated-docs-$(date +%s)"
           git checkout -b $BRANCH
-          git add *_cn.md
+          xargs -a translated_files.txt git add
           git commit -m "Auto-translate updated documentation"
           git push origin $BRANCH
           echo "BRANCH=$BRANCH" >> $GITHUB_ENV
