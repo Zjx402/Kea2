@@ -18,7 +18,5 @@ to_translate = [f for f in changed_files if f in monitored]
 
 if to_translate:
     print("\n".join(to_translate))
-    print("::set-output name=any_changed::true")
 else:
-    print("")  # empty output
-    print("::set-output name=any_changed::false")
+    pass # empty output

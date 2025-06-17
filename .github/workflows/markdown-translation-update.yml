@@ -13,6 +13,8 @@ permissions:
 jobs:
   translate:
     runs-on: ubuntu-latest
+    outputs:
+      detect_any_changed: ${{ steps.detect.outputs.any_changed }}
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
@@ -33,7 +35,12 @@ jobs:
         id: detect
         run: |
           echo "🔍 Loading translation list..."
-          python .github/scripts/scan_changed_files.py > changed_files.txt
+          python .github/scripts/identify_changed_files.py > changed_files.txt
+          if [ -s "changed_files.txt" ]; then
+            echo "any_changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "any_changed=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "✅ Done. Changed monitored files:"
           cat changed_files.txt
 
