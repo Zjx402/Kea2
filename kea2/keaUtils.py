@@ -137,6 +137,8 @@ class Options:
         super().__setattr__(name, value)
 
     def __post_init__(self):
+        import logging
+        logging.basicConfig(level=logging.DEBUG if self.debug else logging.INFO)
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
         global LOGFILE, RESFILE, STAMP
