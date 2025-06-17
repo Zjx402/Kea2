@@ -150,9 +150,17 @@ class StaticU2UiObject(u2.UiObject):
 
             bool_props = ["checkable", "checked", "clickable", "longClickable", "scrollable", "enabled", "focusable",
                           "focused", "selected", "covered"]
+
+            def str_to_bool(value):
+                """Convert string 'true'/'false' to boolean, or return original value if already boolean"""
+                if isinstance(value, str):
+                    return value.lower() == "true"
+                return bool(value)
+
             for prop in bool_props:
                 if prop in selector:
-                    value = "true" if selector[prop] else "false"
+                    bool_value = str_to_bool(selector[prop])
+                    value = "true" if bool_value else "false"
                     conditions.append(f"[@{prop}='{value}']")
 
             if "index" in selector:
@@ -184,7 +192,7 @@ class StaticU2UiObject(u2.UiObject):
 
     @property
     def exists(self):
-        dict.update(self.selector, {"covered": "false"})
+        dict.update(self.selector, {"covered": False})
         xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
