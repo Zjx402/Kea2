@@ -1,3 +1,4 @@
 monitored_files:
   README.md: README_cn.md
   docs/manual_en.md: docs/manual_cn.md
+  docs/blacklisting.md: docs/blacklisting_cn.md
