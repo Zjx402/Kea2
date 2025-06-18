@@ -1,8 +1,34 @@
 import subprocess
 from typing import List, Optional, Set
 from kea2.utils import getLogger
+from adbutils import AdbDevice, adb
 
 logger = getLogger(__name__)
+
+class ADBDevice(AdbDevice):
+    _instance = None
+    serial: Optional[str] = None
+    transport_id: Optional[str] = None
+
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+    @classmethod
+    def setDevice(cls, serial: Optional[str] = None, transport_id: Optional[str] = None):
+        ADBDevice.serial = serial or ADBDevice.serial
+        ADBDevice.transport_id = transport_id or ADBDevice.transport_id
+    
+    def __init__(self) -> AdbDevice:
+        """
+        Initializes the ADBDevice instance.
+        
+        Parameters:
+            device (str, optional): The device serial number. If None, it is resolved automatically when only one device is connected.
+            transport_id (str, optional): The transport ID for the device.
+        """
+        super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
 
 
 def run_adb_command(cmd: List[str], timeout=10):

@@ -3,16 +3,53 @@ import subprocess
 import threading
 import requests
 from time import sleep
-from .adbUtils import push_file
+
+import uiautomator2.core
+
+from kea2.adbUtils import ADBDevice
 from pathlib import Path
-from .utils import getLogger
+from kea2.utils import getLogger
+import uiautomator2
+uiautomator2.core.U2_PORT = 8090
 
 from typing import IO, TYPE_CHECKING
 if TYPE_CHECKING:
     from .keaUtils import Options
 
-
 logger = getLogger(__name__)
+
+
+if __name__ == "__main__":
+    ADBDevice.setDevice(serial="HMQNW20A27002747")
+    dev = ADBDevice()
+
+
+    stream = dev.shell("monkey -p com.example.app -v 1000", encoding="utf-8", stream=True, timeout=float("inf"))
+            
+    with stream:
+        fp = stream.conn.makefile('r', encoding='utf-8')
+        with open("test.txt", "w", encoding="utf-8") as f:
+            try:
+                while True:
+                    line = fp.readline()
+                    if not line:  # EOF，命令结束
+                        break
+                    
+                    # 实时写入文件
+                    f.write(line)
+                    f.flush()  # 强制刷新到磁盘
+                    
+                    # 可选：同时打印到控制台
+                    print(f"Monkey: {line.rstrip()}")
+                    
+            except Exception as e:
+                print(f"Reading error: {e}")
+            finally:
+                fp.close()
+
+    import sys
+    sys.exit(0)
+
 
 
 class FastbotManager:
@@ -21,6 +58,8 @@ class FastbotManager:
         self.log_file: str = log_file
         self.port = None
         self.thread = None
+        ADBDevice.setDevice(options.serial, options.transport_id)
+        self.dev = ADBDevice()
 
 
     def _activateFastbot(self) -> threading.Thread:
@@ -32,40 +71,34 @@ class FastbotManager:
         """
         options = self.options
         cur_dir = Path(__file__).parent
-        push_file(
+        self.dev.push()
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/monkeyq.jar"),
-            "/sdcard/monkeyq.jar",
-            device=options.serial
+            "/sdcard/monkeyq.jar"
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"),
             "/sdcard/fastbot-thirdpart.jar",
-            device=options.serial,
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/framework.jar"), 
             "/sdcard/framework.jar",
-            device=options.serial
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
             "/data/local/tmp",
-            device=options.serial
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
             "/data/local/tmp",
-            device=options.serial
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/fastbot_libs/x86"),
             "/data/local/tmp",
-            device=options.serial
         )
-        push_file(
+        self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"),
             "/data/local/tmp",
-            device=options.serial
         )
 
         t = self._startFastbotService()
@@ -74,14 +107,19 @@ class FastbotManager:
         return t
 
 
-    def check_alive(self, port):
+    def check_alive(self):
         """
         check if the script driver and proxy server are alive.
         """
+
         for _ in range(10):
             sleep(2)
             try:
-                requests.get(f"http://localhost:{port}/ping")
+                uiautomator2.core._http_request(
+                    dev=self.dev,
+                    method="GET",
+                    path="/ping",
+                )
                 return
             except requests.ConnectionError:
                 logger.info("waiting for connection.")
@@ -109,18 +147,22 @@ class FastbotManager:
 
         full_cmd = ["adb"] + (["-s", self.options.serial] if self.options.serial else []) + ["shell"] + shell_command
 
+
         outfile = open(self.log_file, "w", encoding="utf-8", buffering=1)
 
         logger.info("Options info: {}".format(asdict(self.options)))
         logger.info("Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
         logger.info("Fastbot log will be saved to {}".format(outfile.name))
 
+        stream = self.dev.shell(shell_command, encoding="utf-8", stream=True, timeout=float("inf"))
         # process handler
         proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
         t = threading.Thread(target=self.close_on_exit, args=(proc, outfile), daemon=True)
         t.start()
 
         return t
+    
+    
 
     def close_on_exit(self, proc: subprocess.Popen, f: IO):
         self.return_code = proc.wait()
