@@ -14,7 +14,7 @@ from .bug_report_generator import BugReportGenerator
 from .resultSyncer import ResultSyncer
 from .logWatcher import LogWatcher
 from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject, selector_to_xpath
+from .u2Driver import StaticU2UiObject
 from .fastbotManager import FastbotManager
 import uiautomator2 as u2
 import types
@@ -126,6 +126,8 @@ class Options:
     profile_period: int = 25
     # take screenshots for every step
     take_screenshots: bool = False
+    # The root of output dir on device
+    device_output_root: str = "/sdcard"
     # the debug mode
     debug: bool = False
 
@@ -135,10 +137,18 @@ class Options:
         super().__setattr__(name, value)
 
     def __post_init__(self):
+        import logging
+        logging.basicConfig(level=logging.DEBUG if self.debug else logging.INFO)
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
+            illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
+            for char in illegal_chars:
+                if char in self.log_stamp:
+                    raise ValueError(
+                        f"char: `{char}` is illegal in --log-stamp. current stamp: {self.log_stamp}"
+                    )
             STAMP = self.log_stamp
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
@@ -324,16 +334,15 @@ class KeaTestRunner(TextTestRunner):
                         xml_raw = self.stepMonkey()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
+                        logger.info("Connection refused by remote.")
                         if fb.get_return_code() == 0:
-                            logger.info("[INFO] Exploration times up (--running-minutes).")
+                            logger.info("Exploration times up (--running-minutes).")
                             end_by_remote = True
                             break
                         raise RuntimeError("Fastbot Aborted.")
 
                     if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
                         resultSyncer.sync_event.set()
-
-                    print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
 
                     # Go to the next round if no precond satisfied
                     if len(propsSatisfiedPrecond) == 0:
@@ -467,18 +476,25 @@ class KeaTestRunner(TextTestRunner):
                     if not precond(test):
                         valid = False
                         break
+                except u2.UiObjectNotFoundError as e:
+                    valid = False
+                    break
                 except Exception as e:
-                    print(f"[ERROR] Error when checking precond: {getFullPropName(test)}", flush=True)
+                    logger.error(f"Error when checking precond: {getFullPropName(test)}")
                     traceback.print_exc()
                     valid = False
                     break
             # if all the precond passed. make it the candidate prop.
             if valid:
-                logger.debug(f"precond satisfied: {getFullPropName(test)}")
                 if result.getExcuted(test) >= getattr(prop, MAX_TRIES_MARKER, float("inf")):
-                    logger.debug(f"{getFullPropName(test)} has reached its max_tries. Skip.")
+                    print(f"{getFullPropName(test)} has reached its max_tries. Skip.", flush=True)
                     continue
                 validProps[propName] = test
+        
+        print(f"{len(validProps)} precond satisfied.", flush=True)
+        if len(validProps) > 0:
+            print("[INFO] Valid properties:",flush=True)
+            print("\n".join([f'                - {getFullPropName(p)}' for p in validProps.values()]), flush=True)
         return validProps
 
     def _logScript(self, execution_info:Dict):
@@ -495,7 +511,8 @@ class KeaTestRunner(TextTestRunner):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
         data = {
             "takeScreenshots": self.options.take_screenshots,
-            "Stamp": STAMP
+            "Stamp": STAMP,
+            "deviceOutputRoot": self.options.device_output_root,
         }
         print(f"[INFO] Init fastbot: {data}", flush=True)
         r = requests.post(
@@ -505,7 +522,7 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         import re
         self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
+        print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
@@ -607,60 +624,72 @@ class KeaTestRunner(TextTestRunner):
            """
         def _get_xpath_widgets(func):
             blocked_set = set()
-            try:
-                script_driver = self.options.Driver.getScriptDriver()
-                preconds = getattr(func, PRECONDITIONS_MARKER, [])
-                if all(precond(script_driver) for precond in preconds):
+            script_driver = self.options.Driver.getScriptDriver()
+            preconds = getattr(func, PRECONDITIONS_MARKER, [])
+
+            def preconds_pass(preconds):
+                try:
+                    return all(precond(script_driver) for precond in preconds)
+                except u2.UiObjectNotFoundError as e:
+                    return False
+                except Exception as e:
+                    logger.error(f"Error processing precond. Check if precond: {e}")
+                    traceback.print_exc()
+                    return False
+
+            if preconds_pass(preconds):
+                try:
                     _widgets = func(self.options.Driver.getStaticChecker())
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
                         if isinstance(w, StaticU2UiObject):
-                            xpath = selector_to_xpath(w.selector, True)
-                            blocked_set.add(xpath)
+                            xpath = w.selector_to_xpath(w.selector)
+                            if xpath != '//error':
+                                blocked_set.add(xpath)
                         elif isinstance(w, u2.xpath.XPathSelector):
                             xpath = w._parent.xpath
                             blocked_set.add(xpath)
                         else:
-                            logger.warning(f"{w} Not supported")
-            except Exception as e:
-                logger.error(f"Error processing blocked widgets: {e}")
-                traceback.print_exc()
+                            logger.error(f"block widget defined in {func.__name__} Not supported.")
+                except Exception as e:
+                    logger.error(f"Error processing blocked widgets in: {func}")
+                    logger.error(e)
+                    traceback.print_exc()
             return blocked_set
 
-        res = {
+        result = {
             "widgets": set(),
             "trees": set()
         }
 
-
         for func in self._blockWidgetFuncs["widgets"]:
             widgets = _get_xpath_widgets(func)
-            res["widgets"].update(widgets)
-
+            result["widgets"].update(widgets)
 
         for func in self._blockWidgetFuncs["trees"]:
             trees = _get_xpath_widgets(func)
-            res["trees"].update(trees)
+            result["trees"].update(trees)
 
+        result["widgets"] = list(result["widgets"] - result["trees"])
+        result["trees"] = list(result["trees"])
 
-        res["widgets"] = list(res["widgets"] - res["trees"])
-        res["trees"] = list(res["trees"])
-
-        return res
+        return result
 
 
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
         try:
-            logger.debug("Generating test bug report")
+            self.stopMonkey()
+        except Exception as e:
+            pass
+
+        if self.options.Driver:
+            self.options.Driver.tearDown()
+
+        try:
+            logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
         except Exception as e:
             logger.error(f"Error generating bug report: {e}", flush=True)
-        try:
-            self.stopMonkey()
-        except Exception as e:
-            pass
-        if self.options.Driver:
-            self.options.Driver.tearDown()

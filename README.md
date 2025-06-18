@@ -4,8 +4,9 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/kea2-python)](https://pepy.tech/projects/kea2-python)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
+
 <div>
-    <img src="https://github.com/user-attachments/assets/1a64635b-a8f2-40f1-8f16-55e47b1d74e7" style="border-radius: 14px; width: 20%; height: 20%;"/> 
+    <img src="https://github.com/user-attachments/assets/aa5839fc-4542-46f6-918b-c9f891356c84" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
 [中文文档](README_cn.md)
@@ -56,7 +57,7 @@ In the future, Kea2 will be extended to support
 
 Running environment:
 - support Windows, MacOS and Linux
-- python 3.8+, Android 4.4+ (Android SDK installed)
+- python 3.8+, Android 5.0+ (Android SDK installed)
 - **VPN closed** (Features 2 and 3 required)
 
 Install Kea2 by `pip`:
