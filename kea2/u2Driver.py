@@ -344,7 +344,6 @@ class U2StaticChecker(AbstractStaticChecker):
 
     def setHierarchy(self, hierarchy: str):
         if hierarchy is None:
-            logger.warning("Hierarchy is None, using current device hierarchy.")
             return
         if isinstance(hierarchy, str):
             self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
