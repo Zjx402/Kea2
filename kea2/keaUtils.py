@@ -344,8 +344,6 @@ class KeaTestRunner(TextTestRunner):
                     if self.options.profile_period and self.stepsCount % self.options.profile_period == 0:
                         resultSyncer.sync_event.set()
 
-                    print(f"{len(propsSatisfiedPrecond)} precond satisfied.", flush=True)
-
                     # Go to the next round if no precond satisfied
                     if len(propsSatisfiedPrecond) == 0:
                         continue
@@ -488,11 +486,15 @@ class KeaTestRunner(TextTestRunner):
                     break
             # if all the precond passed. make it the candidate prop.
             if valid:
-                logger.debug(f"precond satisfied: {getFullPropName(test)}")
                 if result.getExcuted(test) >= getattr(prop, MAX_TRIES_MARKER, float("inf")):
-                    logger.debug(f"{getFullPropName(test)} has reached its max_tries. Skip.")
+                    print(f"{getFullPropName(test)} has reached its max_tries. Skip.", flush=True)
                     continue
                 validProps[propName] = test
+        
+        print(f"{len(validProps)} precond satisfied.", flush=True)
+        if len(validProps) > 0:
+            print("[INFO] Valid properties:",flush=True)
+            print("\n".join([f'                - {getFullPropName(p)}' for p in validProps.values()]), flush=True)
         return validProps
 
     def _logScript(self, execution_info:Dict):
