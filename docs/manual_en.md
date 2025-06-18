@@ -1,6 +1,8 @@
 
 # Documentation
 
+[中文文档](manual_cn.md)
+
 ## Kea2's tutorials 
 
 1. A small tutorial of applying Kea2's Feature 2 and 3 on [WeChat](Scenario_Examples_zh.md).

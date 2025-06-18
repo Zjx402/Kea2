@@ -1,6 +1,6 @@
 ## Blacklisting specific UI widgets/regions (黑白名单/控件/界面特定区域)
 
-[中文文档](docs/blacklisting_cn.md)
+[中文文档](blacklisting_cn.md)
 
 We support blacklisting specific UI widgets/regions so that Fastbot can avoid interacting with these widgets during fuzzing. 
 

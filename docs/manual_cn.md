@@ -1,10 +1,8 @@
 # 文档
 
-[中文文档](docs/manual_enh.md)
-
 ## Kea2 教程
 
-1. 关于如何在 [WeChat](docs/Scenario_Examples_zh.md) 上应用 Kea2 的功能 2 和 3 的小教程。
+1. 关于如何在 [WeChat](Scenario_Examples_zh.md) 上应用 Kea2 的功能 2 和 3 的小教程。
 
 ## Kea2 脚本
 
