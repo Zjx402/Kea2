@@ -23,13 +23,14 @@ class FastbotManager:
         self.thread = None
 
 
-    def _activateFastbot(self, options: "Options") -> threading.Thread:
+    def _activateFastbot(self) -> threading.Thread:
         """
         activate fastbot.
         :params: options: the running setting for fastbot
         :params: port: the listening port for script driver
         :return: the fastbot daemon thread
         """
+        options = self.options
         cur_dir = Path(__file__).parent
         push_file(
             Path.joinpath(cur_dir, "assets/monkeyq.jar"),
@@ -39,6 +40,11 @@ class FastbotManager:
         push_file(
             Path.joinpath(cur_dir, "assets/fastbot-thirdpart.jar"),
             "/sdcard/fastbot-thirdpart.jar",
+            device=options.serial,
+        )
+        push_file(
+            Path.joinpath(cur_dir, "assets/kea2-thirdpart.jar"),
+            "/sdcard/kea2-thirdpart.jar",
             device=options.serial,
         )
         push_file(
@@ -67,7 +73,7 @@ class FastbotManager:
             device=options.serial
         )
 
-        t = self._startFastbotService(options)
+        t = self._startFastbotService()
         logger.info("Running Fastbot...")
 
         return t
@@ -90,7 +96,12 @@ class FastbotManager:
 
     def _startFastbotService(self) -> threading.Thread:
         shell_command = [
-            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+            "CLASSPATH="
+            "/sdcard/monkeyq.jar:"
+            "/sdcard/framework.jar:"
+            "/sdcard/fastbot-thirdpart.jar:"
+            "/sdcard/kea2-thirdpart.jar",
+            
             "exec", "app_process",
             "/system/bin", "com.android.commands.monkey.Monkey",
             "-p", *self.options.packageNames,
@@ -125,7 +136,7 @@ class FastbotManager:
         self.return_code = proc.wait()
         f.close()
         if self.return_code != 0:
-            raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}]")
+            raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}] See {self.log_file} for details.")
 
     def get_return_code(self):
         if self.thread:
@@ -134,7 +145,7 @@ class FastbotManager:
         return self.return_code
 
     def start(self):
-        self.thread = self._startFastbotService()
+        self.thread = self._activateFastbot()
 
     def join(self):
         if self.thread:

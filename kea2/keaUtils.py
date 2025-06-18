@@ -126,6 +126,8 @@ class Options:
     profile_period: int = 25
     # take screenshots for every step
     take_screenshots: bool = False
+    # The root of output dir on device
+    device_output_root: str = "/sdcard"
     # the debug mode
     debug: bool = False
 
@@ -135,10 +137,18 @@ class Options:
         super().__setattr__(name, value)
 
     def __post_init__(self):
+        import logging
+        logging.basicConfig(level=logging.DEBUG if self.debug else logging.INFO)
         if self.serial and self.Driver:
             self.Driver.setDeviceSerial(self.serial)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
+            illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
+            for char in illegal_chars:
+                if char in self.log_stamp:
+                    raise ValueError(
+                        f"char: `{char}` is illegal in --log-stamp. current stamp: {self.log_stamp}"
+                    )
             STAMP = self.log_stamp
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
@@ -255,8 +265,8 @@ class KeaTestRunner(TextTestRunner):
         global LOGFILE, RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)
-        logger.debug(f"Log file: {LOGFILE}")
-        logger.debug(f"Result file: {RESFILE}")
+        logger.info(f"Log file: {LOGFILE}")
+        logger.info(f"Result file: {RESFILE}")
 
     def run(self, test):
 
@@ -293,9 +303,10 @@ class KeaTestRunner(TextTestRunner):
                         message=r"Please use assert\w+ instead.",
                     )
 
-            log_watcher = LogWatcher(LOGFILE)
             fb = FastbotManager(self.options, LOGFILE)
             fb.start()
+
+            log_watcher = LogWatcher(LOGFILE)
             
             if self.options.agent == "u2":
                 # initialize the result.json file
@@ -323,8 +334,9 @@ class KeaTestRunner(TextTestRunner):
                         xml_raw = self.stepMonkey()
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
+                        logger.info("Connection refused by remote.")
                         if fb.get_return_code() == 0:
-                            logger.info("[INFO] Exploration times up (--running-minutes).")
+                            logger.info("Exploration times up (--running-minutes).")
                             end_by_remote = True
                             break
                         raise RuntimeError("Fastbot Aborted.")
@@ -497,7 +509,8 @@ class KeaTestRunner(TextTestRunner):
         URL = f"http://localhost:{self.scriptDriver.lport}/init"
         data = {
             "takeScreenshots": self.options.take_screenshots,
-            "Stamp": STAMP
+            "Stamp": STAMP,
+            "deviceOutputRoot": self.options.device_output_root,
         }
         print(f"[INFO] Init fastbot: {data}", flush=True)
         r = requests.post(
@@ -507,7 +520,7 @@ class KeaTestRunner(TextTestRunner):
         res = r.content.decode(encoding="utf-8")
         import re
         self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] Fastbot initiated. Device outputDir: {res}", flush=True)
+        print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
@@ -665,14 +678,16 @@ class KeaTestRunner(TextTestRunner):
         """tearDown method. Cleanup the env.
         """
         try:
-            logger.debug("Generating test bug report")
+            self.stopMonkey()
+        except Exception as e:
+            pass
+
+        if self.options.Driver:
+            self.options.Driver.tearDown()
+
+        try:
+            logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
         except Exception as e:
             logger.error(f"Error generating bug report: {e}", flush=True)
-        try:
-            self.stopMonkey()
-        except Exception as e:
-            pass
-        if self.options.Driver:
-            self.options.Driver.tearDown()

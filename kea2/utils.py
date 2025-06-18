@@ -47,14 +47,10 @@ d = Device
 
 
 def getProjectRoot():
-    root = Path("/")
+    root = Path(Path.cwd().anchor)
     cur_dir = Path.absolute(Path(os.curdir))
     while not os.path.isdir(cur_dir / "configs"):
         if cur_dir == root:
             return None
         cur_dir = cur_dir.parent
     return cur_dir
-
-
-
- 
