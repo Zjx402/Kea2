@@ -95,6 +95,7 @@ class BugReportGenerator:
         }
 
         # Get screenshot count
+        # TODO del this method (performance Issue)
         if self.screenshots_dir.exists():
             screenshots = sorted(self.screenshots_dir.glob("screenshot-*.png"),
                                  key=lambda x: int(x.name.split("-")[1].split(".")[0]))
@@ -249,6 +250,7 @@ class BugReportGenerator:
         if fastbot_log_path:
             try:
                 with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
+                    # TODO we have another way to record the time. Don't parse the fastbot.log again.
                     log_content = f.read()
 
                     # Extract test start time
@@ -329,6 +331,7 @@ class BugReportGenerator:
         coverage_log_path = self.result_dir / f"output_{self.log_timestamp}" / "coverage.log"
         if coverage_log_path.exists():
             with open(coverage_log_path, "r", encoding="utf-8") as f:
+                # TODO refine this with iterator
                 lines = f.readlines()
                 if lines:
                     # Collect coverage trend data
@@ -422,6 +425,7 @@ class BugReportGenerator:
             relative_path = f"output_{self.log_timestamp}/screenshots"
 
             if self.screenshots_dir.exists():
+                # TODO:  NO PLEASE GOD NOOOOO!
                 screenshot_files = sorted(self.screenshots_dir.glob("screenshot-*.png"),
                                           key=lambda x: int(x.name.split("-")[1].split(".")[0]))
 
