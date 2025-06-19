@@ -34,15 +34,23 @@ class ADBDevice(AdbDevice):
             transport_id (str, optional): The transport ID for the device.
         """
         super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
-
+    
+    @property
+    def stream_shell(self) -> "ADBStreamShell":
+        return ADBStreamShell(serial=self.serial, transport_id=self.transport_id)
 
 class ADBStreamShell:
-    def __init__(self, serial: str = None, transport_id: str = None):
-        ADBDevice.setDevice(serial=serial, transport_id=transport_id)
-        self.dev = ADBDevice()
+    def __init__(self, session: "ADBDevice"):
+        self.dev: ADBDevice = session
         self._thread = None
         self._exit_code = 255
 
+    def __call__(
+        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        stderr: IO = None, timeout: Union[float, None] = None
+    ) -> "ADBStreamShell":
+        return self.shell(cmdargs, stdout, stderr, timeout)
+    
     def shell(
         self, cmdargs: Union[List[str], str],
         stdout: IO = None, stderr: IO = None,
@@ -143,6 +151,10 @@ class ADBStreamShell:
         if self._thread and self._thread.is_alive():
             return None
         return self._exit_code
+    
+    def join(self):
+        if self._thread and self._thread.is_alive():
+            self._thread.join()
 
 
 def run_adb_command(cmd: List[str], timeout=10):

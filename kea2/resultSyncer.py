@@ -1,18 +1,24 @@
 import threading
-from .adbUtils import adb_shell, pull_file
+from .adbUtils import ADBDevice
 from .utils import getLogger
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .keaUtils import Options
 
 logger = getLogger(__name__)
 
 
 class ResultSyncer:
 
-    def __init__(self, device_output_dir, output_dir):
+    def __init__(self, device_output_dir, output_dir, options: "Options"):
         self.device_output_dir = device_output_dir
         self.output_dir = output_dir
         self.running = False
         self.thread = None
         self.sync_event = threading.Event()
+
+        ADBDevice.setDevice(serial=options.serial, transport_id=options.transport_id)
+        self.dev = ADBDevice()
 
     def run(self):
         """Start a background thread to sync device data when triggered"""
@@ -37,7 +43,8 @@ class ResultSyncer:
         try:
             logger.debug(f"Removing device output directory: {self.device_output_dir}")
             remove_device_dir = ["rm", "-rf", self.device_output_dir]
-            adb_shell(remove_device_dir)
+            # adb_shell(remove_device_dir)
+            self.dev.shell(remove_device_dir)
         except Exception as e:
             logger.error(f"Error removing device output directory: {e}", flush=True)
 
@@ -48,9 +55,11 @@ class ResultSyncer:
         try:
             logger.debug("Syncing data")
 
-            pull_file(self.device_output_dir, str(self.output_dir))
+            self.dev.sync.pull(self.device_output_dir, str(self.output_dir))
+            # pull_file(self.device_output_dir, str(self.output_dir))
 
-            remove_pulled_screenshots = ["find", self.device_output_dir, "-name", "\"*.png\"", "-delete"]
-            adb_shell(remove_pulled_screenshots)
+            remove_pulled_screenshots = ["find", self.device_output_dir, "-name", '"*.png"', "-delete"]
+            self.dev.shell(remove_pulled_screenshots)
+            # adb_shell(remove_pulled_screenshots)
         except Exception as e:
             logger.error(f"Error in data sync: {e}", flush=True)

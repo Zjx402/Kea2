@@ -6,7 +6,7 @@ from time import sleep
 
 import uiautomator2.core
 
-from kea2.adbUtils import ADBDevice
+from kea2.adbUtils import ADBDevice, ADBStreamShell
 from pathlib import Path
 from kea2.utils import getLogger
 import uiautomator2
@@ -29,15 +29,13 @@ class FastbotManager:
         ADBDevice.setDevice(options.serial, options.transport_id)
         self.dev = ADBDevice()
 
-
-    def _activateFastbot(self) -> threading.Thread:
+    def _activateFastbot(self) -> ADBStreamShell:
         """
         activate fastbot.
         :params: options: the running setting for fastbot
         :params: port: the listening port for script driver
         :return: the fastbot daemon thread
         """
-        options = self.options
         cur_dir = Path(__file__).parent
         self.dev.push()
         self.dev.sync.push(
@@ -95,7 +93,7 @@ class FastbotManager:
         raise RuntimeError("Failed to connect fastbot")
 
 
-    def _startFastbotService(self) -> threading.Thread:
+    def _startFastbotService(self) -> ADBStreamShell:
         shell_command = [
             "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
             "exec", "app_process",
@@ -122,34 +120,32 @@ class FastbotManager:
         logger.info("Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
         logger.info("Fastbot log will be saved to {}".format(outfile.name))
 
-        stream = self.dev.shell(shell_command, encoding="utf-8", stream=True, timeout=float("inf"))
+        # stream = self.dev.shell(shell_command, encoding="utf-8", stream=True, timeout=float("inf"))
         # process handler
-        proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
-        t = threading.Thread(target=self.close_on_exit, args=(proc, outfile), daemon=True)
-        t.start()
-
+        t = self.dev.stream_shell(shell_command, stdout=outfile, stderr=outfile)
+        # proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
+        # t = threading.Thread(target=self.close_on_exit, args=(proc, outfile), daemon=True)
+        # t.start()
         return t
-    
-    
 
-    def close_on_exit(self, proc: subprocess.Popen, f: IO):
+    def close_on_exit(self, proc: ADBStreamShell, f: IO):
         self.return_code = proc.wait()
         f.close()
         if self.return_code != 0:
             raise RuntimeError(f"Fastbot Error: Terminated with [code {self.return_code}] See {self.log_file} for details.")
 
     def get_return_code(self):
-        if self.thread:
+        if self.thread.is_running():
             logger.info("Waiting for Fastbot to exit.")
-            self.thread.join()
-        return self.return_code
+            return self.thread.wait()
+        return self.thread.poll()
 
     def start(self):
         self.thread = self._activateFastbot()
 
     def join(self):
-        if self.thread:
-            self.thread.join()
+        self.thread.join()
+            
 
 
 
