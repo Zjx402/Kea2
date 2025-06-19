@@ -9,7 +9,10 @@
     <img src="https://github.com/user-attachments/assets/aa5839fc-4542-46f6-918b-c9f891356c84" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-[中文文档](README_cn.md)
+### Github repo link
+[https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
+
+### [点击此处：查看中文文档](README_cn.md)
 
 ## About 
 
