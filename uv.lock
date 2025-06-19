@@ -8,21 +8,21 @@ resolution-markers = [
 
 [[package]]
 name = "adbutils"
-version = "2.8.7"
+version = "2.9.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "deprecation" },
     { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pillow", version = "11.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "requests" },
-    { name = "retry" },
+    { name = "retry2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/f8/b8/d90093a3bc54c9d61195500213d929c92bde085579cf54f2eb97a25400c0/adbutils-2.8.7.tar.gz", hash = "sha256:8e3489d4a8369500951f08cfe6dbfde1ddbdf86b9aaa96641f822181195fa0cf", size = 185622 }
+sdist = { url = "https://files.pythonhosted.org/packages/15/8a/61348e018a4d9a49b2c108570125409b2b791dd1947c1bdcf9986011d79c/adbutils-2.9.2.tar.gz", hash = "sha256:6de68b4142c54df4dbea07240299c0527162531a08e8bafc36c3fd1ac9c4291e", size = 187823 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4c/02/bc01843446aef003e01642292bc31f728b7528cb999488a107d609c3ab9b/adbutils-2.8.7-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:443ffbb0f72532d6cfa88f5df1735b401bcd73265fab6430b3d8fc434f445d30", size = 6705052 },
-    { url = "https://files.pythonhosted.org/packages/53/c8/7d65da1a2de875ee6aa44e3e743e3d586c0bd4fb415a2ae7a5a9ce5d524d/adbutils-2.8.7-py3-none-manylinux1_x86_64.whl", hash = "sha256:b44d521f9ef8453738f1d8abac84e86242715a7a6446f23e36536a6efea37c41", size = 3576001 },
-    { url = "https://files.pythonhosted.org/packages/b1/98/75b6f6f85a81ed9e0de79391642ddf367f6442d764fe7b24dd7d8fb8c891/adbutils-2.8.7-py3-none-win32.whl", hash = "sha256:258686a43d5fc7820ffa72416bd57883b5fdf304f231718ed8f134105475b89f", size = 3336619 },
-    { url = "https://files.pythonhosted.org/packages/ae/e9/c181fc4bfd220a89bc0fe0d1f32e86c1797710d2a76c64bb2522cfe76b68/adbutils-2.8.7-py3-none-win_amd64.whl", hash = "sha256:e74dbf9dc6b83e75dec9f6758a880557c263fc7ee4bff7d09ee736aab7b7b762", size = 3336623 },
+    { url = "https://files.pythonhosted.org/packages/f2/8e/4e2cd1256c717ea3469f2604c7eb749b6686edfd7137ab21977155e2af8b/adbutils-2.9.2-py3-none-macosx_10_9_intel.macosx_10_9_x86_64.macosx_10_10_intel.macosx_10_10_x86_64.whl", hash = "sha256:18861cd2636a7465f8967eadfa30bf23d1d81781da360c7229543ee0ee8d9bec", size = 6706698 },
+    { url = "https://files.pythonhosted.org/packages/2d/97/f47fd4d869c2d809a06fa0e482e2852e62a011cfb37db112281cdf1c60c5/adbutils-2.9.2-py3-none-manylinux1_x86_64.whl", hash = "sha256:8c62c7225f07b98dcdfa6647db61cb28ad593a9a7677439fff5443e826c1647e", size = 3577650 },
+    { url = "https://files.pythonhosted.org/packages/30/19/bd45b5047b422aff77a35f17c6bfd17997d036f30556dcb981da05dbff46/adbutils-2.9.2-py3-none-win32.whl", hash = "sha256:7cff42dde892c385c4260b07047e789f73e56804937fa86463a50db8cf1ef120", size = 3338270 },
+    { url = "https://files.pythonhosted.org/packages/46/c2/7d3312b478569ee9b684282db0cd1399c57229c7f28339cd43d238699af7/adbutils-2.9.2-py3-none-win_amd64.whl", hash = "sha256:c9e1a55db06c30a38252eab5ef5d6787c89a786a7bc1fcdac341608f69a79b81", size = 3338272 },
 ]
 
 [[package]]
@@ -152,6 +152,18 @@ wheels = [
 ]
 
 [[package]]
+name = "importlib-resources"
+version = "6.4.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "zipp", marker = "python_full_version < '3.9'" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/98/be/f3e8c6081b684f176b761e6a2fef02a0be939740ed6f54109a2951d806f3/importlib_resources-6.4.5.tar.gz", hash = "sha256:980862a1d16c9e147a59603677fa2aa5fd82b87f223b6cb870695bcfce830065", size = 43372 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e1/6a/4604f9ae2fa62ef47b9de2fa5ad599589d28c9fd1d335f32759813dfa91e/importlib_resources-6.4.5-py3-none-any.whl", hash = "sha256:ac29d5f956f01d5e4bb63102a5a19957f1b9175e45649977264a1416783bb717", size = 36115 },
+]
+
+[[package]]
 name = "jinja2"
 version = "3.1.6"
 source = { registry = "https://pypi.org/simple" }
@@ -166,7 +178,7 @@ wheels = [
 
 [[package]]
 name = "kea2-python"
-version = "0.1.2b1"
+version = "0.2.0b0"
 source = { virtual = "." }
 dependencies = [
     { name = "jinja2" },
@@ -178,7 +190,7 @@ dependencies = [
 requires-dist = [
     { name = "jinja2", specifier = ">=3.0.0" },
     { name = "rtree", specifier = ">=1.3.0" },
-    { name = "uiautomator2", specifier = ">=3.2.9" },
+    { name = "uiautomator2", specifier = ">=3.3.2" },
 ]
 
 [[package]]
@@ -619,15 +631,6 @@ wheels = [
 ]
 
 [[package]]
-name = "py"
-version = "1.11.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/98/ff/fec109ceb715d2a6b4c4a85a61af3b40c723a961e8828319fbcb15b868dc/py-1.11.0.tar.gz", hash = "sha256:51c75c4126074b472f746a24399ad32f6053d1b34b68d2fa41e558e6f4a98719", size = 207796 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f6/f0/10642828a8dfb741e5f3fbaac830550a518a775c7fff6f04a007259b0548/py-1.11.0-py2.py3-none-any.whl", hash = "sha256:607c53218732647dff4acdfcd50cb62615cedf612e72d1724fb1a0cc6405b378", size = 98708 },
-]
-
-[[package]]
 name = "requests"
 version = "2.32.3"
 source = { registry = "https://pypi.org/simple" }
@@ -644,16 +647,14 @@ wheels = [
 ]
 
 [[package]]
-name = "retry"
-version = "0.9.2"
+name = "retry2"
+version = "0.9.5"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "decorator" },
-    { name = "py" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/9d/72/75d0b85443fbc8d9f38d08d2b1b67cc184ce35280e4a3813cda2f445f3a4/retry-0.9.2.tar.gz", hash = "sha256:f8bfa8b99b69c4506d6f5bd3b0aabf77f98cdb17f3c9fc3f5ca820033336fba4", size = 6448 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/4b/0d/53aea75710af4528a25ed6837d71d117602b01946b307a3912cb3cfcbcba/retry-0.9.2-py2.py3-none-any.whl", hash = "sha256:ccddf89761fa2c726ab29391837d4327f819ea14d244c232a1d24c67a2f98606", size = 7986 },
+    { url = "https://files.pythonhosted.org/packages/97/49/1cae6d9b932378cc75f902fa70648945b7ea7190cb0d09ff83b47de3e60a/retry2-0.9.5-py2.py3-none-any.whl", hash = "sha256:f7fee13b1e15d0611c462910a6aa72a8919823988dd0412152bc3719c89a4e55", size = 6013 },
 ]
 
 [[package]]
@@ -675,19 +676,20 @@ wheels = [
 
 [[package]]
 name = "uiautomator2"
-version = "3.2.9"
+version = "3.3.2"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adbutils" },
+    { name = "importlib-resources", marker = "python_full_version < '3.9'" },
     { name = "lxml" },
     { name = "pillow", version = "10.4.0", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version < '3.9'" },
     { name = "pillow", version = "11.2.1", source = { registry = "https://pypi.org/simple" }, marker = "python_full_version >= '3.9'" },
     { name = "requests" },
-    { name = "retry" },
+    { name = "retry2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/cf/8d/8752c7b6dc4d6defccf56fd493b965a406bfadb12b96e1f3df2961a8dd6c/uiautomator2-3.2.9.tar.gz", hash = "sha256:0aad4c6fae2a8a69301afdcc043e966a2d6c0e786a04d7173998be3b4247d29e", size = 5203393 }
+sdist = { url = "https://files.pythonhosted.org/packages/7a/20/07b1c0022aec927615a3d6dc412699032fbd06dfda925d2e8d88511cf1bc/uiautomator2-3.3.2.tar.gz", hash = "sha256:4beb33a9804825ecde55314cc4373f7a41f44d6edc10006e01fea97e443d5428", size = 5198365 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/72/fd/eaa6f93dec5aed13ccbd31cc2604cc450b0aa776d4b98df1ce928a156e0d/uiautomator2-3.2.9-py3-none-any.whl", hash = "sha256:60d06148dbcb5b3dfc57a17435d43db793c078375fc394f659a7691a8e4981bd", size = 5194528 },
+    { url = "https://files.pythonhosted.org/packages/cd/22/5a97c5719e5dd4b15e74a8e66e4cad670954c38d5a6a51f105977af5de96/uiautomator2-3.3.2-py3-none-any.whl", hash = "sha256:dd7465e97ed2c9ff6d229924fe2dba340be976a45e4990d5e503a3cacf256df6", size = 5192887 },
 ]
 
 [[package]]
@@ -712,4 +714,13 @@ resolution-markers = [
 sdist = { url = "https://files.pythonhosted.org/packages/8a/78/16493d9c386d8e60e442a35feac5e00f0913c0f4b7c217c11e8ec2ff53e0/urllib3-2.4.0.tar.gz", hash = "sha256:414bc6535b787febd7567804cc015fee39daab8ad86268f1310a9250697de466", size = 390672 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/6b/11/cc635220681e93a0183390e26485430ca2c7b5f9d33b15c74c2861cb8091/urllib3-2.4.0-py3-none-any.whl", hash = "sha256:4e16665048960a0900c702d4a66415956a584919c03361cac9f1df5c5dd7e813", size = 128680 },
+]
+
+[[package]]
+name = "zipp"
+version = "3.20.2"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/54/bf/5c0000c44ebc80123ecbdddba1f5dcd94a5ada602a9c225d84b5aaa55e86/zipp-3.20.2.tar.gz", hash = "sha256:bc9eb26f4506fda01b81bcde0ca78103b6e62f991b381fec825435c836edbc29", size = 24199 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/62/8b/5ba542fa83c90e09eac972fc9baca7a88e7e7ca4b221a89251954019308b/zipp-3.20.2-py3-none-any.whl", hash = "sha256:a817ac80d6cf4b23bf7f2828b7cabf326f15a001bea8b1f9b49631780ba28350", size = 9200 },
 ]
