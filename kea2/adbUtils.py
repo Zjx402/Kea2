@@ -1,9 +1,14 @@
+import sys
 import subprocess
+import threading
 from typing import List, Optional, Set
 from kea2.utils import getLogger
 from adbutils import AdbDevice, adb
+from typing import IO, TYPE_CHECKING, Generator, Optional, List, Union
+from adbutils import AdbConnection
 
 logger = getLogger(__name__)
+
 
 class ADBDevice(AdbDevice):
     _instance = None
@@ -29,6 +34,115 @@ class ADBDevice(AdbDevice):
             transport_id (str, optional): The transport ID for the device.
         """
         super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
+
+
+class ADBStreamShell:
+    def __init__(self, serial: str = None, transport_id: str = None):
+        ADBDevice.setDevice(serial=serial, transport_id=transport_id)
+        self.dev = ADBDevice()
+        self._thread = None
+        self._exit_code = 255
+
+    def shell(
+        self, cmdargs: Union[List[str], str],
+        stdout: IO = None, stderr: IO = None,
+        timeout: Union[float, None] = None
+    ):
+        """ Start a shell command on the device and stream its output. 
+        Args:
+            cmdargs (Union[List[str], str]): The command to execute, either as a list of arguments or a single string.
+            stdout (IO, optional): The output stream for standard output. Defaults to sys.stdout.
+            stderr (IO, optional): The output stream for standard error. Defaults to sys.stderr.
+            timeout (Union[float, None], optional): Timeout for the command execution. Defaults to None.
+        Returns:
+            ADBStreamShell: An instance of ADBStreamShell that can be used to interact with the shell command.
+        """
+        self._finished = False
+        self.stdout: IO = stdout if stdout else sys.stdout
+        self.stderr: IO = stderr if stderr else sys.stderr
+
+        cmd = " ".join(cmdargs) if isinstance(cmdargs, list) else cmdargs
+        self._generator = self._shell_v2(cmd, timeout)
+        self._thread = threading.Thread(target=self._process_output, daemon=True)
+        self._thread.start()
+        return self
+
+    def _process_output(self):
+        try:
+            for msg_type, data in self._generator:
+
+                if msg_type == 'stdout':
+                    self._write_stdout(data)
+                elif msg_type == 'stderr':
+                    self._write_stderr(data)
+                elif msg_type == 'exit':
+                    self._exit_code = data
+                    break
+
+        except Exception as e:
+            print(f"ADBStreamShell execution error: {e}")
+            self._exit_code = -1
+
+    def _write_stdout(self, data: bytes):
+        text = data.decode('utf-8', errors='ignore')
+        sys.stdout.write(text)
+        sys.stdout.flush()
+
+    def _write_stderr(self, data: bytes):
+        text = data.decode('utf-8', errors='ignore')
+        self.stderr.write(text)
+        self.stderr.flush()
+
+    def _shell_v2(self, cmd, timeout) -> Generator:
+        c: AdbConnection = self.dev.open_transport(timeout=timeout)
+        c.send_command(f"shell,v2:{cmd}")
+        c.check_okay()
+        try:
+            while True:
+                header = c.read_exact(5)
+                msg_id = header[0]
+                length = int.from_bytes(header[1:5], byteorder="little")
+
+                if length == 0:
+                    continue
+
+                data = c.read_exact(length)
+
+                if msg_id == 1:
+                    yield ('stdout', data)
+                elif msg_id == 2:
+                    yield ('stderr', data)
+                elif msg_id == 3:
+                    yield ('exit', data[0])
+                    break
+        finally:
+            c.close()
+
+    def wait(self):
+        """ Wait for the shell command to finish and return the exit code.
+        Returns:
+            int: The exit code of the shell command.
+        """
+        if self._thread:
+            self._thread.join()
+        return self._exit_code
+
+    def is_running(self) -> bool:
+        """ Check if the shell command is still running.
+        Returns:
+            bool: True if the command is still running, False otherwise.
+        """
+        return not self._finished and self._thread and self._thread.is_alive()
+    
+    def poll(self):
+        """
+        Check if the shell command is still running.
+        Returns:
+            int: The exit code if the command has finished, None otherwise.
+        """
+        if self._thread and self._thread.is_alive():
+            return None
+        return self._exit_code
 
 
 def run_adb_command(cmd: List[str], timeout=10):
