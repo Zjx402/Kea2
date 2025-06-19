@@ -37,7 +37,7 @@ jobs:
 
       - name: Inject Google Site Verification Meta Tag
         run: |
-          META_TAG='<meta name="google-site-verification" content="ZBCyahMarW4F_YWrNdMVtTfjY7uijAxcdOCB2G5wnQ4" />'
+          META_TAG='<meta name="google-site-verification" content="mQeRqqLwBsv9L7dAQB4vIl6UOs3Y-BULEq8AefQf4fE" />'
           find ./_site -name "*.html" -exec sudo sed -i "s|</head>|$META_TAG\n</head>|g" {} +
 
       - name: Upload artifact
