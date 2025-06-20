@@ -1,12 +1,31 @@
 import json
 import datetime
-import re
+from dataclasses import dataclass
 from pathlib import Path
-import cv2
+from typing import Dict, TypedDict, Literal, List
+from collections import deque
+
+from PIL import Image, ImageDraw
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
 from .utils import getLogger
 
+
 logger = getLogger(__name__)
+
+
+class StepData(TypedDict):
+    Type: str
+    MonkeyStepsCount: int
+    Time: str
+    Info: Dict
+    Screenshot: str
+
+@dataclass
+class DataPath:
+    steps_log: Path
+    result_json: Path
+    coverage_log: Path
+    screenshots_dir: Path
 
 
 class BugReportGenerator:
@@ -23,7 +42,16 @@ class BugReportGenerator:
         """
         self.result_dir = Path(result_dir)
         self.log_timestamp = self.result_dir.name.split("_", 1)[1]
-        self.screenshots_dir = self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
+
+        self.data_path: DataPath = DataPath(
+            steps_log=self.result_dir / f"output_{self.log_timestamp}" / "steps.log",
+            result_json=self.result_dir / f"result_{self.log_timestamp}.json",
+            coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
+            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
+        )
+
+        self.screenshots = deque()
+
         self.take_screenshots = self._detect_screenshots_setting()
 
         # Set up Jinja2 environment
@@ -47,7 +75,6 @@ class BugReportGenerator:
                 autoescape=select_autoescape(['html', 'xml'])
             )
 
-            # If template file doesn't exist, it will be created on first report generation
 
     def generate_report(self):
         """
@@ -79,7 +106,6 @@ class BugReportGenerator:
         data = {
             "timestamp": self.log_timestamp,
             "bugs_found": 0,
-            "preconditions_satisfied": 0,
             "executed_events": 0,
             "total_testing_time": 0,
             "first_bug_time": 0,
@@ -89,277 +115,173 @@ class BugReportGenerator:
             "tested_activities": [],
             "property_violations": [],
             "property_stats": [],
-            "screenshots_count": 0,
             "screenshot_info": {},  # Store detailed information for each screenshot
+            # "screenshot_order": [],  # Store screenshots in step order
             "coverage_trend": []  # Store coverage trend data
         }
 
-        # Get screenshot count
-        # TODO del this method (performance Issue)
-        if self.screenshots_dir.exists():
-            screenshots = sorted(self.screenshots_dir.glob("screenshot-*.png"),
-                                 key=lambda x: int(x.name.split("-")[1].split(".")[0]))
-            data["screenshots_count"] = len(screenshots)
-
         # Parse steps.log file to get test step numbers and screenshot mappings
-        steps_log_path = self.result_dir / f"output_{self.log_timestamp}" / "steps.log"
-        property_violations = {}  # Store multiple violation records for each property: {property_name: [{start, end, screenshot}, ...]}
-        start_screenshot = None  # Screenshot name at the start of testing
-        fail_screenshot = None  # Screenshot name at test failure
-
-        # For storing time data
-        first_precond_time = None  # Time of the first ScriptInfo entry with state=start
-        first_fail_time = None  # Time of the first ScriptInfo entry with state=fail
+        steps_log_path = self.data_path.steps_log
+        property_violations = {}  # Store multiple violation records for each property
+        relative_path = f"output_{self.log_timestamp}/screenshots"
 
         if steps_log_path.exists():
             with open(steps_log_path, "r", encoding="utf-8") as f:
-                # First read all steps
-                steps = []
-
-                for line in f:
-                    try:
-                        step_data = json.loads(line)
-                        steps.append(step_data)
-                        info = json.loads(step_data.get("Info", "{}")) if isinstance(step_data.get("Info"),
-                                                                                     str) else step_data.get("Info", {})
-                        # Extract time from ScriptInfo entries
-                        if step_data.get("Type") == "ScriptInfo":
-                            try:
-                                state = info.get("state", "")
-                                # Record the first ScriptInfo with state=start as precondition time
-                                if state == "start" and first_precond_time is None:
-                                    first_precond_time = step_data.get("Time")
-
-                                # Record the first ScriptInfo with state=fail as fail time
-                                elif state == "fail" and first_fail_time is None:
-                                    first_fail_time = step_data.get("Time")
-                            except Exception as e:
-                                logger.error(f"Error parsing ScriptInfo: {e}")
-
-                        elif step_data.get("Type") == "Monkey":
-                            try:
-                                act = info.get("act", "")
-                                pos = info.get("pos")
-                                screenshot_name = step_data.get("Screenshot", "")
-                                if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL") and pos and screenshot_name:
-                                    screenshot_path = self.screenshots_dir / screenshot_name
-                                    if screenshot_path.exists():
-                                        self._mark_screenshot_interaction(screenshot_path, act, pos)
-                            except Exception as e:
-                                logger.error(f"Error processing Monkey step: {e}")
-                    except:
-                        pass
-
-                # Calculate number of Monkey events
-                monkey_events_count = sum(1 for step in steps if step.get("Type") == "Monkey")
-                data["executed_events"] = monkey_events_count
-
                 # Track current test state
                 current_property = None
                 current_test = {}
+                monkey_events_count = 0
+                step_index = 0
 
-                # Collect detailed information for each screenshot
-                for step in steps:
-                    step_type = step.get("Type", "")
-                    screenshot = step.get("Screenshot", "")
-                    info = step.get("Info", "{}")
+                for line in f:
+                    step_data = self._parse_step_data(line)
+                    if step_data:
+                        step_index += 1  # Count steps starting from 1
+                        step_type = step_data.get("Type", "")
+                        screenshot = step_data.get("Screenshot", "")
+                        info = step_data.get("Info", {})
 
-                    if screenshot and screenshot not in data["screenshot_info"]:
-                        try:
-                            info_obj = json.loads(info) if isinstance(info, str) else info
-                            caption = ""
+                        # Count Monkey events
+                        if step_type == "Monkey":
+                            monkey_events_count += 1
 
-                            if step_type == "Monkey":
-                                # Extract 'act' attribute for Monkey type and convert to lowercase
-                                caption = f"{info_obj.get('act', 'N/A').lower()}"
-                            elif step_type == "Script":
-                                # Extract 'method' attribute for Script type
-                                caption = f"{info_obj.get('method', 'N/A')}"
-                            elif step_type == "ScriptInfo":
-                                # Extract 'propName' and 'state' attributes for ScriptInfo type
-                                prop_name = info_obj.get('propName', '')
-                                state = info_obj.get('state', 'N/A')
-                                caption = f"{prop_name} {state}" if prop_name else f"{state}"
+                        # If screenshots are enabled, mark the screenshot
+                        if self.take_screenshots and screenshot:
+                            self._mark_screenshot(step_data)
 
-                            data["screenshot_info"][screenshot] = {
-                                "type": step_type,
-                                "caption": caption
-                            }
-                        except Exception as e:
-                            logger.error(f"Error parsing screenshot info: {e}")
-                            data["screenshot_info"][screenshot] = {
-                                "type": step_type,
-                                "caption": step_type
-                            }
+                        # Collect detailed information for each screenshot
+                        if screenshot and screenshot not in data["screenshot_info"]:
+                            try:
+                                caption = ""
 
-                # Find start and end step numbers and corresponding screenshots for all tests
-                for i, step in enumerate(steps, 1):  # Start counting from 1 to match screenshot numbering
-                    if step.get("Type") == "ScriptInfo":
-                        try:
-                            info = json.loads(step.get("Info", "{}"))
-                            property_name = info.get("propName", "")
-                            state = info.get("state", "")
-                            screenshot = step.get("Screenshot", "")
+                                if step_type == "Monkey":
+                                    # Extract 'act' attribute for Monkey type and convert to lowercase
+                                    caption = f"{info.get('act', 'N/A').lower()}"
+                                elif step_type == "Script":
+                                    # Extract 'method' attribute for Script type
+                                    caption = f"{info.get('method', 'N/A')}"
+                                elif step_type == "ScriptInfo":
+                                    # Extract 'propName' and 'state' attributes for ScriptInfo type
+                                    prop_name = info.get('propName', '')
+                                    state = info.get('state', 'N/A')
+                                    caption = f"{prop_name} {state}" if prop_name else f"{state}"
 
-                            if property_name and state:
-                                if state == "start":
-                                    # Record new test start
-                                    current_property = property_name
-                                    current_test = {
-                                        "start": i,
-                                        "end": None,
-                                        "screenshot_start": screenshot
-                                    }
-                                    # Record screenshot at test start
-                                    if not start_screenshot and screenshot:
-                                        start_screenshot = screenshot
+                                data["screenshot_info"][screenshot] = {
+                                    "type": step_type,
+                                    "caption": caption,
+                                    "step_index": step_index
+                                }
+                                # Add to ordered list
+                                # data["screenshot_order"].append(screenshot)
+                                screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
+                                self.screenshots.append({
+                                    'id': step_index,
+                                    'path': f"{relative_path}/{screenshot}",
+                                    'caption': f"{step_index}. {screenshot_caption}"
+                                })
+                            except Exception as e:
+                                logger.error(f"Error parsing screenshot info: {e}")
+                                data["screenshot_info"][screenshot] = {
+                                    "type": step_type,
+                                    "caption": step_type,
+                                    "step_index": step_index
+                                }
+                                # Add to ordered list even on error
+                                # data["screenshot_order"].append(screenshot)
+                                screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
+                                self.screenshots.append({
+                                    'id': step_index,
+                                    'path': f"{relative_path}/{screenshot}",
+                                    'caption': f"{step_index}. {screenshot_caption}"
+                                })
 
-                                elif state == "fail" or state == "pass":
-                                    if current_property == property_name:
-                                        # Update test end information
-                                        current_test["end"] = i
-                                        current_test["screenshot_end"] = screenshot
+                        # Process ScriptInfo for property violations
+                        if step_type == "ScriptInfo":
+                            try:
+                                property_name = info.get("propName", "")
+                                state = info.get("state", "")
 
-                                        if state == "fail":
-                                            # Record failed test
-                                            if property_name not in property_violations:
-                                                property_violations[property_name] = []
+                                if property_name and state:
+                                    if state == "start":
+                                        # Record new test start
+                                        current_property = property_name
+                                        current_test = {
+                                            "start": step_index,
+                                            "end": None,
+                                            "screenshot_start": screenshot
+                                        }
 
-                                            property_violations[property_name].append({
-                                                "start": current_test["start"],
-                                                "end": current_test["end"],
-                                                "screenshot_start": current_test["screenshot_start"],
-                                                "screenshot_end": screenshot
-                                            })
+                                    elif state in ["pass", "fail", "error"]:
+                                        if current_property == property_name:
+                                            # Update test end information
+                                            current_test["end"] = step_index
+                                            current_test["screenshot_end"] = screenshot
 
-                                            # Record screenshot at test failure
-                                            if not fail_screenshot and screenshot:
-                                                fail_screenshot = screenshot
+                                            if state == "fail" or state == "error":
+                                                # Record failed/error test
+                                                if property_name not in property_violations:
+                                                    property_violations[property_name] = []
 
-                                        # Reset current test
-                                        current_property = None
-                                        current_test = {}
-                        except:
-                            pass
+                                                property_violations[property_name].append({
+                                                    "start": current_test["start"],
+                                                    "end": current_test["end"],
+                                                    "screenshot_start": current_test["screenshot_start"],
+                                                    "screenshot_end": screenshot
+                                                })
 
-        # Calculate test time
-        start_time = None
+                                            # Reset current test
+                                            current_property = None
+                                            current_test = {}
+                            except Exception as e:
+                                logger.error(f"Error processing ScriptInfo step {step_index}: {e}")
 
-        # Parse fastbot log file to get start time
-        fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
-        if fastbot_log_path:
-            try:
-                with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
-                    # TODO we have another way to record the time. Don't parse the fastbot.log again.
-                    log_content = f.read()
+                        # Store first and last step for time calculation
+                        if step_index == 1:
+                            first_step_time = step_data["Time"]
+                        last_step_time = step_data["Time"]
 
-                    # Extract test start time
-                    start_match = re.search(r'\[Fastbot\]\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]  @Version',
-                                            log_content)
-                    if start_match:
-                        start_time_str = start_match.group(1)
-                        start_time = datetime.datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:%S.%f")
+                # Set the monkey events count
+                data["executed_events"] = monkey_events_count
 
-                    # Extract test end time (last timestamp)
-                    end_matches = re.findall(r'\[Fastbot\]\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]',
-                                             log_content)
-                    end_time = None
-                    if end_matches:
-                        end_time_str = end_matches[-1]
-                        end_time = datetime.datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S.%f")
-
-                    # Calculate total test time (in seconds)
-                    if start_time and end_time:
-                        data["total_testing_time"] = int((end_time - start_time).total_seconds())
-            except Exception as e:
-                logger.error(f"Error parsing fastbot log file: {e}")
-                logger.error(f"Error details: {str(e)}")
-
-        # Calculate first_bug_time and first_precondition_time from steps.log data
-        if start_time:
-            # If first_precond_time exists, calculate first_precondition_time
-            if first_precond_time:
-                try:
-                    precond_time = datetime.datetime.strptime(first_precond_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_precondition_time"] = int((precond_time - start_time).total_seconds())
-                except Exception as e:
-                    logger.error(f"Error parsing precond_time: {e}")
-
-            # If first_fail_time exists, calculate first_bug_time
-            if first_fail_time:
-                try:
-                    fail_time = datetime.datetime.strptime(first_fail_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_bug_time"] = int((fail_time - start_time).total_seconds())
-                except Exception as e:
-                    logger.error(f"Error parsing fail_time: {e}")
+                # Calculate test time
+                if step_index > 0:
+                    try:
+                        data["total_testing_time"] = int((datetime.datetime.strptime(last_step_time,"%Y-%m-%d %H:%M:%S.%f") -
+                                                          datetime.datetime.strptime(first_step_time,"%Y-%m-%d %H:%M:%S.%f")
+                                                         ).total_seconds())
+                    except Exception as e:
+                        logger.error(f"Error calculating test time: {e}")
 
         # Parse result file
-        result_json_path = list(self.result_dir.glob("result_*.json"))
-        property_stats = {}  # Store property names and corresponding statistics
-
-        if result_json_path:
-            with open(result_json_path[0], "r", encoding="utf-8") as f:
+        result_json_path = self.data_path.result_json
+        
+        if result_json_path.exists():
+            with open(result_json_path, "r", encoding="utf-8") as f:
                 result_data = json.load(f)
 
-            # Calculate bug count and get property names
+            # Calculate bug count directly from result data
             for property_name, test_result in result_data.items():
-                # Extract property name (last part of test name)
-
-                # Initialize property statistics
-                if property_name not in property_stats:
-                    property_stats[property_name] = {
-                        "precond_satisfied": 0,
-                        "precond_checked": 0,
-                        "postcond_violated": 0,
-                        "error": 0
-                    }
-
-                # Extract statistics directly from result_*.json file
-                property_stats[property_name]["precond_satisfied"] += test_result.get("precond_satisfied", 0)
-                property_stats[property_name]["precond_checked"] += test_result.get("executed", 0)
-                property_stats[property_name]["postcond_violated"] += test_result.get("fail", 0)
-                property_stats[property_name]["error"] += test_result.get("error", 0)
-
                 # Check if failed or error
                 if test_result.get("fail", 0) > 0 or test_result.get("error", 0) > 0:
                     data["bugs_found"] += 1
 
-                data["preconditions_satisfied"] += test_result.get("precond_satisfied", 0)
-                # data["executed_events"] += test_result.get("executed", 0)
+            # Store the raw result data for direct use in HTML template
+            data["property_stats"] = result_data
 
-        # Parse coverage data
-        coverage_log_path = self.result_dir / f"output_{self.log_timestamp}" / "coverage.log"
-        if coverage_log_path.exists():
-            with open(coverage_log_path, "r", encoding="utf-8") as f:
-                # TODO refine this with iterator
-                lines = f.readlines()
-                if lines:
-                    # Collect coverage trend data
-                    for line in lines:
-                        if not line.strip():
-                            continue
-                        try:
-                            coverage_data = json.loads(line)
-                            data["coverage_trend"].append({
-                                "steps": coverage_data.get("stepsCount", 0),
-                                "coverage": coverage_data.get("coverage", 0),
-                                "tested_activities_count": len(coverage_data.get("testedActivities", []))
-                            })
-                        except Exception as e:
-                            logger.error(f"Error parsing coverage data: {e}")
-                            continue
+        # Process coverage data
+        cov_trend, last_line = self._get_cov_trend()
+        if cov_trend:
+            data["coverage_trend"] = cov_trend
 
-                    # Ensure sorted by steps
-                    data["coverage_trend"].sort(key=lambda x: x["steps"])
-
-                    try:
-                        # Read last line to get final coverage data
-                        coverage_data = json.loads(lines[-1])
-                        data["coverage"] = coverage_data.get("coverage", 0)
-                        data["total_activities"] = coverage_data.get("totalActivities", [])
-                        data["tested_activities"] = coverage_data.get("testedActivities", [])
-                    except Exception as e:
-                        logger.error(f"Error parsing final coverage data: {e}")
+        if last_line:
+            try:
+                coverage_data = json.loads(last_line)
+                if coverage_data:
+                    data["coverage"] = coverage_data.get("coverage", 0)
+                    data["total_activities"] = coverage_data.get("totalActivities", [])
+                    data["tested_activities"] = coverage_data.get("testedActivities", [])
+            except Exception as e:
+                logger.error(f"Error parsing final coverage data: {e}")
 
         # Generate Property Violations list
         if property_violations:
@@ -377,43 +299,98 @@ class BugReportGenerator:
                     })
                     index += 1
 
-        # Generate Property Stats list
-        if property_stats:
-            index = 1
-            for property_name, stats in property_stats.items():
-                data["property_stats"].append({
-                    "index": index,
-                    "property_name": property_name,
-                    "precond_satisfied": stats["precond_satisfied"],
-                    "precond_checked": stats["precond_checked"],
-                    "postcond_violated": stats["postcond_violated"],
-                    "error": stats["error"]
-                })
-                index += 1
-
         return data
+
+    def _parse_step_data(self, raw_step_info: str) -> StepData:
+        step_data = json.loads(raw_step_info)
+        step_data["Info"] = json.loads(step_data.get("Info"))
+        return step_data
+
+    def _mark_screenshot(self, step_data: StepData):
+        if step_data["Type"] == "Monkey":
+            try:
+                act = step_data["Info"].get("act")
+                pos = step_data["Info"].get("pos")
+                screenshot_name = step_data["Screenshot"]
+                if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
+                    screenshot_path = self.data_path.screenshots_dir / screenshot_name
+                    if screenshot_path.exists():
+                        self._mark_screenshot_interaction(screenshot_path, act, pos)
+            except Exception as e:
+                logger.error(f"Error processing Monkey step: {e}")
+
+
+    def _mark_screenshot_interaction(self, screenshot_path, action_type, position):
+        """
+            Mark interaction on screenshot with colored rectangle
+
+            Args:
+                screenshot_path (Path): Path to the screenshot file
+                action_type (str): Type of action ('CLICK' or 'LONG_CLICK' or 'SCROLL')
+                position (list): Position coordinates [x1, y1, x2, y2]
+
+            Returns:
+                bool: True if marking was successful, False otherwise
+        """
+        try:
+            img = Image.open(screenshot_path).convert("RGB")
+            draw = ImageDraw.Draw(img)
+
+            if not isinstance(position, (list, tuple)) or len(position) != 4:
+                logger.warning(f"Invalid position format: {position}")
+                return False
+
+            x1, y1, x2, y2 = map(int, position)
+
+            line_width = 5
+
+            if action_type == "CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+            elif action_type == "LONG_CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+            elif action_type.startswith("SCROLL"):
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+
+            img.save(screenshot_path)
+            return True
+
+        except Exception as e:
+            logger.error(f"Error marking screenshot {screenshot_path}: {e}")
+            return False
+
 
     def _detect_screenshots_setting(self):
         """
-        Detect if screenshots were enabled during test run.
-        Returns True if screenshots were taken, False otherwise.
+            Detect if screenshots were enabled during test run.
+            Returns True if screenshots were taken, False otherwise.
         """
-        # Method 1: Check if screenshots directory exists and has content
-        if self.screenshots_dir.exists() and any(self.screenshots_dir.glob("screenshot-*.png")):
-            return True
+        return self.data_path.screenshots_dir.exists()
 
-        # Method 2: Try to read init config from logs
-        fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
-        if fastbot_log_path:
-            try:
-                with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
-                    log_content = f.read()
-                    if '"takeScreenshots": true' in log_content:
-                        return True
-            except Exception:
-                pass
-
-        return False
+    def _get_cov_trend(self):
+        # Parse coverage data
+        coverage_log_path = self.data_path.coverage_log
+        cov_trend = []
+        last_line = None
+        if coverage_log_path.exists():
+            with open(coverage_log_path, "r", encoding="utf-8") as f:
+                for line in f:
+                    if not line.strip():
+                        continue
+                    try:
+                        coverage_data = json.loads(line)
+                        cov_trend.append({
+                            "steps": coverage_data.get("stepsCount", 0),
+                            "coverage": coverage_data.get("coverage", 0),
+                            "tested_activities_count": coverage_data.get("testedActivitiesCount", 0)
+                        })
+                        last_line = line
+                    except Exception as e:
+                        logger.error(f"Error parsing coverage data: {e}")
+                        continue
+        return cov_trend, last_line
 
     def _generate_html_report(self, data):
         """
@@ -421,28 +398,27 @@ class BugReportGenerator:
         """
         try:
             # Prepare screenshot data
-            screenshots = []
-            relative_path = f"output_{self.log_timestamp}/screenshots"
-
-            if self.screenshots_dir.exists():
-                # TODO:  NO PLEASE GOD NOOOOO!
-                screenshot_files = sorted(self.screenshots_dir.glob("screenshot-*.png"),
-                                          key=lambda x: int(x.name.split("-")[1].split(".")[0]))
-
-                for i, screenshot in enumerate(screenshot_files, 1):
-                    screenshot_name = screenshot.name
-
-                    # Get information for this screenshot
-                    caption = f"{i}"
-                    if screenshot_name in data["screenshot_info"]:
-                        info = data["screenshot_info"][screenshot_name]
-                        caption = f"{i}. {info.get('caption', '')}"
-
-                    screenshots.append({
-                        'id': i,
-                        'path': f"{relative_path}/{screenshot_name}",
-                        'caption': caption
-                    })
+            # screenshots = deque()
+            # relative_path = f"output_{self.log_timestamp}/screenshots"
+            #
+            # if self.data_path.screenshots_dir.exists():
+            #     # Use the ordered screenshot list from steps.log processing
+            #     for i, screenshot_name in enumerate(data["screenshot_order"], 1):
+            #         screenshot_path = self.data_path.screenshots_dir / screenshot_name
+            #
+            #         # Check if screenshot file actually exists
+            #         if screenshot_path.exists():
+            #             # Get information for this screenshot
+            #             caption = f"{i}"
+            #             if screenshot_name in data["screenshot_info"]:
+            #                 info = data["screenshot_info"][screenshot_name]
+            #                 caption = f"{i}. {info.get('caption', '')}"
+            #
+            #             screenshots.append({
+            #                 'id': i,
+            #                 'path': f"{relative_path}/{screenshot_name}",
+            #                 'caption': caption
+            #             })
 
             # Format timestamp for display
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -470,7 +446,7 @@ class BugReportGenerator:
                 'tested_activities': data["tested_activities"],  # Pass list of tested Activities
                 'total_activities': data["total_activities"],  # Pass list of all Activities
                 'items_per_page': 10,  # Items to display per page
-                'screenshots': screenshots,
+                'screenshots': self.screenshots,
                 'property_violations': data["property_violations"],
                 'property_stats': data["property_stats"],
                 'coverage_data': coverage_trend_json,
@@ -491,45 +467,3 @@ class BugReportGenerator:
         except Exception as e:
             logger.error(f"Error rendering template: {e}")
             raise
-
-    def _mark_screenshot_interaction(self, screenshot_path, action_type, position):
-        """
-        Mark interaction on screenshot with colored rectangle
-        
-        Args:
-            screenshot_path (Path): Path to the screenshot file
-            action_type (str): Type of action ('CLICK' or 'LONG_CLICK')
-            position (list): Position coordinates [x1, y1, x2, y2]
-        
-        Returns:
-            bool: True if marking was successful, False otherwise
-        """
-        try:
-            # Read the image
-            img = cv2.imread(str(screenshot_path))
-            if img is None:
-                logger.warning(f"Could not read image: {screenshot_path}")
-                return False
-            
-            # Validate position format
-            if not isinstance(position, (list, tuple)) or len(position) != 4:
-                logger.warning(f"Invalid position format: {position}")
-                return False
-            
-            x1, y1, x2, y2 = int(position[0]), int(position[1]), int(position[2]), int(position[3])
-            
-            # Choose color based on action type: CLICK uses red, LONG_CLICK uses blue
-            if action_type == "CLICK":
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 0, 255), 5)
-            elif action_type == "LONG_CLICK":
-                cv2.rectangle(img, (x1, y1), (x2, y2), (255, 0, 0), 5)
-            elif action_type.startswith("SCROLL"):
-                cv2.rectangle(img, (x1, y1), (x2, y2), (0, 255, 0), 5)
-
-            # Save with overwrite
-            cv2.imwrite(str(screenshot_path), img)
-            return True
-            
-        except Exception as e:
-            logger.error(f"Error marking screenshot {screenshot_path}: {e}")
-            return False
