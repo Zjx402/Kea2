@@ -109,39 +109,105 @@ class StaticU2UiObject(u2.UiObject):
             return filterDict[originKey]
         return originKey
 
-    def _getXPath(self, kwargs: Dict[str, str]):
+    def selector_to_xpath(self, selector: u2.Selector, is_initial: bool = True) -> str:
+        """
+            Convert a u2 Selector into an XPath expression compatible with Java Android UI controls.
 
-        def filter_selectors(kwargs: Dict[str, str]):
+            Args:
+                selector (u2.Selector): A u2 Selector object
+                is_initial (bool): Whether it is the initial node, defaults to True
+
+            Returns:
+                str: The corresponding XPath expression
             """
-            filter the selector
-            """
-            new_kwargs = dict()
-            SPECIAL_KEY = {"mask", "childOrSibling", "childOrSiblingSelector"}
-            for key, val in kwargs.items():
-                if key in SPECIAL_KEY:
-                    continue
-                key = self._transferU2Keys(key)
-                new_kwargs[key] = val
-            return new_kwargs
+        try:
 
-        kwargs = filter_selectors(kwargs)
+            xpath = ".//node" if is_initial else "node"
 
-        attrLocs = [
-            f"[@{k}='{v}']" for k, v in kwargs.items()
-        ]
-        xpath = f".//node{''.join(attrLocs)}"
-        return xpath
+            conditions = []
+
+            if "className" in selector:
+                conditions.insert(0, f"[@class='{selector['className']}']")
+
+            if "text" in selector:
+                conditions.append(f"[@text='{selector['text']}']")
+            elif "textContains" in selector:
+                conditions.append(f"[contains(@text, '{selector['textContains']}')]")
+            elif "textStartsWith" in selector:
+                conditions.append(f"[starts-with(@text, '{selector['textStartsWith']}')]")
+            elif "textMatches" in selector:
+                raise NotImplementedError("'textMatches' syntax is not supported")
+
+            if "description" in selector:
+                conditions.append(f"[@content-desc='{selector['description']}']")
+            elif "descriptionContains" in selector:
+                conditions.append(f"[contains(@content-desc, '{selector['descriptionContains']}')]")
+            elif "descriptionStartsWith" in selector:
+                conditions.append(f"[starts-with(@content-desc, '{selector['descriptionStartsWith']}')]")
+            elif "descriptionMatches" in selector:
+                raise NotImplementedError("'descriptionMatches' syntax is not supported")
+
+            if "packageName" in selector:
+                conditions.append(f"[@package='{selector['packageName']}']")
+            elif "packageNameMatches" in selector:
+                raise NotImplementedError("'packageNameMatches' syntax is not supported")
+
+            if "resourceId" in selector:
+                conditions.append(f"[@resource-id='{selector['resourceId']}']")
+            elif "resourceIdMatches" in selector:
+                raise NotImplementedError("'resourceIdMatches' syntax is not supported")
+
+            bool_props = ["checkable", "checked", "clickable", "longClickable", "scrollable", "enabled", "focusable",
+                          "focused", "selected", "covered"]
+
+            def str_to_bool(value):
+                """Convert string 'true'/'false' to boolean, or return original value if already boolean"""
+                if isinstance(value, str):
+                    return value.lower() == "true"
+                return bool(value)
+
+            for prop in bool_props:
+                if prop in selector:
+                    bool_value = str_to_bool(selector[prop])
+                    value = "true" if bool_value else "false"
+                    conditions.append(f"[@{prop}='{value}']")
+
+            if "index" in selector:
+                conditions.append(f"[@index='{selector['index']}']")
+
+            xpath += "".join(conditions)
+
+            if "childOrSibling" in selector and selector["childOrSibling"]:
+                for i, relation in enumerate(selector["childOrSibling"]):
+                    sub_selector = selector["childOrSiblingSelector"][i]
+                    sub_xpath = self.selector_to_xpath(sub_selector, False)
+
+                    if relation == "child":
+                        xpath += f"//{sub_xpath}"
+                    elif relation == "sibling":
+                        cur_root = xpath
+                        following_sibling = cur_root + f"/following-sibling::{sub_xpath}"
+                        preceding_sibling = cur_root + f"/preceding-sibling::{sub_xpath}"
+                        xpath = f"({following_sibling} | {preceding_sibling})"
+            if "instance" in selector:
+                xpath = f"({xpath})[{selector['instance'] + 1}]"
+
+            return xpath
+
+        except Exception as e:
+            print(f"Error occurred during selector conversion: {e}")
+            return "//error"
 
 
     @property
     def exists(self):
-        dict.update(self.selector, {"covered": "false"})
-        xpath = self._getXPath(self.selector)
+        set_covered_to_deepest_node(self.selector)
+        xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return bool(matched_widgets)
 
     def __len__(self):
-        xpath = self._getXPath(self.selector)
+        xpath = self.selector_to_xpath(self.selector)
         matched_widgets = self.session.xml.xpath(xpath)
         return len(matched_widgets)
     
@@ -150,6 +216,9 @@ class StaticU2UiObject(u2.UiObject):
     
     def sibling(self, **kwargs):
         return StaticU2UiObject(self.session, self.selector.clone().sibling(**kwargs))
+
+    def __getattr__(self, attr):
+        return getattr(super(), attr)
 
 
 def _get_bounds(raw_bounds):
@@ -236,7 +305,9 @@ class U2StaticDevice(u2.Device):
         self._script_driver = script_driver
 
     def __call__(self, **kwargs):
-        return StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
+        ui = StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
+        ui.jsonrpc = self._script_driver.jsonrpc
+        return ui
 
     @property
     def xpath(self) -> u2.xpath.XPathEntry:
@@ -283,7 +354,12 @@ class U2StaticChecker(AbstractStaticChecker):
     def setHierarchy(self, hierarchy: str):
         if hierarchy is None:
             return
-        self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
+        if isinstance(hierarchy, str):
+            self.d.xml = etree.fromstring(hierarchy.encode("utf-8"))
+        elif isinstance(hierarchy, etree._Element):
+            self.d.xml = hierarchy
+        elif isinstance(hierarchy, etree._ElementTree):
+            self.d.xml = hierarchy.getroot()
         _HindenWidgetFilter(self.d.xml)
 
     def getInstance(self, hierarchy: str=None):
@@ -342,90 +418,6 @@ def forward_port(self, remote: Union[int, str]) -> int:
         logger.debug(f"forwading port: tcp:{local_port} -> {remote}")
         return local_port
 
-
-def selector_to_xpath(selector: u2.Selector, is_initial: bool = True) -> str:
-    """
-    Convert a u2 Selector into an XPath expression compatible with Java Android UI controls.
-
-    Args:
-        selector (u2.Selector): A u2 Selector object
-        is_initial (bool): Whether it is the initial node, defaults to True
-
-    Returns:
-        str: The corresponding XPath expression
-    """
-    try:
-        if is_initial:
-            xpath = ".//node"
-        else:
-            xpath = "node"
-
-        conditions = []
-
-        if "className" in selector:
-            conditions.insert(0, f"[@class='{selector['className']}']")  # 将 className 条件放在前面
-
-        if "text" in selector:
-            conditions.append(f"[@text='{selector['text']}']")
-        elif "textContains" in selector:
-            conditions.append(f"[contains(@text, '{selector['textContains']}')]")
-        elif "textMatches" in selector:
-            conditions.append(f"[re:match(@text, '{selector['textMatches']}')]")
-        elif "textStartsWith" in selector:
-            conditions.append(f"[starts-with(@text, '{selector['textStartsWith']}')]")
-
-        if "description" in selector:
-            conditions.append(f"[@content-desc='{selector['description']}']")
-        elif "descriptionContains" in selector:
-            conditions.append(f"[contains(@content-desc, '{selector['descriptionContains']}')]")
-        elif "descriptionMatches" in selector:
-            conditions.append(f"[re:match(@content-desc, '{selector['descriptionMatches']}')]")
-        elif "descriptionStartsWith" in selector:
-            conditions.append(f"[starts-with(@content-desc, '{selector['descriptionStartsWith']}')]")
-
-        if "packageName" in selector:
-            conditions.append(f"[@package='{selector['packageName']}']")
-        elif "packageNameMatches" in selector:
-            conditions.append(f"[re:match(@package, '{selector['packageNameMatches']}')]")
-
-        if "resourceId" in selector:
-            conditions.append(f"[@resource-id='{selector['resourceId']}']")
-        elif "resourceIdMatches" in selector:
-            conditions.append(f"[re:match(@resource-id, '{selector['resourceIdMatches']}')]")
-
-        bool_props = [
-            "checkable", "checked", "clickable", "longClickable", "scrollable",
-            "enabled", "focusable", "focused", "selected", "covered"
-        ]
-        for prop in bool_props:
-            if prop in selector:
-                value = "true" if selector[prop] else "false"
-                conditions.append(f"[@{prop}='{value}']")
-
-        if "index" in selector:
-            conditions.append(f"[@index='{selector['index']}']")
-        elif "instance" in selector:
-            conditions.append(f"[@instance='{selector['instance']}']")
-
-        xpath += "".join(conditions)
-
-        if "childOrSibling" in selector and selector["childOrSibling"]:
-            for i, relation in enumerate(selector["childOrSibling"]):
-                sub_selector = selector["childOrSiblingSelector"][i]
-                sub_xpath = selector_to_xpath(sub_selector, False)  # 递归处理子选择器
-
-                if relation == "child":
-                    xpath += f"/{sub_xpath}"
-                elif relation == "sibling":
-                    xpath_initial = xpath
-                    xpath = '(' + xpath_initial + f"/following-sibling::{sub_xpath} | " + xpath_initial + f"/preceding-sibling::{sub_xpath})"
-
-        return xpath
-
-    except Exception as e:
-        print(f"Error occurred during selector conversion: {e}")
-        return "//error"
-
 def is_port_in_use(port: int) -> bool:
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
         return s.connect_ex(('127.0.0.1', port)) == 0
@@ -448,7 +440,24 @@ def get_free_port():
                 return port
         raise RuntimeError("No free port found")
 
+def set_covered_to_deepest_node(selector: u2.Selector):
+
+    def find_deepest_nodes(node):
+        deepest_node = None
+        is_leaf = True
+        if "childOrSibling" in node and node["childOrSibling"]:
+            for i, relation in enumerate(node["childOrSibling"]):
+                sub_selector = node["childOrSiblingSelector"][i]
+                deepest_node = find_deepest_nodes(sub_selector)
+                is_leaf = False
+
+        if is_leaf:
+            deepest_node = node
+        return deepest_node
+
+    deepest_node = find_deepest_nodes(selector)
+
+    if deepest_node is not None:
+        dict.update(deepest_node, {"covered": False})
 
 
-
-u2.core.U2_PORT = 8090

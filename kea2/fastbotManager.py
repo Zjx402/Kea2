@@ -17,6 +17,7 @@ from typing import IO, TYPE_CHECKING
 if TYPE_CHECKING:
     from .keaUtils import Options
 
+
 logger = getLogger(__name__)
 
 
@@ -46,7 +47,11 @@ class FastbotManager:
             "/sdcard/fastbot-thirdpart.jar",
         )
         self.dev.sync.push(
-            Path.joinpath(cur_dir, "assets/framework.jar"), 
+            Path.joinpath(cur_dir, "assets/kea2-thirdpart.jar"),
+            "/sdcard/kea2-thirdpart.jar",
+        )
+        self.dev.sync.push(
+            Path.joinpath(cur_dir, "assets/framework.jar"),
             "/sdcard/framework.jar",
         )
         self.dev.sync.push(
@@ -94,7 +99,12 @@ class FastbotManager:
 
     def _startFastbotService(self) -> ADBStreamShell:
         shell_command = [
-            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+            "CLASSPATH="
+            "/sdcard/monkeyq.jar:"
+            "/sdcard/framework.jar:"
+            "/sdcard/fastbot-thirdpart.jar:"
+            "/sdcard/kea2-thirdpart.jar",
+
             "exec", "app_process",
             "/system/bin", "com.android.commands.monkey.Monkey",
             "-p", *self.options.packageNames,
@@ -144,7 +154,7 @@ class FastbotManager:
 
     def join(self):
         self.thread.join()
-            
+
 
 
 
