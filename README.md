@@ -29,6 +29,7 @@ Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot
 
 
 **The ability of the three features in Kea2**
+
 |  | **Feature 1** | **Feature 2** | **Feature 3** |
 | --- | --- | --- | ---- |
 | **Finding crashes** | :+1: | :+1: | :+1: |
@@ -171,11 +172,10 @@ In Feature 3, a script is composed of three elements:
 In a social media app, message sending is a common feature. On the message sending page, the `send` button should always appears when the input box is not empty (i.e., has some message).
 
 <div align="center" >
-    <div >
+    <div>
         <img src="docs/socialAppBug.png" style="border-radius: 14px; width:30%; height:40%;"/>
     </div>
-    <p>The expected behavior (the upper figure) and the buggy behavior (the lower figure).
-<p/>
+    <p>The expected behavior (the upper figure) and the buggy behavior (the lower figure).<p/>
 </div>
 
 For the preceding always-holding property, we can write the following script to validate the functional correctness: when there is an `input_box` widget on the message sending page, we can type any non-empty string text into the input box and assert `send_button` should always exists.
