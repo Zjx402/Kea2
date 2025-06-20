@@ -37,7 +37,7 @@ class ADBDevice(AdbDevice):
     
     @property
     def stream_shell(self) -> "ADBStreamShell":
-        return ADBStreamShell(serial=self.serial, transport_id=self.transport_id)
+        return ADBStreamShell(session=self)
 
 class ADBStreamShell:
     def __init__(self, session: "ADBDevice"):
@@ -93,8 +93,8 @@ class ADBStreamShell:
 
     def _write_stdout(self, data: bytes):
         text = data.decode('utf-8', errors='ignore')
-        sys.stdout.write(text)
-        sys.stdout.flush()
+        self.stdout.write(text)
+        self.stdout.flush()
 
     def _write_stderr(self, data: bytes):
         text = data.decode('utf-8', errors='ignore')

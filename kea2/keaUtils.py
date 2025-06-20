@@ -320,10 +320,11 @@ class KeaTestRunner(TextTestRunner):
                 result.flushResult(outfile=RESFILE)
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
-                fb.check_alive(port=self.scriptDriver.lport)
-                self._init()
+                fb.check_alive()
+                
+                fb.init(options=self.options, stamp=STAMP)
 
-                resultSyncer = ResultSyncer(self.device_output_dir, self.options.output_dir)
+                resultSyncer = ResultSyncer(fb.device_output_dir, self.options.output_dir)
                 resultSyncer.run()
 
                 end_by_remote = False
@@ -514,22 +515,22 @@ class KeaTestRunner(TextTestRunner):
         if res != "OK":
             print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
 
-    def _init(self):
-        URL = f"http://localhost:{self.scriptDriver.lport}/init"
-        data = {
-            "takeScreenshots": self.options.take_screenshots,
-            "Stamp": STAMP,
-            "deviceOutputRoot": self.options.device_output_root,
-        }
-        print(f"[INFO] Init fastbot: {data}", flush=True)
-        r = requests.post(
-            url=URL,
-            json=data
-        )
-        res = r.content.decode(encoding="utf-8")
-        import re
-        self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
+    # def _init(self):
+    #     URL = f"http://localhost:{self.scriptDriver.lport}/init"
+    #     data = {
+    #         "takeScreenshots": self.options.take_screenshots,
+    #         "Stamp": STAMP,
+    #         "deviceOutputRoot": self.options.device_output_root,
+    #     }
+    #     print(f"[INFO] Init fastbot: {data}", flush=True)
+    #     r = requests.post(
+    #         url=URL,
+    #         json=data
+    #     )
+    #     res = r.content.decode(encoding="utf-8")
+    #     import re
+    #     self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
+    #     print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT

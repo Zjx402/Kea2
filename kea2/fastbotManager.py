@@ -27,6 +27,7 @@ class FastbotManager:
         self.log_file: str = log_file
         self.port = None
         self.thread = None
+        self._device_output_dir = None
         ADBDevice.setDevice(options.serial, options.transport_id)
         self.dev = ADBDevice()
 
@@ -55,20 +56,20 @@ class FastbotManager:
             "/sdcard/framework.jar",
         )
         self.dev.sync.push(
-            Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a"),
-            "/data/local/tmp",
+            Path.joinpath(cur_dir, "assets/fastbot_libs/arm64-v8a/libfastbot_native.so"),
+            "/data/local/tmp/arm64-v8a/libfastbot_native.so",
         )
         self.dev.sync.push(
-            Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a"),
-            "/data/local/tmp",
+            Path.joinpath(cur_dir, "assets/fastbot_libs/armeabi-v7a/libfastbot_native.so"),
+            "/data/local/tmp/armeabi-v7a/libfastbot_native.so",
         )
         self.dev.sync.push(
-            Path.joinpath(cur_dir, "assets/fastbot_libs/x86"),
-            "/data/local/tmp",
+            Path.joinpath(cur_dir, "assets/fastbot_libs/x86/libfastbot_native.so"),
+            "/data/local/tmp/x86/libfastbot_native.so",
         )
         self.dev.sync.push(
-            Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64"),
-            "/data/local/tmp",
+            Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64/libfastbot_native.so"),
+            "/data/local/tmp/x86_64/libfastbot_native.so",
         )
 
         t = self._startFastbotService()
@@ -95,7 +96,27 @@ class FastbotManager:
                 logger.info("waiting for connection.")
                 pass
         raise RuntimeError("Failed to connect fastbot")
-
+    
+    def init(self, options: "Options", stamp):
+        post_data = {
+            "takeScreenshots": options.take_screenshots,
+            "Stamp": stamp,
+            "deviceOutputRoot": options.device_output_root,
+        }
+        r = uiautomator2.core._http_request(
+            self.dev,
+            method="POST",
+            path="/init",
+            data=post_data
+        )
+        print(f"[INFO] Init fastbot: {post_data}", flush=True)
+        import re
+        self._device_output_dir = re.match(r"outputDir:(.+)", r.text).group(1)
+        print(f"[INFO] Fastbot initiated. outputDir: {r.text}", flush=True)
+    
+    @property
+    def device_output_dir(self):
+        return self._device_output_dir
 
     def _startFastbotService(self) -> ADBStreamShell:
         shell_command = [
