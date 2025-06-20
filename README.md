@@ -207,6 +207,7 @@ You can run this example by using the similar command line in Feature 2.
 - Kea2的启动方式、命令行选项
 - 查看/理解Kea2的运行结果（如界面截图、测试覆盖率、脚本执行成功与否）。
 - [如何黑白控件/区域](docs/blacklisting.md)
+- [如何配置Fastbot支持的专家系统配置](docs/expert_system.md)
 
 ## Open-source projects used by Kea2
 
