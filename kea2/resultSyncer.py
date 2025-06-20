@@ -10,9 +10,9 @@ logger = getLogger(__name__)
 
 class ResultSyncer:
 
-    def __init__(self, device_output_dir, output_dir, options: "Options"):
+    def __init__(self, device_output_dir, options: "Options"):
         self.device_output_dir = device_output_dir
-        self.output_dir = output_dir
+        self.output_dir = options.output_dir
         self.running = False
         self.thread = None
         self.sync_event = threading.Event()
@@ -62,4 +62,4 @@ class ResultSyncer:
             self.dev.shell(remove_pulled_screenshots)
             # adb_shell(remove_pulled_screenshots)
         except Exception as e:
-            logger.error(f"Error in data sync: {e}", flush=True)
+            logger.error(f"Error in data sync: {e}")

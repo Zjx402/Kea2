@@ -4,8 +4,8 @@ from dataclasses import asdict
 import requests
 from time import sleep
 
-import uiautomator2.core
 
+from uiautomator2.core import HTTPResponse, _http_request
 from kea2.adbUtils import ADBDevice, ADBStreamShell
 from pathlib import Path
 from kea2.utils import getLogger
@@ -13,7 +13,7 @@ import uiautomator2
 uiautomator2.core.U2_PORT = 8090
 
 
-from typing import IO, TYPE_CHECKING
+from typing import IO, TYPE_CHECKING, Dict
 if TYPE_CHECKING:
     from .keaUtils import Options
 
@@ -96,14 +96,17 @@ class FastbotManager:
                 logger.info("waiting for connection.")
                 pass
         raise RuntimeError("Failed to connect fastbot")
-    
+
+    def request(self, method: str, path: str, data: Dict=None, timeout: int=10) -> HTTPResponse:
+        return _http_request(self.dev, method, path, data, timeout)
+
     def init(self, options: "Options", stamp):
         post_data = {
             "takeScreenshots": options.take_screenshots,
             "Stamp": stamp,
             "deviceOutputRoot": options.device_output_root,
         }
-        r = uiautomator2.core._http_request(
+        r = _http_request(
             self.dev,
             method="POST",
             path="/init",
@@ -114,6 +117,35 @@ class FastbotManager:
         self._device_output_dir = re.match(r"outputDir:(.+)", r.text).group(1)
         print(f"[INFO] Fastbot initiated. outputDir: {r.text}", flush=True)
     
+    def stepMonkey(self, monkeyStepInfo):
+        r = self.request(
+            method="POST",
+            path="/stepMonkey",
+            data=monkeyStepInfo
+        )
+        return r.json()["result"]
+
+    def stopMonkey(self):
+        """
+        send a stop monkey request to the server.
+        """
+        r = self.request(
+            method="GET",
+            path="/stopMonkey",
+        )
+
+        print(f"[Server INFO] {r.text}", flush=True)
+    
+    def logScript(self, execution_info: Dict):
+        r = self.request(
+            method="POST",
+            path="/logScript",
+            data=execution_info
+        )
+        res = r.text
+        if res != "OK":
+            print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
+
     @property
     def device_output_dir(self):
         return self._device_output_dir
