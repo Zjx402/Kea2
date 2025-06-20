@@ -1,3 +1,4 @@
+from pathlib import Path
 import threading
 from .adbUtils import ADBDevice
 from .utils import getLogger
@@ -12,7 +13,7 @@ class ResultSyncer:
 
     def __init__(self, device_output_dir, options: "Options"):
         self.device_output_dir = device_output_dir
-        self.output_dir = options.output_dir
+        self.output_dir = Path(options.output_dir) / Path(device_output_dir).name
         self.running = False
         self.thread = None
         self.sync_event = threading.Event()
@@ -55,7 +56,7 @@ class ResultSyncer:
         try:
             logger.debug("Syncing data")
 
-            self.dev.sync.pull(self.device_output_dir, str(self.output_dir))
+            self.dev.sync.pull_dir(self.device_output_dir, self.output_dir, exist_ok=True)
             # pull_file(self.device_output_dir, str(self.output_dir))
 
             remove_pulled_screenshots = ["find", self.device_output_dir, "-name", '"*.png"', "-delete"]
