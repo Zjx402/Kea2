@@ -37,7 +37,6 @@ class FastbotManager:
         :return: the fastbot daemon thread
         """
         cur_dir = Path(__file__).parent
-        self.dev.push()
         self.dev.sync.push(
             Path.joinpath(cur_dir, "assets/monkeyq.jar"),
             "/sdcard/monkeyq.jar"
