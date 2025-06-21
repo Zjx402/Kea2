@@ -191,7 +191,7 @@ dependencies = [
 requires-dist = [
     { name = "jinja2", specifier = ">=3.0.0" },
     { name = "rtree", specifier = ">=1.3.0" },
-    { name = "uiautomator2", specifier = ">=3.3.2" },
+    { name = "uiautomator2", specifier = ">=3.3.3" },
 ]
 
 [[package]]
@@ -700,7 +700,7 @@ wheels = [
 
 [[package]]
 name = "uiautomator2"
-version = "3.3.2"
+version = "3.3.3"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "adbutils" },
@@ -711,9 +711,9 @@ dependencies = [
     { name = "requests" },
     { name = "retry2" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/7a/20/07b1c0022aec927615a3d6dc412699032fbd06dfda925d2e8d88511cf1bc/uiautomator2-3.3.2.tar.gz", hash = "sha256:4beb33a9804825ecde55314cc4373f7a41f44d6edc10006e01fea97e443d5428", size = 5198365 }
+sdist = { url = "https://files.pythonhosted.org/packages/6c/9c/83c3c7a6071133deced5d1ca4b3dc432b3f658d172f4908dd45beb6c2138/uiautomator2-3.3.3.tar.gz", hash = "sha256:15e5425dba73913979a234dae917f576f91a6862784af816042ab0ba4d94fa1e", size = 5198521 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/cd/22/5a97c5719e5dd4b15e74a8e66e4cad670954c38d5a6a51f105977af5de96/uiautomator2-3.3.2-py3-none-any.whl", hash = "sha256:dd7465e97ed2c9ff6d229924fe2dba340be976a45e4990d5e503a3cacf256df6", size = 5192887 },
+    { url = "https://files.pythonhosted.org/packages/0b/50/d41b28eb876ad7049215a0bf1e28725d9b900ca797c6bc78b72bb712307f/uiautomator2-3.3.3-py3-none-any.whl", hash = "sha256:8e1b0bdf788f15e1c81cf53817d066a908301c64f040aa4d7a8407e999f24328", size = 5192985 },
 ]
 
 [[package]]

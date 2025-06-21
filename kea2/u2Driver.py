@@ -1,8 +1,6 @@
-import datetime
-import json
 import random
 import socket
-import requests
+from time import sleep
 import uiautomator2 as u2
 import adbutils
 import types
@@ -56,6 +54,8 @@ class U2ScriptDriver(AbstractScriptDriver):
             adb = adbutils.device(serial=self.deviceSerial, transport_id=self.transportId)
             print("[INFO] Connecting to uiautomator2. Please wait ...")
             self.d = u2.connect(adb)
+            sleep(5)
+            self.d._device_server_port = 8090
 
             # def get_u2_forward_port() -> int:
             #     """rewrite forward_port mothod to avoid the relocation of port

@@ -9,8 +9,6 @@ from uiautomator2.core import HTTPResponse, _http_request
 from kea2.adbUtils import ADBDevice, ADBStreamShell
 from pathlib import Path
 from kea2.utils import getLogger
-import uiautomator2
-uiautomator2.core.U2_PORT = 8090
 
 
 from typing import IO, TYPE_CHECKING, Dict
@@ -86,8 +84,9 @@ class FastbotManager:
         for _ in range(10):
             sleep(2)
             try:
-                uiautomator2.core._http_request(
+                _http_request(
                     dev=self.dev,
+                    device_port=8090,
                     method="GET",
                     path="/ping",
                 )
@@ -98,7 +97,7 @@ class FastbotManager:
         raise RuntimeError("Failed to connect fastbot")
 
     def request(self, method: str, path: str, data: Dict=None, timeout: int=10) -> HTTPResponse:
-        return _http_request(self.dev, method, path, data, timeout)
+        return _http_request(self.dev, 8090, method, path, data, timeout)
 
     def init(self, options: "Options", stamp):
         post_data = {
@@ -108,6 +107,7 @@ class FastbotManager:
         }
         r = _http_request(
             self.dev,
+            device_port=8090,
             method="POST",
             path="/init",
             data=post_data

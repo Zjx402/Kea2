@@ -110,10 +110,10 @@ class ADBStreamShell:
         self.stderr.flush()
 
     def _shell_v2(self, cmd, timeout) -> Generator:
-        c: AdbConnection = self.dev.open_transport(timeout=timeout)
-        c.send_command(f"shell,v2:{cmd}")
-        c.check_okay()
-        try:
+        with self.dev.open_transport(timeout=timeout) as c:
+            c.send_command(f"shell,v2:{cmd}")
+            c.check_okay()
+
             while True:
                 header = c.read_exact(5)
                 msg_id = header[0]
@@ -131,8 +131,7 @@ class ADBStreamShell:
                 elif msg_id == 3:
                     yield ('exit', data[0])
                     break
-        finally:
-            c.close()
+
 
     def wait(self):
         """ Wait for the shell command to finish and return the exit code.
