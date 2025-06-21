@@ -21,7 +21,7 @@ Kea2 is an easy-to-use tool for fuzzing mobile apps. Its key *novelty* is able t
 Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android), *an industrial-strength automated UI testing tool*, and [uiautomator2](https://github.com/openatx/uiautomator2), *an easy-to-use and stable Android automation library*.
 Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
-## Important features
+## Novelty & Important features
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
