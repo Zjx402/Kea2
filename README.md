@@ -205,12 +205,12 @@ You can run this example by using the similar command line in Feature 2.
 
 ## Documentations（更多文档）
 
-You can find the [user manual]((docs/manual_en.md)), which includes:
+You can find the [user manual](docs/manual_en.md), which includes:
 - Examples of using Kea2 on WeChat (in Chinese);
 - How to define Kea2's scripts and use the decorators (e.g., `@precondition`、`@prob`、`@max_tries`);
 - How to run Kea2 and Kea2's command line options
 - How to find and understand Kea2's testing results
-- How to [whitelist or blacklist]((docs/blacklisting.md)) specific activities, UI widgets and UI regions during fuzzing
+- How to [whitelist or blacklist](docs/blacklisting.md) specific activities, UI widgets and UI regions during fuzzing
 
 ## Open-source projects used by Kea2
 
