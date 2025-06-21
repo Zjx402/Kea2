@@ -2,6 +2,7 @@ import sys
 import subprocess
 import threading
 from typing import List, Optional, Set
+
 from kea2.utils import getLogger
 from adbutils import AdbDevice, adb
 from typing import IO, TYPE_CHECKING, Generator, Optional, List, Union
@@ -33,8 +34,15 @@ class ADBDevice(AdbDevice):
             device (str, optional): The device serial number. If None, it is resolved automatically when only one device is connected.
             transport_id (str, optional): The transport ID for the device.
         """
+        if not ADBDevice.serial and not ADBDevice.transport_id:
+            devices = [d.serial for d in adb.list() if d.state == "device"]
+            if len(devices) > 1:
+                raise RuntimeError("Multiple devices connected. Please specify a device")
+            if len(devices) == 0:
+                raise RuntimeError("No device connected.")
+            ADBDevice.serial = devices[0]
         super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
-    
+
     @property
     def stream_shell(self) -> "ADBStreamShell":
         return ADBStreamShell(session=self)
