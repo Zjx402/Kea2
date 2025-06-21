@@ -35,7 +35,7 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 
 - **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing functional bugs*)
 
-For **Feature 2 and 3**, Kea2 allows you to focus on what app functionalities to be tested. You do not need to think how to reach these app functionalities. As a result, the scripts are usually short, robust and easy to maintain, and the corresponding app functionalities are much more stress-tested!
+    For **Feature 2 and 3**, Kea2 allows you to focus on what app functionalities to be tested. You do not need to worry about how to reach these app functionalities. Just let Fastbot help. As a result, your scripts are usually short, robust and easy to maintain, and the corresponding app functionalities are much more stress-tested!
 
 **The ability of the three features in Kea2**
 
