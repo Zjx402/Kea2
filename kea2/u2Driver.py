@@ -57,22 +57,6 @@ class U2ScriptDriver(AbstractScriptDriver):
             sleep(5)
             self.d._device_server_port = 8090
 
-            # def get_u2_forward_port() -> int:
-            #     """rewrite forward_port mothod to avoid the relocation of port
-            #     :return: the new forward port
-            #     """
-            #     print("Rewriting forward_port method", flush=True)
-            #     self.d._dev.forward_port = types.MethodType(
-            #                     forward_port, self.d._dev)
-            #     lport = self.d._dev.forward_port(8090)
-            #     setattr(self.d._dev, "msg", "meta")
-            #     print(f"[U2] local port: {lport}", flush=True)
-            #     return lport
-
-            # self._remove_remote_port(8090)
-            # self.d.lport = get_u2_forward_port()
-            # self._remove_remote_port(9008)
-
         return self.d
 
     def _remove_remote_port(self, port:int):
