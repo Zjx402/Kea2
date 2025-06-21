@@ -33,7 +33,7 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 
 - **Feature 2**(自定义测试场景\事件序列\黑白名单\黑白控件[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
-- **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing functional bugs*)
+- **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing functional bugs*).
 
     For **Feature 2 and 3**, Kea2 allows you to focus on what app functionalities to be tested. You do not need to worry about how to reach these app functionalities. Just let Fastbot help. As a result, your scripts are usually short, robust and easy to maintain, and the corresponding app functionalities are much more stress-tested!
 
@@ -48,15 +48,15 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 
 
 ## Design & Roadmap
-Kea2, released as a Python library, currently works with:
-- [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework;
+Kea2 currently works with:
+- [unittest](https://docs.python.org/3/library/unittest.html) as the testing framework to manage the scripts;
 - [uiautomator2](https://github.com/openatx/uiautomator2) as the UI test driver; 
 - [Fastbot](https://github.com/bytedance/Fastbot_Android) as the backend automated UI testing tool.
 
 In the future, Kea2 will be extended to support
-- [pytest](https://docs.pytest.org/en/stable/)
-- [Appium](https://github.com/appium/appium), [Hypium](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hypium-python-guidelines) (for HarmonyOS/Open Harmony)
-- other automated UI testing tools (not limited to Fastbot)
+- [pytest](https://docs.pytest.org/en/stable/), another popular python testing framework;
+- [Appium](https://github.com/appium/appium), [Hypium](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hypium-python-guidelines) (for HarmonyOS/Open Harmony);
+- any other automated UI testing tools (not limited to Fastbot)
 
 
 ## Installation
