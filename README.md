@@ -16,17 +16,26 @@
 
 ## About 
 
-Kea2 is an easy-to-use Python library for supporting, customizing and improving automated UI testing for mobile apps. Kea2's novelty is able to fuse the scripts (usually written by human) with automated UI testing tools, thus allowing many interesting and powerful features. 
+Kea2 is an easy-to-use tool for fuzzing mobile apps. Its key *novelty* is able to fuse automated UI testing with scripts (usually written by human), thus empowering automated UI testing with human intelligence for effectively finding *crashing bugs* as well as *non-crashing functional (logic) bugs*. 
 
-Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android) and [uiautomator2](https://github.com/openatx/uiautomator2) and targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
+Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android), *an industrial-strength automated UI testing tool*, and [uiautomator2](https://github.com/openatx/uiautomator2), *an easy-to-use and stable Android automation library*.
+Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
 
 ## Important features
+
+<div align="center">
+    <div style="max-width:80%; max-height:80%">
+    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    </div>
+</div>
+
 - **Feature 1**(查找稳定性问题): coming with the full capability of [Fastbot](https://github.com/bytedance/Fastbot_Android) for stress testing and finding *stability problems* (i.e., *crashing bugs*); 
 
-- **Feature 2**(自定义测试场景\事件序列\黑白名单\黑白控件[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2); 
+- **Feature 2**(自定义测试场景\事件序列\黑白名单\黑白控件[^1]): customizing testing scenarios when running Fastbot (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app states, blacklisting specific activities/UI widgets/UI regions) with the full capability and flexibility powered by *python* language and [uiautomator2](https://github.com/openatx/uiautomator2);
 
-- **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing bugs*)
+- **Feature 3**(支持断言机制[^2]): supporting auto-assertions when running Fastbot, based on the idea of [property-based testing](https://en.wikipedia.org/wiki/Software_testing#Property_testing) inheritted from [Kea](https://github.com/ecnusse/Kea), for finding *logic bugs* (i.e., *non-crashing functional bugs*)
 
+For **Feature 2 and 3**, Kea2 allows you to focus on what app functionalities to be tested. You do not need to think how to reach these app functionalities. As a result, the scripts are usually short, robust and easy to maintain, and the corresponding app functionalities are much more stress-tested!
 
 **The ability of the three features in Kea2**
 
@@ -35,13 +44,6 @@ Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot
 | **Finding crashes** | :+1: | :+1: | :+1: |
 | **Finding crashes in deep states** |  | :+1: | :+1: |
 | **Finding non-crashing functional (logic) bugs** |  |  | :+1: |
-
-
-<div align="center">
-    <div style="max-width:80%; max-height:80%">
-    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
-    </div>
-</div>
 
 
 
