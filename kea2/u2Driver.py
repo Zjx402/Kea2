@@ -54,6 +54,7 @@ class U2ScriptDriver(AbstractScriptDriver):
     def getInstance(self):
         if self.d is None:
             adb = adbutils.device(serial=self.deviceSerial, transport_id=self.transportId)
+            print("[INFO] Connecting to uiautomator2. Please wait ...")
             self.d = u2.connect(adb)
 
             # def get_u2_forward_port() -> int:
