@@ -110,7 +110,7 @@ Test your app with the full capability of Fastbot for stress testing and finding
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
 ```
 
-理解上述选项含义请查看[文档](docs/manual_en.md#launching-kea2)
+To understand the meanings of the options, you can see our [manual](docs/manual_en.md#launching-kea2).
 
 > The usage is similar to the the original Fastbot's [shell commands](https://github.com/bytedance/Fastbot_Android?tab=readme-ov-file#run-fastbot-with-shell-command). 
 
@@ -205,12 +205,12 @@ You can run this example by using the similar command line in Feature 2.
 
 ## Documentations（更多文档）
 
-[更多文档](docs/manual_en.md)，包括了：
-- Kea2的案例教程（基于微信介绍）、
-- Kea2脚本的定义方法，支持的脚本装饰器(如`@precondition`、`@prob`、`@max_tries`)、
-- Kea2的启动方式、命令行选项
-- 查看/理解Kea2的运行结果（如界面截图、测试覆盖率、脚本执行成功与否）。
-- [如何黑白控件/区域](docs/blacklisting.md)
+You can find the [user manual]((docs/manual_en.md)), which includes:
+- Examples of using Kea2 on WeChat (in Chinese);
+- How to define Kea2's scripts and use the decorators (e.g., `@precondition`、`@prob`、`@max_tries`);
+- How to run Kea2 and Kea2's command line options
+- How to find and understand Kea2's testing results
+- How to [whitelist or blacklist]((docs/blacklisting.md)) specific activities, UI widgets and UI regions during fuzzing
 
 ## Open-source projects used by Kea2
 
