@@ -43,6 +43,11 @@ class FastbotManager:
             device=options.serial,
         )
         push_file(
+            Path.joinpath(cur_dir, "assets/kea2-thirdpart.jar"),
+            "/sdcard/kea2-thirdpart.jar",
+            device=options.serial,
+        )
+        push_file(
             Path.joinpath(cur_dir, "assets/framework.jar"), 
             "/sdcard/framework.jar",
             device=options.serial
@@ -91,7 +96,12 @@ class FastbotManager:
 
     def _startFastbotService(self) -> threading.Thread:
         shell_command = [
-            "CLASSPATH=/sdcard/monkeyq.jar:/sdcard/framework.jar:/sdcard/fastbot-thirdpart.jar",
+            "CLASSPATH="
+            "/sdcard/monkeyq.jar:"
+            "/sdcard/framework.jar:"
+            "/sdcard/fastbot-thirdpart.jar:"
+            "/sdcard/kea2-thirdpart.jar",
+            
             "exec", "app_process",
             "/system/bin", "com.android.commands.monkey.Monkey",
             "-p", *self.options.packageNames,

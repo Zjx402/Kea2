@@ -12,7 +12,6 @@ build
 *.egg-info
 clean.sh
 
-test/
 
 output/
 quicktest.py

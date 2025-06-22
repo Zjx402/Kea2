@@ -9,7 +9,7 @@ from kea2.u2Driver import U2Driver
 class Omni_Notes_Sample(unittest.TestCase):
 
     def setUp(self):
-        self.d = u2.connect()
+        self.d = u2.connect() 
 
     @prob(0.7)  # The probability of executing the function when precondition is satisfied.
     @precondition(
@@ -77,11 +77,12 @@ if __name__ == "__main__":
     check_installation()
     KeaTestRunner.setOptions(
         Options(
+            debug=False,
             driverName="d",
             Driver=U2Driver,
             packageNames=[PACKAGE_NAME],
             # serial="emulator-5554",   # specify the serial
-            maxStep=5000,
+            maxStep=50,
             # running_mins=10,  # specify the maximal running time in minutes, default value is 10m
             # throttle=200,   # specify the throttle in milliseconds, default value is 200ms
             # agent='native'  # 'native' for running the vanilla Fastbot, 'u2' for running Kea2
