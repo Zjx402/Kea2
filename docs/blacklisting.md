@@ -4,15 +4,15 @@
 
 We support blacklisting specific UI widgets/regions so that Fastbot can avoid interacting with these widgets during fuzzing. 
 
-We support two levels for blacklisting:
+We support two levels of blacklisting:
 
 - Widget Blocking: Use this method when you want to disable some single widget.
 
 - Tree Blocking: Use this method when you want to disable all widgets within a certain area by simply passing the root node of that area to disable the entire subtree of widgets under it.
 
-We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
+We support (1) `Global Block List` (always taking effect), and (2) `Conditional Block List` (only taking effect when some conditions are met).
 
-The list of blocked elements are specified in Kea2's config file `configs/widget.block.py` (generated when running `kea2 init`). 
+The list of blocked elements is specified in Kea2's config file `configs/widget.block.py` (generated when running `kea2 init`). 
 The elements needed to be blocked can be flexibly specified by u2 selector (e.g., `text`, `description`) or `xpath`, etc.
 
 
@@ -60,7 +60,7 @@ def global_block_tree(d: "Device"):
     Returns a list of root nodes whose entire subtrees will be blocked from exploration.
     This function is only available in 'u2 agent' mode.
     """
-     return [d(text="trees to block"), d.xpath(".//node[@text='tree to block']")]
+    return [d(text="trees to block"), d.xpath(".//node[@text='tree to block']")]
 ```
 ##### Conditional Block List
 We can define any reserved function whose name starts with "block_tree_" and decorate such function by `@precondition` to allow conditional block list.
@@ -184,7 +184,7 @@ Please avoid using these unsupported methods to ensure your blacklist configurat
 We adopt Fastbot's configuration method in a more user-friendly way. 
 It allows users to specify the path for the device to read blacklists or whitelists directly in the running command and 
 display whether they'll execute a blacklist or whitelist (only one can be chosen). 
-You only need to fill in the blacklist/whitelist and specify in the running command which one to execute and the path on the device. 
+You only need to fill in the blacklist/whitelist and specify in the running command which one to execute along with the path on the device. 
 Once specified, you don't need to push the file to the device yourself; we'll handle the pushing to the designated device path for you.
 
 ### Activity Whitelist Configuration
