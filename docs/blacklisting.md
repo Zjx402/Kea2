@@ -6,14 +6,15 @@ We support blacklisting specific UI widgets/regions so that Fastbot can avoid in
 
 We support two levels for blacklisting:
 
-- Widget Blocking: Only set the specified attributes (clickable, long-clickable, scrollable, checkable, enabled, focusable) of the widget you pass in to false. Use this method when you want to disable some single widget.
+- Widget Blocking: Use this method when you want to disable some single widget.
 
-- Tree Blocking: Treat the passed-in widget as the root node of a subtree, and set the above attributes to false for the root node and all its descendant nodes in the subtree. Use this method when you want to disable all widgets within a certain area by simply passing the root node of that area to disable the entire subtree of widgets under it.
+- Tree Blocking: Use this method when you want to disable all widgets within a certain area by simply passing the root node of that area to disable the entire subtree of widgets under it.
 
 We support (1) `Global Block List` (always taking effective), and (2) `Conditional Block List` (only taking effective when some conditions are met).
 
 The list of blocked elements are specified in Kea2's config file `configs/widget.block.py` (generated when running `kea2 init`). 
 The elements needed to be blocked can be flexibly specified by u2 selector (e.g., `text`, `description`) or `xpath`, etc.
+
 
 #### Widget Blocking
 ##### Global Block List
@@ -77,6 +78,10 @@ def block_tree_sth(d: "Device"):
             d(description="trees to block")]
 ```
 
+> Implementation principle:
+> - Widget Blocking: Set only the specified attributes (clickable, long-clickable, scrollable, checkable, enabled, focusable) of the given widget to false.
+> - Tree Blocking: Treat the given widget as the root of a subtree, and set the above attributes to false for the root widget as well as all its descendant nodes within that subtree.
+
 
 ### Supported Methods for UI Element Identification
 
@@ -90,7 +95,7 @@ d(text="Alarm", className="android.widget.Button")
 
 #### Supported Attributes
 
-Commonly used attributes are listed below. For detailed usage, please refer to the official Android UiSelector documentation:
+Commonly used attributes are listed below. For detailed usage, please refer to the official [Android UiSelector documentation](http://developer.android.com/tools/help/uiautomator/UiSelector.html):
 
 - **Text-related attributes**  
   `text`, `textContains`, `textStartsWith`
@@ -176,6 +181,12 @@ Please avoid using these unsupported methods to ensure your blacklist configurat
 
 *(Applicable scenarios: selectively override certain activities or block unnecessary ones.)*
 
+We adopt Fastbot's configuration method in a more user-friendly way. 
+It allows users to specify the path for the device to read blacklists or whitelists directly in the running command and 
+display whether they'll execute a blacklist or whitelist (only one can be chosen). 
+You only need to fill in the blacklist/whitelist and specify in the running command which one to execute and the path on the device. 
+Once specified, you don't need to push the file to the device yourself; we'll handle the pushing to the designated device path for you.
+
 ### Activity Whitelist Configuration
 
 1. **Add Activity names**  
@@ -193,7 +204,7 @@ Please avoid using these unsupported methods to ensure your blacklist configurat
 
 2. **Add parameter when running tests**  
 
-   Add the following argument to specify the whitelist file:  
+   Add the following argument to specify the whitelist file (`/sdcard/awl.strings` is the desired path on the device):  
    ```
    --act-whitelist-file /sdcard/awl.strings
    ```
@@ -217,7 +228,7 @@ Please avoid using these unsupported methods to ensure your blacklist configurat
 
 
 2. **Add parameter when running tests**  
-   Add the following argument to specify the blacklist file:  
+   Add the following argument to specify the blacklist file (`/sdcard/abl.strings` is the desired path on the device):  
    ```
    --act-blacklist-file /sdcard/abl.strings
    ```

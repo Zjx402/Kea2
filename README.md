@@ -205,7 +205,6 @@ You can run this example by using the similar command line in Feature 2.
 
 ## Documentations（更多文档）
 
-
 You can find the [user manual](docs/manual_en.md), which includes:
 - Examples of using Kea2 on WeChat (in Chinese);
 - How to define Kea2's scripts and use the decorators (e.g., `@precondition`、`@prob`、`@max_tries`);
