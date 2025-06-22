@@ -116,7 +116,6 @@ class BugReportGenerator:
             "property_violations": [],
             "property_stats": [],
             "screenshot_info": {},  # Store detailed information for each screenshot
-            # "screenshot_order": [],  # Store screenshots in step order
             "coverage_trend": []  # Store coverage trend data
         }
 
@@ -151,87 +150,17 @@ class BugReportGenerator:
 
                         # Collect detailed information for each screenshot
                         if screenshot and screenshot not in data["screenshot_info"]:
-                            try:
-                                caption = ""
-
-                                if step_type == "Monkey":
-                                    # Extract 'act' attribute for Monkey type and convert to lowercase
-                                    caption = f"{info.get('act', 'N/A').lower()}"
-                                elif step_type == "Script":
-                                    # Extract 'method' attribute for Script type
-                                    caption = f"{info.get('method', 'N/A')}"
-                                elif step_type == "ScriptInfo":
-                                    # Extract 'propName' and 'state' attributes for ScriptInfo type
-                                    prop_name = info.get('propName', '')
-                                    state = info.get('state', 'N/A')
-                                    caption = f"{prop_name} {state}" if prop_name else f"{state}"
-
-                                data["screenshot_info"][screenshot] = {
-                                    "type": step_type,
-                                    "caption": caption,
-                                    "step_index": step_index
-                                }
-                                # Add to ordered list
-                                # data["screenshot_order"].append(screenshot)
-                                screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
-                                self.screenshots.append({
-                                    'id': step_index,
-                                    'path': f"{relative_path}/{screenshot}",
-                                    'caption': f"{step_index}. {screenshot_caption}"
-                                })
-                            except Exception as e:
-                                logger.error(f"Error parsing screenshot info: {e}")
-                                data["screenshot_info"][screenshot] = {
-                                    "type": step_type,
-                                    "caption": step_type,
-                                    "step_index": step_index
-                                }
-                                # Add to ordered list even on error
-                                # data["screenshot_order"].append(screenshot)
-                                screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
-                                self.screenshots.append({
-                                    'id': step_index,
-                                    'path': f"{relative_path}/{screenshot}",
-                                    'caption': f"{step_index}. {screenshot_caption}"
-                                })
+                            self._add_screenshot_info(screenshot, step_type, info, step_index, relative_path, data)
 
                         # Process ScriptInfo for property violations
                         if step_type == "ScriptInfo":
                             try:
                                 property_name = info.get("propName", "")
                                 state = info.get("state", "")
-
-                                if property_name and state:
-                                    if state == "start":
-                                        # Record new test start
-                                        current_property = property_name
-                                        current_test = {
-                                            "start": step_index,
-                                            "end": None,
-                                            "screenshot_start": screenshot
-                                        }
-
-                                    elif state in ["pass", "fail", "error"]:
-                                        if current_property == property_name:
-                                            # Update test end information
-                                            current_test["end"] = step_index
-                                            current_test["screenshot_end"] = screenshot
-
-                                            if state == "fail" or state == "error":
-                                                # Record failed/error test
-                                                if property_name not in property_violations:
-                                                    property_violations[property_name] = []
-
-                                                property_violations[property_name].append({
-                                                    "start": current_test["start"],
-                                                    "end": current_test["end"],
-                                                    "screenshot_start": current_test["screenshot_start"],
-                                                    "screenshot_end": screenshot
-                                                })
-
-                                            # Reset current test
-                                            current_property = None
-                                            current_test = {}
+                                current_property, current_test = self._process_script_info(
+                                    property_name, state, step_index, screenshot,
+                                    current_property, current_test, property_violations
+                                )
                             except Exception as e:
                                 logger.error(f"Error processing ScriptInfo step {step_index}: {e}")
 
@@ -284,20 +213,7 @@ class BugReportGenerator:
                 logger.error(f"Error parsing final coverage data: {e}")
 
         # Generate Property Violations list
-        if property_violations:
-            index = 1
-            for property_name, violations in property_violations.items():
-                for violation in violations:
-                    start_step = violation["start"]
-                    end_step = violation["end"]
-                    data["property_violations"].append({
-                        "index": index,
-                        "property_name": property_name,
-                        "precondition_page": start_step,
-                        "interaction_pages": [start_step, end_step],
-                        "postcondition_page": end_step
-                    })
-                    index += 1
+        self._generate_property_violations_list(property_violations, data)
 
         return data
 
@@ -397,29 +313,6 @@ class BugReportGenerator:
         Generate HTML format bug report
         """
         try:
-            # Prepare screenshot data
-            # screenshots = deque()
-            # relative_path = f"output_{self.log_timestamp}/screenshots"
-            #
-            # if self.data_path.screenshots_dir.exists():
-            #     # Use the ordered screenshot list from steps.log processing
-            #     for i, screenshot_name in enumerate(data["screenshot_order"], 1):
-            #         screenshot_path = self.data_path.screenshots_dir / screenshot_name
-            #
-            #         # Check if screenshot file actually exists
-            #         if screenshot_path.exists():
-            #             # Get information for this screenshot
-            #             caption = f"{i}"
-            #             if screenshot_name in data["screenshot_info"]:
-            #                 info = data["screenshot_info"][screenshot_name]
-            #                 caption = f"{i}. {info.get('caption', '')}"
-            #
-            #             screenshots.append({
-            #                 'id': i,
-            #                 'path': f"{relative_path}/{screenshot_name}",
-            #                 'caption': caption
-            #             })
-
             # Format timestamp for display
             timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
@@ -467,3 +360,132 @@ class BugReportGenerator:
         except Exception as e:
             logger.error(f"Error rendering template: {e}")
             raise
+
+    def _add_screenshot_info(self, screenshot: str, step_type: str, info: Dict, step_index: int, relative_path: str, data: Dict):
+        """
+        Add screenshot information to data structure
+        
+        Args:
+            screenshot: Screenshot filename
+            step_type: Type of step (Monkey, Script, ScriptInfo)
+            info: Step information dictionary
+            step_index: Current step index
+            relative_path: Relative path to screenshots directory
+            data: Data dictionary to update
+        """
+        try:
+            caption = ""
+
+            if step_type == "Monkey":
+                # Extract 'act' attribute for Monkey type and convert to lowercase
+                caption = f"{info.get('act', 'N/A').lower()}"
+            elif step_type == "Script":
+                # Extract 'method' attribute for Script type
+                caption = f"{info.get('method', 'N/A')}"
+            elif step_type == "ScriptInfo":
+                # Extract 'propName' and 'state' attributes for ScriptInfo type
+                prop_name = info.get('propName', '')
+                state = info.get('state', 'N/A')
+                caption = f"{prop_name} {state}" if prop_name else f"{state}"
+
+            data["screenshot_info"][screenshot] = {
+                "type": step_type,
+                "caption": caption,
+                "step_index": step_index
+            }
+            
+            screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
+            self.screenshots.append({
+                'id': step_index,
+                'path': f"{relative_path}/{screenshot}",
+                'caption': f"{step_index}. {screenshot_caption}"
+            })
+            
+        except Exception as e:
+            logger.error(f"Error parsing screenshot info: {e}")
+            data["screenshot_info"][screenshot] = {
+                "type": step_type,
+                "caption": step_type,
+                "step_index": step_index
+            }
+            
+            screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
+            self.screenshots.append({
+                'id': step_index,
+                'path': f"{relative_path}/{screenshot}",
+                'caption': f"{step_index}. {screenshot_caption}"
+            })
+
+    def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str, 
+                           current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
+        """
+        Process ScriptInfo step for property violations tracking
+        
+        Args:
+            property_name: Property name from ScriptInfo
+            state: State from ScriptInfo (start, pass, fail, error)
+            step_index: Current step index
+            screenshot: Screenshot filename
+            current_property: Currently tracked property
+            current_test: Current test data
+            property_violations: Dictionary to store violations
+            
+        Returns:
+            tuple: (updated_current_property, updated_current_test)
+        """
+        if property_name and state:
+            if state == "start":
+                # Record new test start
+                current_property = property_name
+                current_test = {
+                    "start": step_index,
+                    "end": None,
+                    "screenshot_start": screenshot
+                }
+
+            elif state in ["pass", "fail", "error"]:
+                if current_property == property_name:
+                    # Update test end information
+                    current_test["end"] = step_index
+                    current_test["screenshot_end"] = screenshot
+
+                    if state == "fail" or state == "error":
+                        # Record failed/error test
+                        if property_name not in property_violations:
+                            property_violations[property_name] = []
+
+                        property_violations[property_name].append({
+                            "start": current_test["start"],
+                            "end": current_test["end"],
+                            "screenshot_start": current_test["screenshot_start"],
+                            "screenshot_end": screenshot
+                        })
+
+                    # Reset current test
+                    current_property = None
+                    current_test = {}
+        
+        return current_property, current_test
+
+    def _generate_property_violations_list(self, property_violations: Dict, data: Dict):
+        """
+        Generate property violations list from collected violation data
+        
+        Args:
+            property_violations: Dictionary containing property violations
+            data: Data dictionary to update with property violations list
+        """
+        if property_violations:
+            index = 1
+            for property_name, violations in property_violations.items():
+                for violation in violations:
+                    start_step = violation["start"]
+                    end_step = violation["end"]
+                    data["property_violations"].append({
+                        "index": index,
+                        "property_name": property_name,
+                        "precondition_page": start_step,
+                        "interaction_pages": [start_step, end_step],
+                        "postcondition_page": end_step
+                    })
+                    index += 1
