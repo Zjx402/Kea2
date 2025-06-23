@@ -122,6 +122,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | arg | meaning | default | 
 | --- | --- | --- |
 | -s | The serial of your device, which can be found by `adb devices` | |
+| -t | The transport id of your device, which can be found by `adb devices -l` | |
 | -p | The tested app's package name (e.g., com.example.app) | 
 | -o | The ouput directory for logs and results | `output` |
 | --agent |  {native, u2}. By default, `u2` is used and supports all the three important features of Kea2. If you hope to run the orignal Fastbot, please use `native`.| `u2` |
