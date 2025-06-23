@@ -1,10 +1,13 @@
 import random
 import socket
+from time import sleep
 import uiautomator2 as u2
+import adbutils
 import types
 import rtree
 import re
-from typing import Dict, List, Union
+from typing import Any, Dict, List, Union
+from http.client import HTTPResponse
 from lxml import etree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
 from .adbUtils import list_forwards, remove_forward, create_forward
@@ -35,7 +38,12 @@ class U2ScriptDriver(AbstractScriptDriver):
     """
 
     deviceSerial: str = None
+    transportId: str = None
     d = None
+
+    @classmethod
+    def setTransportId(cls, transportId):
+        cls.transportId = transportId
 
     @classmethod
     def setDeviceSerial(cls, deviceSerial):
@@ -43,26 +51,11 @@ class U2ScriptDriver(AbstractScriptDriver):
 
     def getInstance(self):
         if self.d is None:
-            self.d = (
-                u2.connect() if self.deviceSerial is None
-                else u2.connect(self.deviceSerial)
-            )
-
-            def get_u2_forward_port() -> int:
-                """rewrite forward_port mothod to avoid the relocation of port
-                :return: the new forward port
-                """
-                print("Rewriting forward_port method", flush=True)
-                self.d._dev.forward_port = types.MethodType(
-                                forward_port, self.d._dev)
-                lport = self.d._dev.forward_port(8090)
-                setattr(self.d._dev, "msg", "meta")
-                print(f"[U2] local port: {lport}", flush=True)
-                return lport
-
-            self._remove_remote_port(8090)
-            self.d.lport = get_u2_forward_port()
-            self._remove_remote_port(9008)
+            adb = adbutils.device(serial=self.deviceSerial, transport_id=self.transportId)
+            print("[INFO] Connecting to uiautomator2. Please wait ...")
+            self.d = u2.connect(adb)
+            sleep(5)
+            self.d._device_server_port = 8090
 
         return self.d
 
@@ -76,10 +69,11 @@ class U2ScriptDriver(AbstractScriptDriver):
                 remove_forward(local_spec=forward_local, device=self.deviceSerial)
 
     def tearDown(self):
-        logger.debug("U2Driver tearDown: stop_uiautomator")
-        self.d.stop_uiautomator()
-        logger.debug("U2Driver tearDown: remove forward")
-        self._remove_remote_port(8090)
+        # logger.debug("U2Driver tearDown: stop_uiautomator")
+        # self.d.stop_uiautomator()
+        # logger.debug("U2Driver tearDown: remove forward")
+        # self._remove_remote_port(8090)
+        pass
 
 """
 The definition of U2StaticChecker
@@ -207,7 +201,7 @@ class StaticU2UiObject(u2.UiObject):
     
     def sibling(self, **kwargs):
         return StaticU2UiObject(self.session, self.selector.clone().sibling(**kwargs))
-    
+
     def __getattr__(self, attr):
         return getattr(super(), attr)
 
@@ -366,8 +360,11 @@ class U2Driver(AbstractDriver):
     staticChecker = None
 
     @classmethod
-    def setDeviceSerial(cls, deviceSerial):
-        U2ScriptDriver.setDeviceSerial(deviceSerial)
+    def setDevice(cls, kwarg):
+        if kwarg.get("serial"):
+            U2ScriptDriver.setDeviceSerial(kwarg["serial"])
+        if kwarg.get("transport_id"):
+            U2ScriptDriver.setTransportId(kwarg["transport_id"])
 
     @classmethod
     def getScriptDriver(self):
@@ -400,7 +397,7 @@ def forward_port(self, remote: Union[int, str]) -> int:
                 and f.remote == remote
                 and f.local.startswith("tcp:")
             ):  # yapf: disable
-                return int(f.local[len("tcp:") :])
+                return int(f.local[len("tcp:"):])
         local_port = get_free_port()
         self.forward("tcp:" + str(local_port), remote)
         logger.debug(f"forwading port: tcp:{local_port} -> {remote}")

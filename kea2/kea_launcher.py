@@ -9,8 +9,20 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
         "-s",
         "--serial",
         dest="serial",
+        required=False,
+        default=None,
         type=str,
         help="The serial of your device. Can be found with `adb devices`",
+    )
+
+    parser.add_argument(
+        "-t",
+        "--transport-id",
+        dest="transport_id",
+        required=False,
+        default=None,
+        type=str,
+        help="transport-id of your device, can be found with `adb devices -l`",
     )
 
     parser.add_argument(
@@ -128,6 +140,8 @@ def driver_info_logger(args):
     print("[INFO] Driver Settings:", flush=True)
     if args.serial:
         print("  serial:", args.serial, flush=True)
+    if args.transport_id:
+        print("  transport_id:", args.transport_id, flush=True)
     if args.package_names:
         print("  package_names:", args.package_names, flush=True)
     if args.agent:
@@ -174,6 +188,7 @@ def run(args=None):
         Driver=U2Driver,
         packageNames=args.package_names,
         serial=args.serial,
+        transport_id=args.transport_id,
         running_mins=args.running_minutes,
         maxStep=args.max_step,
         throttle=args.throttle_ms,
