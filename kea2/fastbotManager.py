@@ -6,7 +6,7 @@ from time import sleep
 
 
 from uiautomator2.core import HTTPResponse, _http_request
-from kea2.adbUtils import ADBDevice, ADBStreamShell
+from kea2.adbUtils import ADBDevice, ADBStreamShell_V2
 from pathlib import Path
 from kea2.utils import getLogger
 
@@ -29,7 +29,7 @@ class FastbotManager:
         ADBDevice.setDevice(options.serial, options.transport_id)
         self.dev = ADBDevice()
 
-    def _activateFastbot(self) -> ADBStreamShell:
+    def _activateFastbot(self) -> ADBStreamShell_V2:
         """
         activate fastbot.
         :params: options: the running setting for fastbot
@@ -150,7 +150,7 @@ class FastbotManager:
     def device_output_dir(self):
         return self._device_output_dir
 
-    def _startFastbotService(self) -> ADBStreamShell:
+    def _startFastbotService(self) -> ADBStreamShell_V2:
         shell_command = [
             "CLASSPATH="
             "/sdcard/monkeyq.jar:"
@@ -190,7 +190,7 @@ class FastbotManager:
         # t.start()
         return t
 
-    def close_on_exit(self, proc: ADBStreamShell, f: IO):
+    def close_on_exit(self, proc: ADBStreamShell_V2, f: IO):
         self.return_code = proc.wait()
         f.close()
         if self.return_code != 0:
