@@ -1,7 +1,7 @@
 import sys
 import subprocess
 import threading
-from typing import List, Optional, Set
+from typing import List, Optional, Set, Tuple
 
 from kea2.utils import getLogger
 from adbutils import AdbDevice, adb
@@ -63,13 +63,13 @@ class StreamShell:
                  stderr: IO = None, timeout: Union[float, None] = None) -> "StreamShell":
         pass
 
-    def _write_stdout(self, data: bytes):
-        text = data.decode('utf-8', errors='ignore')
+    def _write_stdout(self, data: bytes, decode=True):
+        text = data.decode('utf-8', errors='ignore') if decode else data
         self.stdout.write(text)
         self.stdout.flush()
 
-    def _write_stderr(self, data: bytes):
-        text = data.decode('utf-8', errors='ignore')
+    def _write_stderr(self, data: bytes, decode=True):
+        text = data.decode('utf-8', errors='ignore') if decode else data
         self.stderr.write(text)
         self.stderr.flush()
     
@@ -104,43 +104,56 @@ class StreamShell:
             self._thread.join()
 
 
-
 class ADBStreamShell_V1(StreamShell):
+
+    def __call__(
+        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        stderr: IO = None, timeout: Union[float, None] = None
+    ) -> "StreamShell":
+        return self.shell_v1(cmdargs, stdout, stderr, timeout)
     
-    def shell_v1(self, cmdargs: Union[List[str]], stdout: IO = None, 
-        stderr: IO = None, timeout: Union[float, None] = None,
+    def shell_v1(
+        self, cmdargs: Union[List[str], str],
+        stdout: IO = None, stderr: IO = None,
+        timeout: Union[float, None] = None
     ):
-        self._generator = self._shell_v1(cmdargs, timeout)
+        self._finished = False
         self.stdout: IO = stdout if stdout else sys.stdout
         self.stderr: IO = stdout if stderr else sys.stdout
+
+        cmd = " ".join(cmdargs) if isinstance(cmdargs, list) else cmdargs
+        self._generator = self._shell_v1(cmd, timeout)
+        self._thread = threading.Thread(target=self._process_output, daemon=True)
+        self._thread.start()
+        return self
     
-    def _shell_v1(self, cmdargs: str, timeout: Optional[float] = None) -> Generator[bytes, None, None]:
-        assert isinstance(cmdargs, str)
+    
+    def _shell_v1(self, cmdargs: str, timeout: Optional[float] = None) -> Generator[Tuple[str, str], None, None]:
+        if not isinstance(cmdargs, str):
+            raise RuntimeError("_shell_v1 args must be str")
         MAGIC = "X4EXIT:"
         newcmd = cmdargs + f"; echo {MAGIC}$?"
-        MAGIC_BYTES = MAGIC.encode()
-        while True:
-            with self.dev.open_transport(timeout=timeout) as c:
-                c.send_command(f"shell,{newcmd}")
-                c.check_okay()
-                res = c.read_string_block()
-                rindex = res.rfind(MAGIC_BYTES)
+        with self.dev.open_transport(timeout=timeout) as c:
+            c.send_command(f"shell:{newcmd}")
+            c.check_okay()
+            with c.conn.makefile("r", encoding="utf-8") as f:
+                for line in f:
+                    rindex = line.rfind(MAGIC)
+                    if rindex == -1:
+                        yield "output", line
+                        continue
 
-                if rindex == -1:
-                    yield "output", res
-                    continue
+                    yield "exit", line[rindex + len(MAGIC):]
+                    return
 
-                yield "exit", res[rindex + len(MAGIC):]
-                break
-    
     def _process_output(self):
         try:
             for msg_type, data in self._generator:
 
                 if msg_type == 'output':
-                    self._write_stdout(data)
+                    self._write_stdout(data, decode=False)
                 elif msg_type == 'exit':
-                    self._exit_code = int(data.decode('utf-8', errors='ignore').strip())
+                    self._exit_code = int(data.strip())
                     break
 
         except Exception as e:
@@ -200,7 +213,7 @@ class ADBStreamShell_V2(StreamShell):
             print(f"ADBStreamShell execution error: {e}")
             self._exit_code = -1
 
-    def _shell_v2(self, cmd, timeout) -> Generator:
+    def _shell_v2(self, cmd, timeout) -> Generator[Tuple[str, bytes], None, None]:
         with self.dev.open_transport(timeout=timeout) as c:
             c.send_command(f"shell,v2:{cmd}")
             c.check_okay()
