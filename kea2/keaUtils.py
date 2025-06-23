@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import traceback
+import time
 from typing import Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
@@ -670,8 +671,15 @@ class KeaTestRunner(TextTestRunner):
             self.options.Driver.tearDown()
 
         try:
+            start_time = time.time()
             logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
+
+            end_time = time.time()
+            generation_time = end_time - start_time
+
+            logger.info(f"Bug report generation completed in {generation_time:.2f} seconds")
+            
         except Exception as e:
             logger.error(f"Error generating bug report: {e}", flush=True)

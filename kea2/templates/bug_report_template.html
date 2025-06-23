@@ -356,48 +356,7 @@
 
         <!-- Key Statistics -->
         <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="stats-card">
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-stopwatch"></i> Time Statistics
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>First Bug Discovery Time:</span>
-                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-danger" role="progressbar" 
-                                     style="width: calc({{ first_bug_time }} / {{ total_testing_time }} * 100%);" 
-                                     aria-valuenow="{{ first_bug_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>First Precondition Satisfaction Time:</span>
-                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" 
-                                     style="width: calc({{ first_precondition_time }} / {{ total_testing_time }} * 100%);" 
-                                     aria-valuenow="{{ first_precondition_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="d-flex justify-content-between">
-                                <span>Total Testing Time:</span>
-                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
-                                     aria-valuenow="{{ total_testing_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
+            <div class="col-12">
                 <div class="stats-card">
                     <div class="card-header bg-success text-white">
                         <i class="bi bi-bar-chart"></i> Coverage Statistics
@@ -437,7 +396,7 @@
                 <!-- Tested Activities Panel -->
                 <div class="col-md-6">
                     <div class="card">
-                        <div class="card-header bg-success text-white">
+                        <div class="card-header bg-warning text-white">
                             <div class="d-flex justify-content-between align-items-center">
                                 <span><i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})</span>
                                 <span class="badge bg-light text-dark">{{ tested_activities|length }} / {{ total_activities_count }}</span>
@@ -605,14 +564,14 @@
                         </tr>
                     </thead>
                     <tbody id="property-stats-container">
-                        {% for stat in property_stats %}
+                        {% for property_name, test_result in property_stats.items() %}
                         <tr class="property-stat-row" data-page="1">
-                            <td>{{ stat.index }}</td>
-                            <td><span class="badge bg-light text-dark badge-custom">{{ stat.property_name }}</span></td>
-                            <td>{{ stat.precond_satisfied }}</td>
-                            <td>{{ stat.precond_checked }}</td>
-                            <td><span class="badge bg-danger text-white">{{ stat.postcond_violated }}</span></td>
-                            <td><span class="badge bg-warning text-dark">{{ stat.error }}</span></td>
+                            <td>{{ loop.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ property_name }}</span></td>
+                            <td>{{ test_result.precond_satisfied|default(0) }}</td>
+                            <td>{{ test_result.executed|default(0) }}</td>
+                            <td><span class="badge bg-danger text-white">{{ test_result.fail|default(0) }}</span></td>
+                            <td><span class="badge bg-warning text-dark">{{ test_result.error|default(0) }}</span></td>
                         </tr>
                         {% endfor %}
                     </tbody>

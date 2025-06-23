@@ -13,6 +13,7 @@ def getLogger(name: str) -> logging.Logger:
         if not logger.handlers:
             # Configure handler
             handler = logging.StreamHandler()
+            handler.flush = lambda: handler.stream.flush()  # 确保每次都flush
             formatter = logging.Formatter('[%(levelname)1s][%(asctime)s %(module)s:%(lineno)d pid:%(process)d] %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
