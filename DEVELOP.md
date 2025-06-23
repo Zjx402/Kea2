@@ -13,7 +13,7 @@ If you need to specify `parent-child` relation ship in `@precondition`, specify 
 for example: 
 
 ```python
-# Do not use:
+# Do not use: 
 # @precondition(lambda self: 
 #      self.d(className="android.widget.ListView").child(text="Bluetooth")
 # ):

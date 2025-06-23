@@ -1,15 +1,17 @@
 
 # Documentation
 
+[中文文档](manual_cn.md)
+
 ## Kea2's tutorials 
 
-1. A small tutorial of applying Kea2's Feature 2 and 3 on [WeChat](docs/Scenario_Examples_zh.md).
+1. A small tutorial of applying Kea2's Feature 2 and 3 on [WeChat](Scenario_Examples_zh.md).
 
 ## Kea2's scripts
 
 Kea2 uses [Unittest](https://docs.python.org/3/library/unittest.html) to manage scripts. All the Kea2's scripts can be found in unittest's rules (i.e., the test methods should start with `test_`, the test classes should extend `unittest.TestCase`).
 
-Kea2 uses [Uiautomator2](https://github.com/openatx/uiautomator2) to manipulate android devices. Refer to [Uiautomator2's docs](https://github.com/openatx/uiautomator2?tab=readme-ov-file#quick-start) for more details.
+Kea2 uses [Uiautomator2](https://github.com/openatx/uiautomator2) to manipulate android devices. Refer to [Uiautomator2's docs](https://github.com/openatx/uiautomator2?tab=readme-ov-file#quick-start) for more details. 
 
 Basically, you can write Kea2's scripts by following two steps:
 
@@ -28,7 +30,7 @@ By default, only the test method starts with `test_` will be found by unittest. 
 
 Note that if a test method is not decorated with `@precondition`.
 This test method will never be activated during automated UI testing, and will be treated as a normal `unittset` test method.
-Thus, you need to explicitly specify `@precondition(lambda self: True)` when the test method should be always executed. When a test method is not decorated with `@prob`, the default probability is 1 (always execute when precondition satisfied).
+Thus, you need to explicitly specify `@precondition(lambda self: True)` when the test method should be always executed. When a test method is not decorated with `@prob`, the default probability is 1 (always execute when precondition satisfied). 
 
 ```python
 import unittest

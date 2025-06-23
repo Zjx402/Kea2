@@ -19,7 +19,7 @@ import logging
 logging.getLogger("urllib3").setLevel(logging.INFO)
 logging.getLogger("uiautomator2").setLevel(logging.INFO)
 
-logger = getLogger(__name__)
+logger = getLogger(__name__) 
 
 """
 The definition of U2ScriptDriver
