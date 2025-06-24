@@ -1,5 +1,5 @@
-import subprocess
-import threading
+from retry import retry
+from retry.api import retry_call
 from dataclasses import asdict
 import requests
 from time import sleep
@@ -80,25 +80,18 @@ class FastbotManager:
         """
         check if the script driver and proxy server are alive.
         """
+        def _check_alive_request():
+            _http_request(dev=self.dev, device_port=8090, method="GET", path="/ping")
 
-        for _ in range(10):
-            sleep(2)
-            try:
-                _http_request(
-                    dev=self.dev,
-                    device_port=8090,
-                    method="GET",
-                    path="/ping",
-                )
-                return
-            except requests.ConnectionError:
-                logger.info("waiting for connection.")
-                pass
-        raise RuntimeError("Failed to connect fastbot")
+        try:
+            retry_call(_check_alive_request, tries=10, delay=2)
+        except requests.ConnectionError:
+            raise RuntimeError("Failed to connect fastbot")
 
     def request(self, method: str, path: str, data: Dict=None, timeout: int=10) -> HTTPResponse:
         return _http_request(self.dev, 8090, method, path, data, timeout)
 
+    @retry(Exception, tries=2, delay=2)
     def init(self, options: "Options", stamp):
         post_data = {
             "takeScreenshots": options.take_screenshots,
@@ -117,6 +110,7 @@ class FastbotManager:
         self._device_output_dir = re.match(r"outputDir:(.+)", r.text).group(1)
         print(f"[INFO] Fastbot initiated. outputDir: {r.text}", flush=True)
     
+    @retry(Exception, tries=2, delay=2)
     def stepMonkey(self, monkeyStepInfo):
         r = self.request(
             method="POST",
@@ -125,6 +119,7 @@ class FastbotManager:
         )
         return r.json()["result"]
 
+    @retry(Exception, tries=2, delay=2)
     def stopMonkey(self):
         """
         send a stop monkey request to the server.
@@ -136,6 +131,7 @@ class FastbotManager:
 
         print(f"[Server INFO] {r.text}", flush=True)
     
+    @retry(Exception, tries=2, delay=2)
     def logScript(self, execution_info: Dict):
         r = self.request(
             method="POST",
