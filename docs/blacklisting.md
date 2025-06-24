@@ -2,18 +2,21 @@
 
 [中文文档](blacklisting_cn.md)
 
-We support blacklisting specific UI widgets/regions so that Fastbot can avoid interacting with these widgets during fuzzing. 
 
-We support two levels of blacklisting:
+Fastbot supports blacklisting specific UI widgets or regions to prevent interactions with them during fuzzing.
 
-- Widget Blocking: Use this method when you want to disable some single widget.
+There are two levels of blacklisting:
 
-- Tree Blocking: Use this method when you want to disable all widgets within a certain area by simply passing the root node of that area to disable the entire subtree of widgets under it.
+- **Widget Blocking:** Use this to disable individual widgets.
+- **Tree Blocking:** Use this to disable all widgets within a specific area by specifying the root node of that area, thereby blocking the entire subtree of widgets under it.
 
-We support (1) `Global Block List` (always taking effect), and (2) `Conditional Block List` (only taking effect when some conditions are met).
+We provide two types of block lists:
 
-The list of blocked elements is specified in Kea2's config file `configs/widget.block.py` (generated when running `kea2 init`). 
-The elements needed to be blocked can be flexibly specified by u2 selector (e.g., `text`, `description`) or `xpath`, etc.
+1. **Global Block List** — always in effect.
+2. **Conditional Block List** — effective only when certain conditions are met.
+
+Blocked elements are configured in Kea2’s config file `configs/widget.block.py` (generated when running `kea2 init`).  
+Elements can be flexibly specified using u2 selectors (such as `text` or `description`), XPath, or other selector methods.
 
 
 #### Widget Blocking
