@@ -182,12 +182,7 @@ class FastbotManager:
         logger.info("Launching fastbot with shell command:\n{}".format(" ".join(full_cmd)))
         logger.info("Fastbot log will be saved to {}".format(outfile.name))
 
-        # stream = self.dev.shell(shell_command, encoding="utf-8", stream=True, timeout=float("inf"))
-        # process handler
         t = self.dev.stream_shell(shell_command, stdout=outfile, stderr=outfile)
-        # proc = subprocess.Popen(full_cmd, stdout=outfile, stderr=outfile)
-        # t = threading.Thread(target=self.close_on_exit, args=(proc, outfile), daemon=True)
-        # t.start()
         return t
 
     def close_on_exit(self, proc: ADBStreamShell_V2, f: IO):
@@ -203,6 +198,8 @@ class FastbotManager:
         return self.thread.poll()
 
     def start(self):
+        # kill the fastbot process if runing.
+        self.dev.kill_proc("com.android.commands.monkey")
         self.thread = self._activateFastbot()
 
     def join(self):
