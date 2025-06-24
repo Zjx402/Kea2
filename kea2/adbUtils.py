@@ -44,7 +44,7 @@ class ADBDevice(AdbDevice):
         super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
 
     @property
-    def stream_shell(self) -> "ADBStreamShell_V2":
+    def stream_shell(self) -> "StreamShell":
         if "shell_v2" in self.get_features():
             return ADBStreamShell_V2(session=self)
         logger.warning("Using ADBStreamShell_V1. All output will be printed to stdout.")
@@ -107,7 +107,7 @@ class StreamShell:
 class ADBStreamShell_V1(StreamShell):
 
     def __call__(
-        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        self, cmdargs: Union[List[str], str], stdout: IO = None, 
         stderr: IO = None, timeout: Union[float, None] = None
     ) -> "StreamShell":
         return self.shell_v1(cmdargs, stdout, stderr, timeout)
@@ -168,7 +168,7 @@ class ADBStreamShell_V2(StreamShell):
         self._exit_code = 255
 
     def __call__(
-        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        self, cmdargs: Union[List[str], str], stdout: IO = None, 
         stderr: IO = None, timeout: Union[float, None] = None
     ) -> "StreamShell":
         return self.shell_v2(cmdargs, stdout, stderr, timeout)
