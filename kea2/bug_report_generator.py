@@ -94,7 +94,7 @@ class BugReportGenerator:
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
-            logger.info(f"Bug report saved to: {report_path}")
+            logger.debug(f"Bug report saved to: {report_path}")
 
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
