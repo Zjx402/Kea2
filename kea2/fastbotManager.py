@@ -70,8 +70,8 @@ class FastbotManager:
             "/data/local/tmp/x86_64/libfastbot_native.so",
         )
 
-        whitelist = options.act_whitelist_file
-        blacklist = options.act_blacklist_file
+        whitelist = self.options.act_whitelist_file
+        blacklist = self.options.act_blacklist_file
         if bool(whitelist) ^ bool(blacklist):
             if whitelist:
                 file_to_push = cur_dir.parent / 'configs' / 'awl.strings'
@@ -80,10 +80,9 @@ class FastbotManager:
                 file_to_push = cur_dir.parent / 'configs' / 'abl.strings'
                 remote_path = blacklist
 
-            push_file(
+            self.dev.sync.push(
                 file_to_push,
-                remote_path,
-                device=options.serial,
+                remote_path
             )
 
         t = self._startFastbotService()
