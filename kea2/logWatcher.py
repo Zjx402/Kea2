@@ -21,7 +21,6 @@ def thread_excepthook(args):
 class LogWatcher:
 
     def watcher(self, poll_interval=0.5):
-        self.buffer = ""
         self.last_pos = 0
 
         while not self.end_flag:
@@ -34,33 +33,30 @@ class LogWatcher:
     def read_log(self):
         with open(self.log_file, 'r', encoding='utf-8') as f:
             f.seek(self.last_pos)
-            new_data = f.read()
+            buffer = f.read()
             self.last_pos = f.tell()
 
-            if new_data:
-                self.buffer += new_data
-            self.parse_log()
+            self.parse_log(buffer)
 
-    def parse_log(self):
-        buffer = self.buffer
-        exception_match = PATTERN_EXCEPTION.search(buffer)
+    def parse_log(self, content):
+        exception_match = PATTERN_EXCEPTION.search(content)
         if exception_match:
             exception_body = exception_match.group(1).strip()
             if exception_body:
                 raise RuntimeError(
-                    "[Error] Execption while running fastbot:\n" + 
+                    "[Error] Fatal Execption while running fastbot:\n" + 
                     exception_body + 
                     "\nSee fastbot.log for details."
                 )
-        if self.end_flag:
-            statistic_match = PATTERN_STATISTIC.search(buffer)
-            if statistic_match:
-                statistic_body = statistic_match.group(1).strip()
-                if statistic_body:
-                    print(
-                        "[INFO] Fastbot exit:\n" + 
-                        statistic_body
-                    , flush=True)
+        
+        statistic_match = PATTERN_STATISTIC.search(content)
+        if statistic_match:
+            statistic_body = statistic_match.group(1).strip()
+            if statistic_body:
+                print(
+                    "[INFO] Fastbot exit:\n" + 
+                    statistic_body
+                , flush=True)
 
     def __init__(self, log_file):
         logger.info(f"Watching log: {log_file}")
