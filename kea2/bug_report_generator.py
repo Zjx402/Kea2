@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Dict, TypedDict, Literal, List
 from collections import deque
+from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image, ImageDraw
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
@@ -40,6 +41,7 @@ class BugReportGenerator:
         Args:
             result_dir: Directory path containing test results
         """
+        self.executor = ThreadPoolExecutor(max_workers=32)
         self.result_dir = Path(result_dir)
         self.log_timestamp = self.result_dir.name.split("_", 1)[1]
 
@@ -146,7 +148,8 @@ class BugReportGenerator:
 
                         # If screenshots are enabled, mark the screenshot
                         if self.take_screenshots and screenshot:
-                            self._mark_screenshot(step_data)
+                            # self._mark_screenshot(step_data)
+                            self.executor.submit(self._mark_screenshot, step_data)
 
                         # Collect detailed information for each screenshot
                         if screenshot and screenshot not in data["screenshot_info"]:
