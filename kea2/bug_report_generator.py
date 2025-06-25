@@ -2,14 +2,13 @@ import json
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, Literal, List
+from typing import Dict, TypedDict
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image, ImageDraw
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
-from .utils import getLogger
-
+from kea2.utils import getLogger
 
 logger = getLogger(__name__)
 
@@ -20,6 +19,7 @@ class StepData(TypedDict):
     Time: str
     Info: Dict
     Screenshot: str
+
 
 @dataclass
 class DataPath:
@@ -34,27 +34,17 @@ class BugReportGenerator:
     Generate HTML format bug reports
     """
 
-    def __init__(self, result_dir):
+    def __init__(self, result_dir=None):
         """
         Initialize the bug report generator
 
         Args:
             result_dir: Directory path containing test results
         """
+        if result_dir is not None:
+            self._setup_paths(result_dir)
+
         self.executor = ThreadPoolExecutor(max_workers=32)
-        self.result_dir = Path(result_dir)
-        self.log_timestamp = self.result_dir.name.split("_", 1)[1]
-
-        self.data_path: DataPath = DataPath(
-            steps_log=self.result_dir / f"output_{self.log_timestamp}" / "steps.log",
-            result_json=self.result_dir / f"result_{self.log_timestamp}.json",
-            coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
-            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
-        )
-
-        self.screenshots = deque()
-
-        self.take_screenshots = self._detect_screenshots_setting()
 
         # Set up Jinja2 environment
         # First try to load templates from the package
@@ -77,12 +67,44 @@ class BugReportGenerator:
                 autoescape=select_autoescape(['html', 'xml'])
             )
 
+    def _setup_paths(self, result_dir):
+        """
+        Setup paths for a given result directory
 
-    def generate_report(self):
+        Args:
+            result_dir: Directory path containing test results
+        """
+        self.result_dir = Path(result_dir)
+        self.log_timestamp = self.result_dir.name.split("_", 1)[1]
+
+        self.data_path: DataPath = DataPath(
+            steps_log=self.result_dir / f"output_{self.log_timestamp}" / "steps.log",
+            result_json=self.result_dir / f"result_{self.log_timestamp}.json",
+            coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
+            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
+        )
+
+        self.screenshots = deque()
+        self.take_screenshots = self._detect_screenshots_setting()
+
+    def generate_report(self, result_dir_path=None):
         """
         Generate bug report and save to result directory
+
+        Args:
+            result_dir_path: Directory path containing test results (optional)
+                           If not provided, uses the path from initialization
         """
         try:
+            # Setup paths if result_dir_path is provided
+            if result_dir_path is not None:
+                self._setup_paths(result_dir_path)
+
+            # Check if paths are properly set up
+            if not hasattr(self, 'result_dir') or self.result_dir is None:
+                raise ValueError(
+                    "No result directory specified. Please provide result_dir_path or initialize with a directory.")
+
             logger.debug("Starting bug report generation")
 
             # Collect test data
@@ -97,9 +119,11 @@ class BugReportGenerator:
                 f.write(html_content)
 
             logger.debug(f"Bug report saved to: {report_path}")
+            return str(report_path)
 
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
+            raise
 
     def _collect_test_data(self):
         """
@@ -178,15 +202,16 @@ class BugReportGenerator:
                 # Calculate test time
                 if step_index > 0:
                     try:
-                        data["total_testing_time"] = int((datetime.datetime.strptime(last_step_time,"%Y-%m-%d %H:%M:%S.%f") -
-                                                          datetime.datetime.strptime(first_step_time,"%Y-%m-%d %H:%M:%S.%f")
-                                                         ).total_seconds())
+                        data["total_testing_time"] = int(
+                            (datetime.datetime.strptime(last_step_time, "%Y-%m-%d %H:%M:%S.%f") -
+                             datetime.datetime.strptime(first_step_time, "%Y-%m-%d %H:%M:%S.%f")
+                             ).total_seconds())
                     except Exception as e:
                         logger.error(f"Error calculating test time: {e}")
 
         # Parse result file
         result_json_path = self.data_path.result_json
-        
+
         if result_json_path.exists():
             with open(result_json_path, "r", encoding="utf-8") as f:
                 result_data = json.load(f)
@@ -238,7 +263,6 @@ class BugReportGenerator:
             except Exception as e:
                 logger.error(f"Error processing Monkey step: {e}")
 
-
     def _mark_screenshot_interaction(self, screenshot_path, action_type, position):
         """
             Mark interaction on screenshot with colored rectangle
@@ -279,7 +303,6 @@ class BugReportGenerator:
         except Exception as e:
             logger.error(f"Error marking screenshot {screenshot_path}: {e}")
             return False
-
 
     def _detect_screenshots_setting(self):
         """
@@ -364,10 +387,11 @@ class BugReportGenerator:
             logger.error(f"Error rendering template: {e}")
             raise
 
-    def _add_screenshot_info(self, screenshot: str, step_type: str, info: Dict, step_index: int, relative_path: str, data: Dict):
+    def _add_screenshot_info(self, screenshot: str, step_type: str, info: Dict, step_index: int, relative_path: str,
+                             data: Dict):
         """
         Add screenshot information to data structure
-        
+
         Args:
             screenshot: Screenshot filename
             step_type: Type of step (Monkey, Script, ScriptInfo)
@@ -396,22 +420,7 @@ class BugReportGenerator:
                 "caption": caption,
                 "step_index": step_index
             }
-            
-            screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
-            self.screenshots.append({
-                'id': step_index,
-                'path': f"{relative_path}/{screenshot}",
-                'caption': f"{step_index}. {screenshot_caption}"
-            })
-            
-        except Exception as e:
-            logger.error(f"Error parsing screenshot info: {e}")
-            data["screenshot_info"][screenshot] = {
-                "type": step_type,
-                "caption": step_type,
-                "step_index": step_index
-            }
-            
+
             screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
             self.screenshots.append({
                 'id': step_index,
@@ -419,11 +428,26 @@ class BugReportGenerator:
                 'caption': f"{step_index}. {screenshot_caption}"
             })
 
-    def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str, 
-                           current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
+        except Exception as e:
+            logger.error(f"Error parsing screenshot info: {e}")
+            data["screenshot_info"][screenshot] = {
+                "type": step_type,
+                "caption": step_type,
+                "step_index": step_index
+            }
+
+            screenshot_caption = data["screenshot_info"][screenshot].get('caption', '')
+            self.screenshots.append({
+                'id': step_index,
+                'path': f"{relative_path}/{screenshot}",
+                'caption': f"{step_index}. {screenshot_caption}"
+            })
+
+    def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str,
+                             current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
         """
         Process ScriptInfo step for property violations tracking
-        
+
         Args:
             property_name: Property name from ScriptInfo
             state: State from ScriptInfo (start, pass, fail, error)
@@ -432,7 +456,7 @@ class BugReportGenerator:
             current_property: Currently tracked property
             current_test: Current test data
             property_violations: Dictionary to store violations
-            
+
         Returns:
             tuple: (updated_current_property, updated_current_test)
         """
@@ -467,13 +491,13 @@ class BugReportGenerator:
                     # Reset current test
                     current_property = None
                     current_test = {}
-        
+
         return current_property, current_test
 
     def _generate_property_violations_list(self, property_violations: Dict, data: Dict):
         """
         Generate property violations list from collected violation data
-        
+
         Args:
             property_violations: Dictionary containing property violations
             data: Data dictionary to update with property violations list
@@ -492,3 +516,15 @@ class BugReportGenerator:
                         "postcondition_page": end_step
                     })
                     index += 1
+
+
+if __name__ == "__main__":
+    print("开始生成bug报告...")
+
+    try:
+        b = BugReportGenerator()
+        report_path = b.generate_report("P:/Python/Kea2/output/res_2025062523_2428604348")
+        print(f"✓ bug报告生成成功: {report_path}")
+    except Exception as e:
+        print(f"✗ 生成失败: {e}")
+        print("请检查目录路径是否正确")
