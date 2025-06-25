@@ -2,6 +2,7 @@ import json
 import os
 from pathlib import Path
 import traceback
+import time
 from typing import Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
@@ -110,6 +111,8 @@ class Options:
     packageNames: List[str]
     # target device
     serial: str = None
+    # target device with transport_id
+    transport_id: str = None
     # test agent. "native" for stage 1 and "u2" for stage 1~3
     agent: Literal["u2", "native"] = "u2"
     # max step in exploration (availble in stage 2~3)
@@ -143,8 +146,13 @@ class Options:
     def __post_init__(self):
         import logging
         logging.basicConfig(level=logging.DEBUG if self.debug else logging.INFO)
-        if self.serial and self.Driver:
-            self.Driver.setDeviceSerial(self.serial)
+        if self.Driver:
+            target_device = dict()
+            if self.serial:
+                target_device["serial"] = self.serial
+            if self.transport_id:
+                target_device["transport_id"] = self.transport_id
+            self.Driver.setDevice(target_device)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
@@ -317,10 +325,11 @@ class KeaTestRunner(TextTestRunner):
                 result.flushResult(outfile=RESFILE)
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
-                fb.check_alive(port=self.scriptDriver.lport)
-                self._init()
+                fb.check_alive()
+                
+                fb.init(options=self.options, stamp=STAMP)
 
-                resultSyncer = ResultSyncer(self.device_output_dir, self.options.output_dir)
+                resultSyncer = ResultSyncer(fb.device_output_dir, self.options)
                 resultSyncer.run()
 
                 end_by_remote = False
@@ -335,7 +344,7 @@ class KeaTestRunner(TextTestRunner):
                     )
 
                     try:
-                        xml_raw = self.stepMonkey()
+                        xml_raw = fb.stepMonkey(self._monkeyStepInfo)
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
                     except requests.ConnectionError:
                         logger.info("Connection refused by remote.")
@@ -373,18 +382,18 @@ class KeaTestRunner(TextTestRunner):
                     print("execute property %s." % execPropName, flush=True)
 
                     result.addExcuted(test)
-                    self._logScript(result.lastExecutedInfo)
+                    fb.logScript(result.lastExecutedInfo)
                     try:
                         test(result)
                     finally:
                         result.printErrors()
 
                     result.updateExectedInfo()
-                    self._logScript(result.lastExecutedInfo)
+                    fb.logScript(result.lastExecutedInfo)
                     result.flushResult(outfile=RESFILE)
 
                 if not end_by_remote:
-                    self.stopMonkey()
+                    fb.stopMonkey()
                 result.flushResult(outfile=RESFILE)
                 resultSyncer.close()
                 
@@ -428,40 +437,46 @@ class KeaTestRunner(TextTestRunner):
         self.stream.flush()
         return result
 
-    def stepMonkey(self) -> str:
-        """
-        send a step monkey request to the server and get the xml string.
-        """
+    # def stepMonkey(self) -> str:
+    #     """
+    #     send a step monkey request to the server and get the xml string.
+    #     """
+    #     block_dict = self._getBlockedWidgets()
+    #     block_widgets: List[str] = block_dict['widgets']
+    #     block_trees: List[str] = block_dict['trees']
+    #     URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
+    #     logger.debug(f"Sending request: {URL}")
+    #     logger.debug(f"Blocking widgets: {block_widgets}")
+    #     logger.debug(f"Blocking trees: {block_trees}")
+    #     r = requests.post(
+    #         url=URL,
+    #         json={
+    #             "steps_count": self.stepsCount,
+    #             "block_widgets": block_widgets,
+    #             "block_trees": block_trees
+    #         }
+    #     )
+
+    #     res = json.loads(r.content)
+    #     xml_raw = res["result"]
+    #     return xml_raw
+
+    @property
+    def _monkeyStepInfo(self):
+        r = self._get_block_widgets()
+        r["steps_count"] = self.stepsCount
+        return r
+    
+    def _get_block_widgets(self):
         block_dict = self._getBlockedWidgets()
         block_widgets: List[str] = block_dict['widgets']
         block_trees: List[str] = block_dict['trees']
-        URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
-        logger.debug(f"Sending request: {URL}")
         logger.debug(f"Blocking widgets: {block_widgets}")
         logger.debug(f"Blocking trees: {block_trees}")
-        r = requests.post(
-            url=URL,
-            json={
-                "steps_count": self.stepsCount,
-                "block_widgets": block_widgets,
-                "block_trees": block_trees
-            }
-        )
-
-        res = json.loads(r.content)
-        xml_raw = res["result"]
-        return xml_raw
-
-    def stopMonkey(self) -> str:
-        """
-        send a stop monkey request to the server and get the xml string.
-        """
-        URL = f"http://localhost:{self.scriptDriver.lport}/stopMonkey"
-        logger.debug(f"Sending request: {URL}")
-        r = requests.get(URL)
-
-        res = r.content.decode(encoding="utf-8")
-        print(f"[Server INFO] {res}", flush=True)
+        return {
+            "block_widgets": block_widgets,
+            "block_trees": block_trees
+        }
 
     def getValidProperties(self, xml_raw: str, result: JsonResult) -> PropertyStore:
 
@@ -494,39 +509,12 @@ class KeaTestRunner(TextTestRunner):
                     print(f"{getFullPropName(test)} has reached its max_tries. Skip.", flush=True)
                     continue
                 validProps[propName] = test
-        
+
         print(f"{len(validProps)} precond satisfied.", flush=True)
         if len(validProps) > 0:
             print("[INFO] Valid properties:",flush=True)
             print("\n".join([f'                - {getFullPropName(p)}' for p in validProps.values()]), flush=True)
         return validProps
-
-    def _logScript(self, execution_info:Dict):
-        URL = f"http://localhost:{self.scriptDriver.lport}/logScript"
-        r = requests.post(
-            url=URL,
-            json=execution_info
-        )
-        res = r.content.decode(encoding="utf-8")
-        if res != "OK":
-            print(f"[ERROR] Error when logging script: {execution_info}", flush=True)
-
-    def _init(self):
-        URL = f"http://localhost:{self.scriptDriver.lport}/init"
-        data = {
-            "takeScreenshots": self.options.take_screenshots,
-            "Stamp": STAMP,
-            "deviceOutputRoot": self.options.device_output_root,
-        }
-        print(f"[INFO] Init fastbot: {data}", flush=True)
-        r = requests.post(
-            url=URL,
-            json=data
-        )
-        res = r.content.decode(encoding="utf-8")
-        import re
-        self.device_output_dir = re.match(r"outputDir:(.+)", res).group(1)
-        print(f"[INFO] Fastbot initiated. outputDir: {res}", flush=True)
 
     def collectAllProperties(self, test: TestSuite):
         """collect all the properties to prepare for PBT
@@ -683,17 +671,19 @@ class KeaTestRunner(TextTestRunner):
     def __del__(self):
         """tearDown method. Cleanup the env.
         """
-        try:
-            self.stopMonkey()
-        except Exception as e:
-            pass
-
         if self.options.Driver:
             self.options.Driver.tearDown()
 
         try:
+            start_time = time.time()
             logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
+
+            end_time = time.time()
+            generation_time = end_time - start_time
+
+            logger.info(f"Bug report generation completed in {generation_time:.2f} seconds")
+            
         except Exception as e:
             logger.error(f"Error generating bug report: {e}", flush=True)
