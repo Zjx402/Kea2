@@ -6,7 +6,6 @@ from typing import List, Optional, Set, Tuple
 from kea2.utils import getLogger
 from adbutils import AdbDevice, adb
 from typing import IO, TYPE_CHECKING, Generator, Optional, List, Union
-from adbutils import AdbConnection
 
 logger = getLogger(__name__)
 
@@ -44,20 +43,29 @@ class ADBDevice(AdbDevice):
         super().__init__(client=adb, serial=ADBDevice.serial, transport_id=ADBDevice.transport_id)
 
     @property
-    def stream_shell(self) -> "ADBStreamShell_V2":
+    def stream_shell(self) -> "StreamShell":
         if "shell_v2" in self.get_features():
             return ADBStreamShell_V2(session=self)
         logger.warning("Using ADBStreamShell_V1. All output will be printed to stdout.")
         return ADBStreamShell_V1(session=self)
 
+    def kill_proc(self, proc_name):
+        r = self.shell(f"ps -ef")
+        pids = [l for l in r.splitlines() if proc_name in l]
+        if pids:
+            logger.info(f"{proc_name} running, trying to kill it.")
+            pid = pids[0].split()[1]
+            self.shell(f"kill {pid}")
+
 
 class StreamShell:
     def __init__(self, session: "ADBDevice"):
         self.dev: ADBDevice = session
-        self._thread = None
+        self._thread: threading.Thread = None
         self._exit_code = 255
         self.stdout = sys.stdout
         self.stderr = sys.stderr
+        self._finished = False
 
     def __call__(self, cmdargs: Union[List[str], str], stdout: IO = None, 
                  stderr: IO = None, timeout: Union[float, None] = None) -> "StreamShell":
@@ -107,7 +115,7 @@ class StreamShell:
 class ADBStreamShell_V1(StreamShell):
 
     def __call__(
-        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        self, cmdargs: Union[List[str], str], stdout: IO = None, 
         stderr: IO = None, timeout: Union[float, None] = None
     ) -> "StreamShell":
         return self.shell_v1(cmdargs, stdout, stderr, timeout)
@@ -168,7 +176,7 @@ class ADBStreamShell_V2(StreamShell):
         self._exit_code = 255
 
     def __call__(
-        self, cmdargs: Union[List[str]], stdout: IO = None, 
+        self, cmdargs: Union[List[str], str], stdout: IO = None, 
         stderr: IO = None, timeout: Union[float, None] = None
     ) -> "StreamShell":
         return self.shell_v2(cmdargs, stdout, stderr, timeout)
