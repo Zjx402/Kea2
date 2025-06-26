@@ -9,6 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 from PIL import Image, ImageDraw
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
 from kea2.utils import getLogger
+from time import perf_counter
 
 logger = getLogger(__name__)
 
@@ -44,7 +45,7 @@ class BugReportGenerator:
         if result_dir is not None:
             self._setup_paths(result_dir)
 
-        self.executor = ThreadPoolExecutor(max_workers=32)
+        self.executor = ThreadPoolExecutor(max_workers=128)
 
         # Set up Jinja2 environment
         # First try to load templates from the package
@@ -124,6 +125,8 @@ class BugReportGenerator:
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
             raise
+        finally:
+            self.executor.shutdown()
 
     def _collect_test_data(self):
         """
@@ -519,12 +522,9 @@ class BugReportGenerator:
 
 
 if __name__ == "__main__":
-    print("开始生成bug报告...")
+    print("Generating bug report")
+    OUTPUT_PATH = "<Your output path>"
 
-    try:
-        b = BugReportGenerator()
-        report_path = b.generate_report("P:/Python/Kea2/output/res_2025062523_2428604348")
-        print(f"✓ bug报告生成成功: {report_path}")
-    except Exception as e:
-        print(f"✗ 生成失败: {e}")
-        print("请检查目录路径是否正确")
+    report_generator = BugReportGenerator()
+    report_path = report_generator.generate_report(OUTPUT_PATH)
+    print(f"bug report generated: {report_path}")
