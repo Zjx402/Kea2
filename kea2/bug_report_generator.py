@@ -2,7 +2,7 @@ import json
 import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict
+from typing import Dict, TypedDict, List, Deque, NewType
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
@@ -15,11 +15,53 @@ logger = getLogger(__name__)
 
 
 class StepData(TypedDict):
+    # The type of the action (Monkey / Script / Script Info)
     Type: str
+    # The steps of monkey event when the action happened
+    # ps: since we insert script actions into monkey actions. Total actions count >= Monkey actions count
     MonkeyStepsCount: int
+    # The time stamp of the action
     Time: str
+    # The execution info of the action
     Info: Dict
+    # The screenshot of the action
     Screenshot: str
+
+
+class CovData(TypedDict):
+    stepsCount: int  # The MonkeyStepsCount when profiling the Coverage data
+    coverage: float
+    totalActivitiesCount: int
+    testedActivitiesCount: int
+    totalActivities: List[str]
+    testedActivities: List[str]
+
+
+class ReportData(TypedDict):
+    timestamp: str
+    bugs_found: int
+    executed_events: int
+    total_testing_time: float
+    coverage: float
+    total_activities_count: int
+    tested_activities_count: int
+    total_activities: List
+    tested_activities: List
+    property_violations: List[Dict]
+    property_stats: List
+    screenshot_info: Dict
+    coverage_trend: List
+
+
+class PropertyExecResult(TypedDict):
+    precond_satisfied: int
+    executed: int
+    fail: int
+    error: int
+
+
+PropertyName = NewType("PropertyName", str)
+TestResult = NewType("TestResult", Dict[PropertyName, PropertyExecResult])
 
 
 @dataclass
@@ -34,7 +76,56 @@ class BugReportGenerator:
     """
     Generate HTML format bug reports
     """
+    
+    _cov_trend: Deque[CovData] = None
+    _test_result: TestResult = None
+    _take_screenshots: bool = None
+    _data_path: DataPath = None
 
+    @property
+    def cov_trend(self):
+        if self._cov_trend is not None:
+            return self._cov_trend
+        
+        # Parse coverage data
+        if not self.data_path.coverage_log.exists():
+            logger.error(f"{self.data_path.coverage_log} not exists")
+        
+        cov_trend = list()
+
+        with open(self.data_path.coverage_log, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+                
+                coverage_data = json.loads(line)
+                cov_trend.append(coverage_data)
+        self._cov_trend = cov_trend
+        return self._cov_trend
+
+    @property
+    def take_screenshots(self) -> bool:
+        """Whether the `--take-screenshots` enabled. Should we report the screenshots?
+
+        Returns:
+            bool: Whether the `--take-screenshots` enabled.
+        """
+        if self._take_screenshots is None:
+            self._take_screenshots = self.data_path.screenshots_dir.exists()
+        return self._take_screenshots
+    
+    @property
+    def test_result(self) -> TestResult:
+        if self._test_result is not None:
+            return self._test_result
+        
+        if not self.data_path.result_json.exists():
+            logger.error(f"{self.data_path.result_json} not found")
+        with open(self.data_path.result_json, "r", encoding="utf-8") as f:
+            self._test_result: TestResult = json.load(f)
+        
+        return self._test_result     
+    
     def __init__(self, result_dir=None):
         """
         Initialize the bug report generator
@@ -86,7 +177,6 @@ class BugReportGenerator:
         )
 
         self.screenshots = deque()
-        self.take_screenshots = self._detect_screenshots_setting()
 
     def generate_report(self, result_dir_path=None):
         """
@@ -109,7 +199,7 @@ class BugReportGenerator:
             logger.debug("Starting bug report generation")
 
             # Collect test data
-            test_data = self._collect_test_data()
+            test_data: ReportData = self._collect_test_data()
 
             # Generate HTML report
             html_content = self._generate_html_report(test_data)
@@ -128,17 +218,15 @@ class BugReportGenerator:
         finally:
             self.executor.shutdown()
 
-    def _collect_test_data(self):
+    def _collect_test_data(self) -> ReportData:
         """
         Collect test data, including results, coverage, etc.
         """
-        data = {
+        data: ReportData = {
             "timestamp": self.log_timestamp,
             "bugs_found": 0,
             "executed_events": 0,
             "total_testing_time": 0,
-            "first_bug_time": 0,
-            "first_precondition_time": 0,
             "coverage": 0,
             "total_activities": [],
             "tested_activities": [],
@@ -212,36 +300,25 @@ class BugReportGenerator:
                     except Exception as e:
                         logger.error(f"Error calculating test time: {e}")
 
-        # Parse result file
-        result_json_path = self.data_path.result_json
+        # Calculate bug count directly from result data
+        for property_name, test_result in self.test_result.items():
+            # Check if failed or error
+            if test_result["fail"] > 0 or test_result["error"] > 0:
+                data["bugs_found"] += 1
 
-        if result_json_path.exists():
-            with open(result_json_path, "r", encoding="utf-8") as f:
-                result_data = json.load(f)
-
-            # Calculate bug count directly from result data
-            for property_name, test_result in result_data.items():
-                # Check if failed or error
-                if test_result.get("fail", 0) > 0 or test_result.get("error", 0) > 0:
-                    data["bugs_found"] += 1
-
-            # Store the raw result data for direct use in HTML template
-            data["property_stats"] = result_data
+        # Store the raw result data for direct use in HTML template
+        data["property_stats"] = self.test_result
 
         # Process coverage data
-        cov_trend, last_line = self._get_cov_trend()
-        if cov_trend:
-            data["coverage_trend"] = cov_trend
+        data["coverage_trend"] = self.cov_trend
 
-        if last_line:
-            try:
-                coverage_data = json.loads(last_line)
-                if coverage_data:
-                    data["coverage"] = coverage_data.get("coverage", 0)
-                    data["total_activities"] = coverage_data.get("totalActivities", [])
-                    data["tested_activities"] = coverage_data.get("testedActivities", [])
-            except Exception as e:
-                logger.error(f"Error parsing final coverage data: {e}")
+        if self.cov_trend:
+            final_trend = self.cov_trend[-1]
+            data["coverage"] = final_trend["coverage"]
+            data["total_activities"] = final_trend["totalActivities"]
+            data["tested_activities"] = final_trend["testedActivities"]
+            data["total_activities_count"] = final_trend["totalActivitiesCount"]
+            data["tested_activities_count"] = final_trend["testedActivitiesCount"]
 
         # Generate Property Violations list
         self._generate_property_violations_list(property_violations, data)
@@ -307,37 +384,7 @@ class BugReportGenerator:
             logger.error(f"Error marking screenshot {screenshot_path}: {e}")
             return False
 
-    def _detect_screenshots_setting(self):
-        """
-            Detect if screenshots were enabled during test run.
-            Returns True if screenshots were taken, False otherwise.
-        """
-        return self.data_path.screenshots_dir.exists()
-
-    def _get_cov_trend(self):
-        # Parse coverage data
-        coverage_log_path = self.data_path.coverage_log
-        cov_trend = []
-        last_line = None
-        if coverage_log_path.exists():
-            with open(coverage_log_path, "r", encoding="utf-8") as f:
-                for line in f:
-                    if not line.strip():
-                        continue
-                    try:
-                        coverage_data = json.loads(line)
-                        cov_trend.append({
-                            "steps": coverage_data.get("stepsCount", 0),
-                            "coverage": coverage_data.get("coverage", 0),
-                            "tested_activities_count": coverage_data.get("testedActivitiesCount", 0)
-                        })
-                        last_line = line
-                    except Exception as e:
-                        logger.error(f"Error parsing coverage data: {e}")
-                        continue
-        return cov_trend, last_line
-
-    def _generate_html_report(self, data):
+    def _generate_html_report(self, data: ReportData):
         """
         Generate HTML format bug report
         """
@@ -361,12 +408,10 @@ class BugReportGenerator:
                 'total_testing_time': data["total_testing_time"],
                 'executed_events': data["executed_events"],
                 'coverage_percent': round(data["coverage"], 2),
-                'first_bug_time': data["first_bug_time"],
-                'first_precondition_time': data["first_precondition_time"],
-                'total_activities_count': len(data["total_activities"]),
-                'tested_activities_count': len(data["tested_activities"]),
-                'tested_activities': data["tested_activities"],  # Pass list of tested Activities
-                'total_activities': data["total_activities"],  # Pass list of all Activities
+                'total_activities_count': data["total_activities_count"],
+                'tested_activities_count': data["tested_activities_count"],
+                'tested_activities': data["tested_activities"],
+                'total_activities': data["total_activities"],
                 'items_per_page': 10,  # Items to display per page
                 'screenshots': self.screenshots,
                 'property_violations': data["property_violations"],
@@ -523,7 +568,8 @@ class BugReportGenerator:
 
 if __name__ == "__main__":
     print("Generating bug report")
-    OUTPUT_PATH = "<Your output path>"
+    # OUTPUT_PATH = "<Your output path>"
+    OUTPUT_PATH = "output/res_2025062521_5428748051"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
