@@ -245,6 +245,7 @@ class BugReportGenerator:
         current_property = None
         current_test = {}
         step_index = 0
+        monkey_events_count = 0  # Track monkey events separately
 
         with open(self.data_path.steps_log, "r", encoding="utf-8") as f:
             # Track current test state
@@ -258,6 +259,10 @@ class BugReportGenerator:
                 step_type = step_data.get("Type", "")
                 screenshot = step_data.get("Screenshot", "")
                 info = step_data.get("Info", {})
+
+                # Count Monkey events separately
+                if step_type == "Monkey":
+                    monkey_events_count += 1
 
                 # If screenshots are enabled, mark the screenshot
                 if self.take_screenshots and step_data["Screenshot"]:
@@ -284,12 +289,11 @@ class BugReportGenerator:
                     first_step_time = step_data["Time"]
                 last_step_time = step_data["Time"]
 
-            # Set the monkey events count
-            data["executed_events"] = step_index
+            # Set the monkey events count correctly
+            data["executed_events"] = monkey_events_count
 
             # Calculate test time
             if first_step_time and last_step_time:
-
                 def _get_datetime(raw_datetime) -> datetime:
                     return datetime.strptime(raw_datetime, r"%Y-%m-%d %H:%M:%S.%f")
 
@@ -331,40 +335,24 @@ class BugReportGenerator:
         return step_data
 
     def _mark_screenshot(self, step_data: StepData):
-        step_type = step_data["Type"]
-        screenshot_name = step_data["Screenshot"]
-
-        if step_type == "Monkey":
+        if step_data["Type"] == "Monkey":
             try:
                 act = step_data["Info"].get("act")
                 pos = step_data["Info"].get("pos")
                 if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
-                    screenshot_path = self.data_path.screenshots_dir / screenshot_name
-                    if screenshot_path.exists():
-                        self._mark_screenshot_interaction(step_type, screenshot_path, act, pos)
+                    screenshot_name = step_data["Screenshot"]
+                    if not screenshot_name:
+                        return
+
+                    self._mark_screenshot_interaction(screenshot_name, act, pos)
             except Exception as e:
-                logger.error(f"Error when marking Monkey screenshots: {e}")
+                logger.error(f"Error when marking screenshots: {e}")
 
-        elif step_type == "Script":
-            try:
-                method = step_data["Info"].get("method")
-                pos = step_data["Info"].get("params")
-                if method in ["click", "long_click"]:
-                    screenshot_path = self.data_path.screenshots_dir / screenshot_name
-                    if not screenshot_path.exists():
-                        logger.error(f"Screenshot file {screenshot_path} not exists.")
-
-                    self._mark_screenshot_interaction(step_type, screenshot_path, method, pos)
-            except Exception as e:
-                logger.error(f"Error when marking Script screenshots: {e}")
-
-
-    def _mark_screenshot_interaction(self, step_type, screenshot_path, action_type, position):
+    def _mark_screenshot_interaction(self, screenshot_name: str, action_type: str, position: str):
         """
             Mark interaction on screenshot with colored rectangle
 
             Args:
-                step_type (str): Type of the event
                 screenshot_path (Path): Path to the screenshot file
                 action_type (str): Type of action ('CLICK' or 'LONG_CLICK' or 'SCROLL')
                 position (list): Position coordinates [x1, y1, x2, y2]
@@ -372,46 +360,30 @@ class BugReportGenerator:
             Returns:
                 bool: True if marking was successful, False otherwise
         """
+        screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
+        if not screenshot_path.exists():
+            logger.error(f"Screenshot file {screenshot_path} not exists.")
+
         img = Image.open(screenshot_path).convert("RGB")
         draw = ImageDraw.Draw(img)
 
-        if step_type == "Monkey":
-            x1, y1, x2, y2 = map(int, position)
+        if not isinstance(position, (list, tuple)) or len(position) != 4:
+            logger.warning(f"Invalid position format: {position}. Skip drawing {screenshot_path}.")
+            return
 
-            line_width = 5
+        x1, y1, x2, y2 = map(int, position)
 
-            if action_type == "CLICK":
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
-            elif action_type == "LONG_CLICK":
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
-            elif action_type.startswith("SCROLL"):
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+        line_width = 5
 
-        elif step_type == "Script":
-            # For Script type, position contains the exact coordinates [x, y]
-            if len(position) >= 2:
-                x, y = map(float, position[:2])
-
-                # Create a small rectangle around the click point for marking
-                marker_size = 100  # Size of the marker rectangle
-                x1 = int(x - marker_size // 2)
-                y1 = int(y - marker_size // 2)
-                x2 = int(x + marker_size // 2)
-                y2 = int(y + marker_size // 2)
-
-                line_width = 5
-
-                if action_type == "click":
-                    # Red rectangle for click action
-                    for i in range(line_width):
-                        draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
-                elif action_type == "long_click":
-                    # Blue rectangle for long click action
-                    for i in range(line_width):
-                        draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+        if action_type == "CLICK":
+            for i in range(line_width):
+                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+        elif action_type == "LONG_CLICK":
+            for i in range(line_width):
+                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+        elif action_type.startswith("SCROLL"):
+            for i in range(line_width):
+                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
 
         img.save(screenshot_path)
 
@@ -426,7 +398,8 @@ class BugReportGenerator:
             # Ensure coverage_trend has data
             if not data["coverage_trend"]:
                 logger.warning("No coverage trend data")
-                data["coverage_trend"] = [{"steps": 0, "coverage": 0, "tested_activities_count": 0}]
+                # Use the same field names as in coverage.log file
+                data["coverage_trend"] = [{"stepsCount": 0, "coverage": 0, "testedActivitiesCount": 0}]
 
             # Convert coverage_trend to JSON string, ensuring all data points are included
             coverage_trend_json = json.dumps(data["coverage_trend"])
@@ -493,7 +466,8 @@ class BugReportGenerator:
             caption = f"{prop_name}: {state}" if prop_name else f"{state}"
 
         screenshot_name = step_data["Screenshot"]
-        screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
+        # Use relative path string instead of Path object
+        relative_screenshot_path = f"output_{self.log_timestamp}/screenshots/{screenshot_name}"
 
         data["screenshot_info"][screenshot_name] = {
             "type": step_data["Type"],
@@ -503,10 +477,9 @@ class BugReportGenerator:
 
         self.screenshots.append({
             'id': step_index,
-            'path': screenshot_path,
+            'path': relative_screenshot_path,  # Now using string path
             'caption': f"{step_index}. {caption}"
         })
-
 
     def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str,
                              current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
@@ -586,7 +559,7 @@ class BugReportGenerator:
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062623_4433706314"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062717_1853221914"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)

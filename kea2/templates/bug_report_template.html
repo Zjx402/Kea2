@@ -118,7 +118,7 @@
         }
         
         .table-custom thead {
-            background-color: var(--primary-color);
+            background-color: #495057;
             color: white;
         }
         
@@ -182,7 +182,6 @@
             border-radius: 3px;
         }
         
-        /* 增加板块间距 */
         .section-block {
             margin-bottom: 70px;
         }
@@ -232,7 +231,7 @@
         }
         
         .activity-list {
-            height: 300px; /* 固定高度 */
+            height: 550px;
             overflow-y: auto;
             border-radius: 8px;
             border: 1px solid rgba(0,0,0,0.1);
@@ -240,7 +239,7 @@
             background-color: rgba(255,255,255,0.5);
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) #eee;
-            margin-bottom: 15px; /* 为翻页按钮留出空间 */
+            margin-bottom: 15px;
         }
         
         .activity-list::-webkit-scrollbar {
@@ -260,7 +259,7 @@
         .activities-container {
             display: flex;
             flex-direction: column;
-            height: 400px; /* 容器总高度 */
+            height: 650px;
         }
         
         .pagination-container {
@@ -287,7 +286,6 @@
             transform: translateX(3px);
         }
         
-        /* Tab styling for Activities section */
         .nav-tabs .nav-link {
             color: #666;
             border: 1px solid transparent;
@@ -317,7 +315,6 @@
             background-color: #fafafa;
         }
         
-        /* Sorting controls styling */
         .sorting-controls {
             background-color: #f8f9fa;
             border: 1px solid #e9ecef;
@@ -339,7 +336,51 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
         
-        /* Responsive adjustments */
+        .sort-icon {
+            margin-left: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.4rem;
+            color: #ffffff !important;
+            opacity: 0.6;
+            text-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        
+        .sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .sort-icon.active {
+            opacity: 1;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .sort-icon.asc.active {
+            color: #40e0d0 !important;
+        }
+        
+        .sort-icon.desc.active {
+            color: #ff6b6b !important;
+        }
+        
+        .table-violations thead {
+            background-color: #dc3545 !important;
+            color: white;
+        }
+        
+        .table-violations .sort-icon {
+            color: #ffffff !important;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+        
+        .table-violations .sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.6);
+        }
+        
         @media (max-width: 768px) {
             .stat-value {
                 font-size: 1.5rem;
@@ -576,7 +617,7 @@
         <div class="section-block">
             <h2 class="section-title">Property Violations</h2>
             <div class="table-responsive">
-                <table class="table table-custom">
+                <table class="table table-custom table-violations">
                     <thead>
                         <tr>
                             <th>Index</th>
@@ -625,36 +666,6 @@
         <div class="section-block">
             <h2 class="section-title">Property Checking Statistics</h2>
             
-            <!-- Sorting Controls -->
-            <div class="d-flex justify-content-between align-items-center mb-3 sorting-controls">
-                <div class="d-flex align-items-center gap-3">
-                    <div class="d-flex align-items-center">
-                        <label for="sort-column" class="form-label me-2 mb-0">Sort by:</label>
-                        <select class="form-select form-select-sm" id="sort-column" style="width: auto;">
-                            <option value="index">Index</option>
-                            <option value="property_name">Property Name</option>
-                            <option value="precond_satisfied">Precondition Satisfied</option>
-                            <option value="executed">Executed</option>
-                            <option value="fails">Fails</option>
-                            <option value="errors">Errors</option>
-                        </select>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <label for="sort-order" class="form-label me-2 mb-0">Order:</label>
-                        <select class="form-select form-select-sm" id="sort-order" style="width: auto;">
-                            <option value="asc">Ascending</option>
-                            <option value="desc">Descending</option>
-                        </select>
-                    </div>
-                    <button class="btn btn-sm btn-outline-primary" id="apply-sort">
-                        <i class="bi bi-sort-numeric-down"></i> Apply Sort
-                    </button>
-                </div>
-                <div class="text-muted">
-                    <small>Total: {{ property_stats|length }} properties</small>
-                </div>
-            </div>
-            
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
@@ -663,8 +674,8 @@
                             <th>Property Name</th>
                             <th>Precondition Satisfied</th>
                             <th>Executed</th>
-                            <th>Fails</th>
-                            <th>Errors</th>
+                            <th>Fails <i class="bi bi-arrow-down-up text-muted sort-icon" id="fails-sort" data-column="fails" data-order="none" style="cursor: pointer;"></i></th>
+                            <th>Errors <i class="bi bi-arrow-down-up text-muted sort-icon" id="errors-sort" data-column="errors" data-order="none" style="cursor: pointer;"></i></th>
                         </tr>
                     </thead>
                     <tbody id="property-stats-container">
@@ -725,12 +736,12 @@
             console.log("Coverage data points:", coverageData.length);
 
             coverageData.sort(function(a, b) {
-                return a.steps - b.steps;
+                return a.stepsCount - b.stepsCount;
             });
             
-            var steps = coverageData.map(function(item) { return item.steps; });
+            var steps = coverageData.map(function(item) { return item.stepsCount; });
             var coverages = coverageData.map(function(item) { return item.coverage; });
-            var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
+            var testedActivities = coverageData.map(function(item) { return item.testedActivitiesCount; });
 
             if (steps.length > 0 && steps[0] > 0) {
                 steps.unshift(0);
@@ -891,65 +902,60 @@
             // Initialize sorting for Property Checking Statistics
             initSorting();
             
-            // Sorting function for Property Checking Statistics
+            // Simplified sorting function for Fails and Errors columns
             function initSorting() {
-                const applyButton = document.getElementById('apply-sort');
-                const sortColumn = document.getElementById('sort-column');
-                const sortOrder = document.getElementById('sort-order');
-                const container = document.getElementById('property-stats-container');
+                const sortIcons = document.querySelectorAll('.sort-icon');
                 
-                if (!applyButton || !sortColumn || !sortOrder || !container) return;
-                
-                applyButton.addEventListener('click', function() {
-                    const column = sortColumn.value;
-                    const order = sortOrder.value;
-                    sortTable(column, order);
+                sortIcons.forEach(function(icon) {
+                    icon.addEventListener('click', function() {
+                        const column = this.dataset.column;
+                        const currentOrder = this.dataset.order;
+                        
+                        // Reset all other sort icons
+                        sortIcons.forEach(function(otherIcon) {
+                            if (otherIcon !== icon) {
+                                otherIcon.dataset.order = 'none';
+                                otherIcon.className = 'bi bi-arrow-down-up sort-icon';
+                                otherIcon.style.color = '#6c757d';
+                            }
+                        });
+                        
+                        // Toggle current sort order
+                        let newOrder;
+                        if (currentOrder === 'none' || currentOrder === 'desc') {
+                            newOrder = 'asc';
+                            this.className = 'bi bi-arrow-up sort-icon active asc';
+                            this.style.color = '#28a745';
+                        } else {
+                            newOrder = 'desc';
+                            this.className = 'bi bi-arrow-down sort-icon active desc';
+                            this.style.color = '#dc3545';
+                        }
+                        
+                        this.dataset.order = newOrder;
+                        sortTable(column, newOrder);
+                    });
                 });
                 
                 function sortTable(column, order) {
+                    const container = document.getElementById('property-stats-container');
                     const rows = Array.from(container.getElementsByClassName('property-stat-row'));
                     
                     rows.sort(function(a, b) {
                         let valueA, valueB;
                         
-                        switch(column) {
-                            case 'index':
-                                valueA = parseInt(a.dataset.index);
-                                valueB = parseInt(b.dataset.index);
-                                break;
-                            case 'property_name':
-                                valueA = a.dataset.propertyName.toLowerCase();
-                                valueB = b.dataset.propertyName.toLowerCase();
-                                break;
-                            case 'precond_satisfied':
-                                valueA = parseInt(a.dataset.precondSatisfied);
-                                valueB = parseInt(b.dataset.precondSatisfied);
-                                break;
-                            case 'executed':
-                                valueA = parseInt(a.dataset.executed);
-                                valueB = parseInt(b.dataset.executed);
-                                break;
-                            case 'fails':
-                                valueA = parseInt(a.dataset.fails);
-                                valueB = parseInt(b.dataset.fails);
-                                break;
-                            case 'errors':
-                                valueA = parseInt(a.dataset.errors);
-                                valueB = parseInt(b.dataset.errors);
-                                break;
-                            default:
-                                valueA = parseInt(a.dataset.index);
-                                valueB = parseInt(b.dataset.index);
+                        if (column === 'fails') {
+                            valueA = parseInt(a.dataset.fails);
+                            valueB = parseInt(b.dataset.fails);
+                        } else if (column === 'errors') {
+                            valueA = parseInt(a.dataset.errors);
+                            valueB = parseInt(b.dataset.errors);
                         }
                         
-                        if (typeof valueA === 'string' && typeof valueB === 'string') {
-                            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                        if (order === 'asc') {
+                            return valueA - valueB;
                         } else {
-                            if (order === 'asc') {
-                                return valueA - valueB;
-                            } else {
-                                return valueB - valueA;
-                            }
+                            return valueB - valueA;
                         }
                     });
                     
