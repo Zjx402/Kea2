@@ -9,14 +9,15 @@ import random
 import warnings
 from dataclasses import dataclass, asdict
 import requests
-from .absDriver import AbstractDriver
+from kea2.absDriver import AbstractDriver
 from functools import wraps
-from .bug_report_generator import BugReportGenerator
-from .resultSyncer import ResultSyncer
-from .logWatcher import LogWatcher
-from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject
-from .fastbotManager import FastbotManager
+from kea2.bug_report_generator import BugReportGenerator
+from kea2.resultSyncer import ResultSyncer
+from kea2.logWatcher import LogWatcher
+from kea2.utils import TimeStamp, getProjectRoot, getLogger
+from kea2.u2Driver import StaticU2UiObject
+from kea2.fastbotManager import FastbotManager
+from kea2.adbUtils import ADBDevice
 import uiautomator2 as u2
 import types
 
@@ -153,6 +154,7 @@ class Options:
             if self.transport_id:
                 target_device["transport_id"] = self.transport_id
             self.Driver.setDevice(target_device)
+            ADBDevice.setDevice(self.serial, self.transport_id)
         global LOGFILE, RESFILE, STAMP
         if self.log_stamp:
             illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
@@ -174,12 +176,11 @@ class Options:
         if self.throttle < 0:
             raise ValueError("--throttle should be greater than or equal to 0")
 
-        _check_package_installation(self.serial, self.packageNames)
+        _check_package_installation(self.packageNames)
 
 
-def _check_package_installation(serial, packageNames):
-    from .adbUtils import get_packages
-    installed_packages = get_packages(device=serial)
+def _check_package_installation(packageNames):
+    installed_packages = set(ADBDevice().list_packages())
 
     for package in packageNames:
         if package not in installed_packages:
