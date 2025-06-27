@@ -353,7 +353,7 @@ class BugReportGenerator:
             Mark interaction on screenshot with colored rectangle
 
             Args:
-                screenshot_path (Path): Path to the screenshot file
+                screenshot_name (str): Name of the screenshot file
                 action_type (str): Type of action ('CLICK' or 'LONG_CLICK' or 'SCROLL')
                 position (list): Position coordinates [x1, y1, x2, y2]
 
@@ -444,11 +444,8 @@ class BugReportGenerator:
         Add screenshot information to data structure
 
         Args:
-            screenshot: Screenshot filename
-            step_type: Type of step (Monkey, Script, ScriptInfo)
-            info: Step information dictionary
+            step_data: data for the current step
             step_index: Current step index
-            relative_path: Relative path to screenshots directory
             data: Data dictionary to update
         """
         caption = ""
