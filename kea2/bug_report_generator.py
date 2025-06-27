@@ -251,7 +251,8 @@ class BugReportGenerator:
         return step_data
 
     def _mark_screenshot(self, step_data: StepData):
-        if step_data["Type"] == "Monkey":
+        step_type = step_data["Type"]
+        if step_type == "Monkey":
             try:
                 act = step_data["Info"].get("act")
                 pos = step_data["Info"].get("pos")
@@ -259,15 +260,29 @@ class BugReportGenerator:
                 if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
                     screenshot_path = self.data_path.screenshots_dir / screenshot_name
                     if screenshot_path.exists():
-                        self._mark_screenshot_interaction(screenshot_path, act, pos)
+                        self._mark_screenshot_interaction(step_type, screenshot_path, act, pos)
             except Exception as e:
                 logger.error(f"Error processing Monkey step: {e}")
 
-    def _mark_screenshot_interaction(self, screenshot_path, action_type, position):
+        elif step_type == "Script":
+            try:
+                method = step_data["Info"].get("method")
+                pos = step_data["Info"].get("params")
+                screenshot_name = step_data["Screenshot"]
+                if method in ["click", "long_click"]:
+                    screenshot_path = self.data_path.screenshots_dir / screenshot_name
+                    if screenshot_path.exists():
+                        self._mark_screenshot_interaction(step_type, screenshot_path, method, pos)
+            except Exception as e:
+                logger.error(f"Error processing Script step: {e}")
+
+
+    def _mark_screenshot_interaction(self, step_type, screenshot_path, action_type, position):
         """
             Mark interaction on screenshot with colored rectangle
 
             Args:
+                step_type (str): Type of the event
                 screenshot_path (Path): Path to the screenshot file
                 action_type (str): Type of action ('CLICK' or 'LONG_CLICK' or 'SCROLL')
                 position (list): Position coordinates [x1, y1, x2, y2]
@@ -279,23 +294,43 @@ class BugReportGenerator:
             img = Image.open(screenshot_path).convert("RGB")
             draw = ImageDraw.Draw(img)
 
-            if not isinstance(position, (list, tuple)) or len(position) != 4:
-                logger.warning(f"Invalid position format: {position}")
-                return False
+            if step_type == "Monkey":
+                x1, y1, x2, y2 = map(int, position)
 
-            x1, y1, x2, y2 = map(int, position)
+                line_width = 5
 
-            line_width = 5
+                if action_type == "CLICK":
+                    for i in range(line_width):
+                        draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+                elif action_type == "LONG_CLICK":
+                    for i in range(line_width):
+                        draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+                elif action_type.startswith("SCROLL"):
+                    for i in range(line_width):
+                        draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
 
-            if action_type == "CLICK":
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
-            elif action_type == "LONG_CLICK":
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
-            elif action_type.startswith("SCROLL"):
-                for i in range(line_width):
-                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+            elif step_type == "Script":
+                # For Script type, position contains the exact coordinates [x, y]
+                if len(position) >= 2:
+                    x, y = map(float, position[:2])
+                    
+                    # Create a small rectangle around the click point for marking
+                    marker_size = 100  # Size of the marker rectangle
+                    x1 = int(x - marker_size // 2)
+                    y1 = int(y - marker_size // 2)
+                    x2 = int(x + marker_size // 2)
+                    y2 = int(y + marker_size // 2)
+                    
+                    line_width = 5
+                    
+                    if action_type == "click":
+                        # Red rectangle for click action
+                        for i in range(line_width):
+                            draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+                    elif action_type == "long_click":
+                        # Blue rectangle for long click action
+                        for i in range(line_width):
+                            draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
 
             img.save(screenshot_path)
             return True
@@ -523,7 +558,7 @@ if __name__ == "__main__":
 
     try:
         b = BugReportGenerator()
-        report_path = b.generate_report("P:/Python/Kea2/output/res_2025062523_2428604348")
+        report_path = b.generate_report("P:/Python/Kea2/output/res_2025062623_4433706314")
         print(f"✓ bug报告生成成功: {report_path}")
     except Exception as e:
         print(f"✗ 生成失败: {e}")

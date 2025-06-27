@@ -287,6 +287,58 @@
             transform: translateX(3px);
         }
         
+        /* Tab styling for Activities section */
+        .nav-tabs .nav-link {
+            color: #666;
+            border: 1px solid transparent;
+            border-radius: 6px 6px 0 0;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border-color: rgba(52, 152, 219, 0.2);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: white;
+            border-color: #dee2e6 #dee2e6 #fff;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        /* Sorting controls styling */
+        .sorting-controls {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .sorting-controls .form-select {
+            min-width: 140px;
+        }
+        
+        .sorting-controls .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .sorting-controls .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .stat-value {
@@ -388,21 +440,56 @@
             </div>
         </div>
 
+        <!-- Coverage Trend Chart -->
+        <div class="section-block">
+            <h2 class="section-title">Coverage Trend</h2>
+            <div class="chart-container">
+                <canvas id="coverageChart"></canvas>
+            </div>
+        </div>
+
         <!-- Tested Activities List -->
         <div class="section-block">
             <h2 class="section-title">Activities Coverage</h2>
             
-            <div class="row g-4">
-                <!-- Tested Activities Panel -->
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-warning text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})</span>
-                                <span class="badge bg-light text-dark">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-app"></i> Activities Coverage Overview</span>
+                        <span class="badge bg-light text-dark">Coverage: {{ coverage_percent }}%</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="activitiesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tested-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#tested-activities" type="button" role="tab" 
+                                    aria-controls="tested-activities" aria-selected="true">
+                                <i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="all-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#all-activities" type="button" role="tab" 
+                                    aria-controls="all-activities" aria-selected="false">
+                                <i class="bi bi-app"></i> All Activities ({{ total_activities|length }})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="activitiesTabContent">
+                        <!-- Tested Activities Tab -->
+                        <div class="tab-pane fade show active" id="tested-activities" role="tabpanel" 
+                             aria-labelledby="tested-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-success">
+                                    <i class="bi bi-check-circle-fill"></i> Tested Activities
+                                </h5>
+                                <span class="badge bg-success">{{ tested_activities|length }} / {{ total_activities_count }}</span>
                             </div>
-                        </div>
-                        <div class="card-body">
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if tested_activities|length > 0 %}
@@ -421,28 +508,36 @@
                                     {% endif %}
                                 </div>
                                 <!-- Pagination for Tested Activities -->
-                                <div class="pagination-container d-flex justify-content-center">
+                                <div class="pagination-container d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <label for="tested-page-size" class="form-label me-2 mb-0">Show:</label>
+                                        <select class="form-select form-select-sm" id="tested-page-size" style="width: auto;">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
                                     <nav aria-label="Tested Activities Pagination">
-                                        <ul class="pagination pagination-sm" id="tested-pagination">
+                                        <ul class="pagination pagination-sm mb-0" id="tested-pagination">
                                             <!-- Pagination will be generated by JavaScript -->
                                         </ul>
                                     </nav>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- All Activities Panel -->
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-app"></i> All Activities ({{ total_activities|length }})</span>
-                                <span class="badge bg-light text-dark">Coverage: {{ coverage_percent }}%</span>
+                        
+                        <!-- All Activities Tab -->
+                        <div class="tab-pane fade" id="all-activities" role="tabpanel" 
+                             aria-labelledby="all-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="bi bi-app"></i> All Activities Overview
+                                </h5>
+                                <span class="badge bg-primary">Total: {{ total_activities|length }}</span>
                             </div>
-                        </div>
-                        <div class="card-body">
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if total_activities|length > 0 %}
@@ -465,9 +560,19 @@
                                     {% endif %}
                                 </div>
                                 <!-- Pagination for All Activities -->
-                                <div class="pagination-container d-flex justify-content-center">
+                                <div class="pagination-container d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <label for="all-page-size" class="form-label me-2 mb-0">Show:</label>
+                                        <select class="form-select form-select-sm" id="all-page-size" style="width: auto;">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
                                     <nav aria-label="All Activities Pagination">
-                                        <ul class="pagination pagination-sm" id="all-pagination">
+                                        <ul class="pagination pagination-sm mb-0" id="all-pagination">
                                             <!-- Pagination will be generated by JavaScript -->
                                         </ul>
                                     </nav>
@@ -500,14 +605,6 @@
         </div>
         {% endif %}
 
-        <!-- Coverage Trend Chart -->
-        <div class="section-block">
-            <h2 class="section-title">Coverage Trend</h2>
-            <div class="chart-container">
-                <canvas id="coverageChart"></canvas>
-            </div>
-        </div>
-
         <!-- Property Violations List -->
         {% if take_screenshots %}
         <div class="section-block">
@@ -537,9 +634,19 @@
                 </table>
                 
                 <!-- Pagination for Property Violations -->
-                <div class="d-flex justify-content-center mt-3">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                        <label for="violations-page-size" class="form-label me-2 mb-0">Show:</label>
+                        <select class="form-select form-select-sm" id="violations-page-size" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                     <nav aria-label="Property Violations Pagination">
-                        <ul class="pagination pagination-sm" id="violations-pagination">
+                        <ul class="pagination pagination-sm mb-0" id="violations-pagination">
                             <!-- Pagination will be generated by JavaScript -->
                         </ul>
                     </nav>
@@ -551,6 +658,37 @@
         <!-- Property Checking Statistics -->
         <div class="section-block">
             <h2 class="section-title">Property Checking Statistics</h2>
+            
+            <!-- Sorting Controls -->
+            <div class="d-flex justify-content-between align-items-center mb-3 sorting-controls">
+                <div class="d-flex align-items-center gap-3">
+                    <div class="d-flex align-items-center">
+                        <label for="sort-column" class="form-label me-2 mb-0">Sort by:</label>
+                        <select class="form-select form-select-sm" id="sort-column" style="width: auto;">
+                            <option value="index">Index</option>
+                            <option value="property_name">Property Name</option>
+                            <option value="precond_satisfied">Precondition Satisfied</option>
+                            <option value="executed">Executed</option>
+                            <option value="fails">Fails</option>
+                            <option value="errors">Errors</option>
+                        </select>
+                    </div>
+                    <div class="d-flex align-items-center">
+                        <label for="sort-order" class="form-label me-2 mb-0">Order:</label>
+                        <select class="form-select form-select-sm" id="sort-order" style="width: auto;">
+                            <option value="asc">Ascending</option>
+                            <option value="desc">Descending</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-sm btn-outline-primary" id="apply-sort">
+                        <i class="bi bi-sort-numeric-down"></i> Apply Sort
+                    </button>
+                </div>
+                <div class="text-muted">
+                    <small>Total: {{ property_stats|length }} properties</small>
+                </div>
+            </div>
+            
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
@@ -565,7 +703,13 @@
                     </thead>
                     <tbody id="property-stats-container">
                         {% for property_name, test_result in property_stats.items() %}
-                        <tr class="property-stat-row" data-page="1">
+                        <tr class="property-stat-row" data-page="1" 
+                            data-index="{{ loop.index }}"
+                            data-property-name="{{ property_name }}"
+                            data-precond-satisfied="{{ test_result.precond_satisfied|default(0) }}"
+                            data-executed="{{ test_result.executed|default(0) }}"
+                            data-fails="{{ test_result.fail|default(0) }}"
+                            data-errors="{{ test_result.error|default(0) }}">
                             <td>{{ loop.index }}</td>
                             <td><span class="badge bg-light text-dark badge-custom">{{ property_name }}</span></td>
                             <td>{{ test_result.precond_satisfied|default(0) }}</td>
@@ -578,9 +722,19 @@
                 </table>
                 
                 <!-- Pagination for Property Checking Statistics -->
-                <div class="d-flex justify-content-center mt-3">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                        <label for="stats-page-size" class="form-label me-2 mb-0">Show:</label>
+                        <select class="form-select form-select-sm" id="stats-page-size" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                     <nav aria-label="Property Stats Pagination">
-                        <ul class="pagination pagination-sm" id="stats-pagination">
+                        <ul class="pagination pagination-sm mb-0" id="stats-pagination">
                             <!-- Pagination will be generated by JavaScript -->
                         </ul>
                     </nav>
@@ -761,81 +915,86 @@
             });
             
             // Initialize pagination for Activities lists
-            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', {{ items_per_page }});
-            initPagination('all-activities-container', 'all-activity', 'all-pagination', {{ items_per_page }});
+            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
+            initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');
             
             // Initialize pagination for Property tables
-            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', {{ items_per_page }});
-            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', {{ items_per_page }});
+            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', 'violations-page-size');
+            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
             
-            // Pagination function
-            function initPagination(containerId, itemClass, paginationId, itemsPerPage) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
+            // Initialize sorting for Property Checking Statistics
+            initSorting();
+            
+            // Sorting function for Property Checking Statistics
+            function initSorting() {
+                const applyButton = document.getElementById('apply-sort');
+                const sortColumn = document.getElementById('sort-column');
+                const sortOrder = document.getElementById('sort-order');
+                const container = document.getElementById('property-stats-container');
                 
-                const items = container.getElementsByClassName(itemClass);
-                const totalItems = items.length;
-                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+                if (!applyButton || !sortColumn || !sortOrder || !container) return;
                 
-                // Create pagination
-                const paginationElement = document.getElementById(paginationId);
-                if (!paginationElement) return;
+                applyButton.addEventListener('click', function() {
+                    const column = sortColumn.value;
+                    const order = sortOrder.value;
+                    sortTable(column, order);
+                });
                 
-                // Clear pagination
-                paginationElement.innerHTML = '';
-                
-                // Previous button
-                const prevLi = document.createElement('li');
-                prevLi.className = 'page-item disabled';
-                prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
-                paginationElement.appendChild(prevLi);
-                
-                // Add page numbers
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageLi = document.createElement('li');
-                    pageLi.className = i === 1 ? 'page-item active' : 'page-item';
-                    pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                    pageLi.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
-                    });
-                    paginationElement.appendChild(pageLi);
-                }
-                
-                // Next button
-                const nextLi = document.createElement('li');
-                nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
-                nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
-                paginationElement.appendChild(nextLi);
-                
-                // Initialize page 1
-                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
-                
-                // Add event listeners to prev/next buttons
-                if (paginationElement.firstChild) {
-                    paginationElement.firstChild.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const activePage = paginationElement.querySelector('.active');
-                        if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
-                            const pageNum = parseInt(activePage.textContent) - 1;
-                            if (pageNum >= 1) {
-                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                function sortTable(column, order) {
+                    const rows = Array.from(container.getElementsByClassName('property-stat-row'));
+                    
+                    rows.sort(function(a, b) {
+                        let valueA, valueB;
+                        
+                        switch(column) {
+                            case 'index':
+                                valueA = parseInt(a.dataset.index);
+                                valueB = parseInt(b.dataset.index);
+                                break;
+                            case 'property_name':
+                                valueA = a.dataset.propertyName.toLowerCase();
+                                valueB = b.dataset.propertyName.toLowerCase();
+                                break;
+                            case 'precond_satisfied':
+                                valueA = parseInt(a.dataset.precondSatisfied);
+                                valueB = parseInt(b.dataset.precondSatisfied);
+                                break;
+                            case 'executed':
+                                valueA = parseInt(a.dataset.executed);
+                                valueB = parseInt(b.dataset.executed);
+                                break;
+                            case 'fails':
+                                valueA = parseInt(a.dataset.fails);
+                                valueB = parseInt(b.dataset.fails);
+                                break;
+                            case 'errors':
+                                valueA = parseInt(a.dataset.errors);
+                                valueB = parseInt(b.dataset.errors);
+                                break;
+                            default:
+                                valueA = parseInt(a.dataset.index);
+                                valueB = parseInt(b.dataset.index);
+                        }
+                        
+                        if (typeof valueA === 'string' && typeof valueB === 'string') {
+                            return order === 'asc' ? valueA.localeCompare(valueB) : valueB.localeCompare(valueA);
+                        } else {
+                            if (order === 'asc') {
+                                return valueA - valueB;
+                            } else {
+                                return valueB - valueA;
                             }
                         }
                     });
-                }
-                
-                if (paginationElement.lastChild) {
-                    paginationElement.lastChild.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const activePage = paginationElement.querySelector('.active');
-                        if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
-                            const pageNum = parseInt(activePage.textContent) + 1;
-                            if (pageNum <= totalPages) {
-                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
-                            }
-                        }
+                    
+                    // Clear container and append sorted rows
+                    container.innerHTML = '';
+                    rows.forEach(function(row) {
+                        container.appendChild(row);
                     });
+                    
+                    // Re-initialize pagination after sorting
+                    initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
                 }
             }
             
@@ -882,6 +1041,94 @@
                         items[i].style.display = 'none';
                     }
                 }
+            }
+            
+            // Pagination function
+            function initPagination(containerId, itemClass, paginationId, pageSizeSelectId) {
+                const container = document.getElementById(containerId);
+                const pageSizeSelect = document.getElementById(pageSizeSelectId);
+                if (!container) return;
+                
+                // Get initial page size
+                let itemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
+                
+                // Add event listener for page size changes
+                if (pageSizeSelect) {
+                    pageSizeSelect.addEventListener('change', function() {
+                        itemsPerPage = parseInt(this.value);
+                        renderPagination();
+                        goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                    });
+                }
+                
+                function renderPagination() {
+                    const items = container.getElementsByClassName(itemClass);
+                    const totalItems = items.length;
+                    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+                    
+                    // Create pagination
+                    const paginationElement = document.getElementById(paginationId);
+                    if (!paginationElement) return;
+                    
+                    // Clear pagination
+                    paginationElement.innerHTML = '';
+                    
+                    // Previous button
+                    const prevLi = document.createElement('li');
+                    prevLi.className = 'page-item disabled';
+                    prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                    paginationElement.appendChild(prevLi);
+                    
+                    // Add page numbers
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageLi = document.createElement('li');
+                        pageLi.className = i === 1 ? 'page-item active' : 'page-item';
+                        pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                        pageLi.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
+                        });
+                        paginationElement.appendChild(pageLi);
+                    }
+                    
+                    // Next button
+                    const nextLi = document.createElement('li');
+                    nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
+                    nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                    paginationElement.appendChild(nextLi);
+                    
+                    // Add event listeners to prev/next buttons
+                    if (paginationElement.firstChild) {
+                        paginationElement.firstChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) - 1;
+                                if (pageNum >= 1) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (paginationElement.lastChild) {
+                        paginationElement.lastChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) + 1;
+                                const totalPages = Math.ceil(container.getElementsByClassName(itemClass).length / itemsPerPage);
+                                if (pageNum <= totalPages) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                // Initial render
+                renderPagination();
+                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
             }
             
             // Scroll functionality
