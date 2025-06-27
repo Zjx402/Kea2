@@ -32,7 +32,7 @@ PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 PropertyExecutionInfo = TypedDict(
     "PropertyExecutionInfo",
-    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"]}
+    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"], "tb": str}
 )
 
 STAMP = TimeStamp().getTimeStamp()
@@ -212,6 +212,7 @@ class JsonResult(TextTestResult):
     lastExecutedInfo: PropertyExecutionInfo = {
         "propName": "",
         "state": "",
+        "tb": "",
     }
 
     @classmethod
@@ -232,6 +233,7 @@ class JsonResult(TextTestResult):
         self.lastExecutedInfo = {
             "propName": getFullPropName(test),
             "state": "start",
+            "tb": "",
         }
 
     def addPrecondSatisfied(self, test: TestCase):
@@ -241,11 +243,13 @@ class JsonResult(TextTestResult):
         super().addFailure(test, err)
         self.res[getFullPropName(test)].fail += 1
         self.lastExecutedInfo["state"] = "fail"
+        self.lastExecutedInfo["tb"] = self._exc_info_to_string(err, test)
 
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
         self.lastExecutedInfo["state"] = "error"
+        self.lastExecutedInfo["tb"] = self._exc_info_to_string(err, test)
 
     def updateExectedInfo(self):
         if self.lastExecutedInfo["state"] == "start":
