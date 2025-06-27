@@ -194,6 +194,7 @@ class PropStatistic:
     fail: int = 0
     error: int = 0
 
+
 class PBTTestResult(dict):
     def __getitem__(self, key) -> PropStatistic:
         return super().__getitem__(key)
@@ -206,9 +207,10 @@ def getFullPropName(testCase: TestCase):
         testCase._testMethodName
     ])
 
+
 class JsonResult(TextTestResult):
-    res: PBTTestResult
     
+    res: PBTTestResult
     lastExecutedInfo: PropertyExecutionInfo = {
         "propName": "",
         "state": "",
@@ -440,30 +442,6 @@ class KeaTestRunner(TextTestRunner):
             self.stream.write("\n")
         self.stream.flush()
         return result
-
-    # def stepMonkey(self) -> str:
-    #     """
-    #     send a step monkey request to the server and get the xml string.
-    #     """
-    #     block_dict = self._getBlockedWidgets()
-    #     block_widgets: List[str] = block_dict['widgets']
-    #     block_trees: List[str] = block_dict['trees']
-    #     URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
-    #     logger.debug(f"Sending request: {URL}")
-    #     logger.debug(f"Blocking widgets: {block_widgets}")
-    #     logger.debug(f"Blocking trees: {block_trees}")
-    #     r = requests.post(
-    #         url=URL,
-    #         json={
-    #             "steps_count": self.stepsCount,
-    #             "block_widgets": block_widgets,
-    #             "block_trees": block_trees
-    #         }
-    #     )
-
-    #     res = json.loads(r.content)
-    #     xml_raw = res["result"]
-    #     return xml_raw
 
     @property
     def _monkeyStepInfo(self):
