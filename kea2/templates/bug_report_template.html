@@ -383,7 +383,7 @@
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
+                                <span class="stat-value value-highlight">{{ total_testing_time }}</span>
                                 <span class="stat-label">Total Testing Time</span>
                             </div>
                         </div>
@@ -399,40 +399,6 @@
                                 <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-warning">{{ coverage_percent }}%</span>
                                 <span class="stat-label">Activity Coverage</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Key Statistics -->
-        <div class="row g-4 mb-4">
-            <div class="col-12">
-                <div class="stats-card">
-                    <div class="card-header bg-success text-white">
-                        <i class="bi bi-bar-chart"></i> Coverage Statistics
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>Activity Coverage:</span>
-                                <span class="value-warning">{{ coverage_percent }}%</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" 
-                                     style="width: {{ coverage_percent }}%;" 
-                                     aria-valuenow="{{ coverage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-6 text-center">
-                                <div class="stat-value value-primary">{{ total_activities_count }}</div>
-                                <div class="stat-label">Total Activities</div>
-                            </div>
-                            <div class="col-6 text-center">
-                                <div class="stat-value value-success">{{ tested_activities_count }}</div>
-                                <div class="stat-label">Tested Activities</div>
                             </div>
                         </div>
                     </div>
