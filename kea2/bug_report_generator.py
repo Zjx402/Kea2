@@ -2,11 +2,11 @@ import json
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, List, Deque, NewType
+from typing import Dict, TypedDict, List, Deque, NewType, Union
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFont
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
 from kea2.utils import getLogger
 
@@ -46,6 +46,8 @@ class ReportData(TypedDict):
     tested_activities_count: int
     total_activities: List
     tested_activities: List
+    all_properties_count: int
+    executed_properties_count: int
     property_violations: List[Dict]
     property_stats: List
     screenshot_info: Dict
@@ -229,6 +231,8 @@ class BugReportGenerator:
             "coverage": 0,
             "total_activities": [],
             "tested_activities": [],
+            "all_properties_count": 0,
+            "executed_properties_count": 0,
             "property_violations": [],
             "property_stats": [],
             "screenshot_info": {},  # Store detailed information for each screenshot
@@ -313,6 +317,10 @@ class BugReportGenerator:
         # Store the raw result data for direct use in HTML template
         data["property_stats"] = self.test_result
 
+        # Calculate properties statistics
+        data["all_properties_count"] = len(self.test_result)
+        data["executed_properties_count"] = sum(1 for result in self.test_result.values() if result.get("executed", 0) > 0)
+
         # Process coverage data
         data["coverage_trend"] = self.cov_trend
 
@@ -335,27 +343,37 @@ class BugReportGenerator:
         return step_data
 
     def _mark_screenshot(self, step_data: StepData):
-        if step_data["Type"] == "Monkey":
-            try:
+        try:
+            step_type = step_data["Type"]
+            screenshot_name = step_data["Screenshot"]
+            if not screenshot_name:
+                return
+
+            if step_type == "Monkey":
                 act = step_data["Info"].get("act")
                 pos = step_data["Info"].get("pos")
                 if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
-                    screenshot_name = step_data["Screenshot"]
-                    if not screenshot_name:
-                        return
+                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
 
-                    self._mark_screenshot_interaction(screenshot_name, act, pos)
-            except Exception as e:
-                logger.error(f"Error when marking screenshots: {e}")
+            elif step_type == "Script":
+                act = step_data["Info"].get("method")
+                pos = step_data["Info"].get("params")
+                if act in ["click", "setText", "swipe"]:
+                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
 
-    def _mark_screenshot_interaction(self, screenshot_name: str, action_type: str, position: str):
+        except Exception as e:
+            logger.error(f"Error when marking screenshots: {e}")
+
+
+    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
         """
             Mark interaction on screenshot with colored rectangle
 
             Args:
+                step_type (str): Type of the step (Monkey or Script)
                 screenshot_name (str): Name of the screenshot file
-                action_type (str): Type of action ('CLICK' or 'LONG_CLICK' or 'SCROLL')
-                position (list): Position coordinates [x1, y1, x2, y2]
+                action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
+                position: Position coordinates or parameters (format varies by action type)
 
             Returns:
                 bool: True if marking was successful, False otherwise
@@ -363,29 +381,73 @@ class BugReportGenerator:
         screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
         if not screenshot_path.exists():
             logger.error(f"Screenshot file {screenshot_path} not exists.")
+            return False
 
         img = Image.open(screenshot_path).convert("RGB")
         draw = ImageDraw.Draw(img)
-
-        if not isinstance(position, (list, tuple)) or len(position) != 4:
-            logger.warning(f"Invalid position format: {position}. Skip drawing {screenshot_path}.")
-            return
-
-        x1, y1, x2, y2 = map(int, position)
-
         line_width = 5
 
-        if action_type == "CLICK":
-            for i in range(line_width):
-                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
-        elif action_type == "LONG_CLICK":
-            for i in range(line_width):
-                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
-        elif action_type.startswith("SCROLL"):
-            for i in range(line_width):
-                draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+        if step_type == "Monkey":
+            if len(position) < 4:
+                logger.warning(f"Monkey action requires 4 coordinates, got {len(position)}. Skip drawing.")
+                return False
+
+            x1, y1, x2, y2 = map(int, position[:4])
+
+            if action_type == "CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+            elif action_type == "LONG_CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+            elif action_type.startswith("SCROLL"):
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+
+        elif step_type == "Script":
+            if action_type == "click":
+
+                if len(position) < 2:
+                    logger.warning(f"Script click action requires 2 coordinates, got {len(position)}. Skip drawing.")
+                    return False
+                
+                x, y = map(float, position[:2])
+                x1, y1, x2, y2 = x - 50, y - 50, x + 50, y + 50
+
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+                    
+            elif action_type == "swipe":
+
+                if len(position) < 4:
+                    logger.warning(f"Script swipe action requires 4 coordinates, got {len(position)}. Skip drawing.")
+                    return False
+                
+                x1, y1, x2, y2 = map(float, position[:4])
+                
+                # mark start and end positions with rectangles
+                start_x1, start_y1, start_x2, start_y2 = x1 - 50, y1 - 50, x1 + 50, y1 + 50
+                for i in range(line_width):
+                    draw.rectangle([start_x1 - i, start_y1 - i, start_x2 + i, start_y2 + i], outline=(255, 0, 0))
+
+                end_x1, end_y1, end_x2, end_y2 = x2 - 50, y2 - 50, x2 + 50, y2 + 50
+                for i in range(line_width):
+                    draw.rectangle([end_x1 - i, end_y1 - i, end_x2 + i, end_y2 + i], outline=(255, 0, 0))
+                
+                # draw line between start and end positions
+                draw.line([(x1, y1), (x2, y2)], fill=(255, 0, 0), width=line_width)
+                
+                # add text labels for start and end positions
+                font = ImageFont.truetype("arial.ttf", 80)
+                    
+                # draw "start" at start position
+                draw.text((x1 - 20, y1 - 70), "start", fill=(255, 0, 0), font=font)
+                    
+                # draw "end" at end position
+                draw.text((x2 - 15, y2 - 70), "end", fill=(255, 0, 0), font=font)
 
         img.save(screenshot_path)
+        return True
 
     def _generate_html_report(self, data: ReportData):
         """
@@ -416,6 +478,8 @@ class BugReportGenerator:
                 'tested_activities_count': data["tested_activities_count"],
                 'tested_activities': data["tested_activities"],
                 'total_activities': data["total_activities"],
+                'all_properties_count': data["all_properties_count"],
+                'executed_properties_count': data["executed_properties_count"],
                 'items_per_page': 10,  # Items to display per page
                 'screenshots': self.screenshots,
                 'property_violations': data["property_violations"],
@@ -556,7 +620,7 @@ class BugReportGenerator:
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062717_1853221914"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062723_3025834900"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
