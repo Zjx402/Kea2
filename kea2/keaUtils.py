@@ -1,9 +1,10 @@
+from collections import deque
 import json
 import os
 from pathlib import Path
 import traceback
 import time
-from typing import Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
+from typing import Callable, Any, Deque, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -30,10 +31,7 @@ logger = getLogger(__name__)
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
-PropertyExecutionInfo = TypedDict(
-    "PropertyExecutionInfo",
-    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"], "tb": str}
-)
+
 
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
@@ -195,6 +193,15 @@ class PropStatistic:
     error: int = 0
 
 
+PropertyExecutionInfoStore = NewType("PropertyExecutionInfoStore", Deque["PropertyExecutionInfo"])
+@dataclass
+class PropertyExecutionInfo:
+    propName: PropName
+    state: Literal["start", "pass", "fail", "error"]
+    tb: str
+    startStepsCount: int
+
+
 class PBTTestResult(dict):
     def __getitem__(self, key) -> PropStatistic:
         return super().__getitem__(key)
@@ -211,11 +218,8 @@ def getFullPropName(testCase: TestCase):
 class JsonResult(TextTestResult):
     
     res: PBTTestResult
-    lastExecutedInfo: PropertyExecutionInfo = {
-        "propName": "",
-        "state": "",
-        "tb": "",
-    }
+    lastExecutedInfo: PropertyExecutionInfo
+    executionInfoStore: PropertyExecutionInfoStore = deque()
 
     @classmethod
     def setProperties(cls, allProperties: Dict):
@@ -229,14 +233,21 @@ class JsonResult(TextTestResult):
             json_res[propName] = asdict(propStatitic)
         with open(outfile, "w", encoding="utf-8") as fp:
             json.dump(json_res, fp, indent=4)
+        
+        while self.executionInfoStore:
+            execInfo = self.executionInfoStore.popleft()
+            with open("outfile.json", "a", encoding="utf-8") as fp:
+                fp.write(f"{json.dumps(asdict(execInfo))}\n")
 
-    def addExcuted(self, test: TestCase):
+    def addExcuted(self, test: TestCase, stepsCount: int):
         self.res[getFullPropName(test)].executed += 1
-        self.lastExecutedInfo = {
-            "propName": getFullPropName(test),
-            "state": "start",
-            "tb": "",
-        }
+
+        self.lastExecutedInfo = PropertyExecutionInfo(
+            propName=getFullPropName(test),
+            state="start",
+            tb="",
+            startStepsCount=stepsCount
+        )
 
     def addPrecondSatisfied(self, test: TestCase):
         self.res[getFullPropName(test)].precond_satisfied += 1
@@ -244,18 +255,21 @@ class JsonResult(TextTestResult):
     def addFailure(self, test, err):
         super().addFailure(test, err)
         self.res[getFullPropName(test)].fail += 1
-        self.lastExecutedInfo["state"] = "fail"
-        self.lastExecutedInfo["tb"] = self._exc_info_to_string(err, test)
+        self.lastExecutedInfo.state = "fail"
+        self.lastExecutedInfo.tb = self._exc_info_to_string(err, test)
 
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
-        self.lastExecutedInfo["state"] = "error"
-        self.lastExecutedInfo["tb"] = self._exc_info_to_string(err, test)
+        self.lastExecutedInfo.state = "error"
+        self.lastExecutedInfo.tb = self._exc_info_to_string(err, test)
 
     def updateExectedInfo(self):
-        if self.lastExecutedInfo["state"] == "start":
-            self.lastExecutedInfo["state"] = "pass"
+        if self.lastExecutedInfo.state == "start":
+            self.lastExecutedInfo.state = "pass"
+
+        self.executionInfoStore.append(self.lastExecutedInfo)
+        
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
@@ -387,7 +401,7 @@ class KeaTestRunner(TextTestRunner):
                     setattr(test, self.options.driverName, self.scriptDriver)
                     print("execute property %s." % execPropName, flush=True)
 
-                    result.addExcuted(test)
+                    result.addExcuted(test, self.stepsCount)
                     fb.logScript(result.lastExecutedInfo)
                     try:
                         test(result)
