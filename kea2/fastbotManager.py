@@ -152,7 +152,7 @@ class FastbotManager:
             method="POST",
             path="/logScript",
             data={
-                "PropName": execution_info.propName,
+                "propName": execution_info.propName,
                 "startStepsCount": execution_info.startStepsCount,
                 "state": execution_info.state,
             }
