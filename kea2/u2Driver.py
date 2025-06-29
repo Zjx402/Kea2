@@ -381,7 +381,8 @@ class U2Driver(AbstractDriver):
 
     @classmethod
     def tearDown(self):
-        self.scriptDriver.tearDown()
+        if self.scriptDriver:
+            self.scriptDriver.tearDown()
 
 
 """

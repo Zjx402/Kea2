@@ -13,7 +13,7 @@ from kea2.utils import getLogger
 
 from typing import IO, TYPE_CHECKING, Dict
 if TYPE_CHECKING:
-    from .keaUtils import Options
+    from .keaUtils import Options, PropertyExecutionInfo
 
 
 logger = getLogger(__name__)
@@ -147,11 +147,15 @@ class FastbotManager:
         print(f"[Server INFO] {r.text}", flush=True)
     
     @retry(Exception, tries=2, delay=2)
-    def logScript(self, execution_info: Dict):
+    def logScript(self, execution_info: "PropertyExecutionInfo"):
         r = self.request(
             method="POST",
             path="/logScript",
-            data=execution_info
+            data={
+                "propName": execution_info.propName,
+                "startStepsCount": execution_info.startStepsCount,
+                "state": execution_info.state,
+            }
         )
         res = r.text
         if res != "OK":
