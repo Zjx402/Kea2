@@ -215,7 +215,6 @@ class BugReportGenerator:
 
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
-            raise
         finally:
             self.executor.shutdown()
 
