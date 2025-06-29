@@ -13,7 +13,7 @@ from kea2.utils import getLogger
 
 from typing import IO, TYPE_CHECKING, Dict
 if TYPE_CHECKING:
-    from .keaUtils import Options
+    from .keaUtils import Options, PropertyExecutionInfo
 
 
 logger = getLogger(__name__)
@@ -69,6 +69,21 @@ class FastbotManager:
             Path.joinpath(cur_dir, "assets/fastbot_libs/x86_64/libfastbot_native.so"),
             "/data/local/tmp/x86_64/libfastbot_native.so",
         )
+
+        whitelist = self.options.act_whitelist_file
+        blacklist = self.options.act_blacklist_file
+        if bool(whitelist) ^ bool(blacklist):
+            if whitelist:
+                file_to_push = cur_dir.parent / 'configs' / 'awl.strings'
+                remote_path = whitelist
+            else:
+                file_to_push = cur_dir.parent / 'configs' / 'abl.strings'
+                remote_path = blacklist
+
+            self.dev.sync.push(
+                file_to_push,
+                remote_path
+            )
 
         t = self._startFastbotService()
         logger.info("Running Fastbot...")
@@ -132,11 +147,15 @@ class FastbotManager:
         print(f"[Server INFO] {r.text}", flush=True)
     
     @retry(Exception, tries=2, delay=2)
-    def logScript(self, execution_info: Dict):
+    def logScript(self, execution_info: "PropertyExecutionInfo"):
         r = self.request(
             method="POST",
             path="/logScript",
-            data=execution_info
+            data={
+                "propName": execution_info.propName,
+                "startStepsCount": execution_info.startStepsCount,
+                "state": execution_info.state,
+            }
         )
         res = r.text
         if res != "OK":
@@ -166,6 +185,14 @@ class FastbotManager:
 
         if self.options.profile_period:
             shell_command += ["--profile-period", f"{self.options.profile_period}"]
+
+        whitelist = self.options.act_whitelist_file
+        blacklist = self.options.act_blacklist_file
+        if bool(whitelist) ^ bool(blacklist):
+            if whitelist:
+                shell_command += ["--act-whitelist-file", f"{whitelist}"]
+            else:
+                shell_command += ["--act-blacklist-file", f"{blacklist}"]
 
         shell_command += ["-v", "-v", "-v"]
 

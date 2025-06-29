@@ -1,16 +1,22 @@
 import unittest
-from kea2.u2Driver import _HindenWidgetFilter, U2Driver
+from kea2.u2Driver import U2StaticChecker, U2StaticDevice
 from lxml import etree
 from pathlib import Path
+
 
 
 XML_PATH = Path(__file__).parent / "hidden_widget_test.xml"
 
 
+class U2StaticCheckerForTest(U2StaticChecker):
+    def __init__(self):
+        self.d = U2StaticDevice(script_driver=None)
+
+
 def get_static_checker():
     xml: etree._ElementTree = etree.parse(XML_PATH)
-    d = U2Driver.getStaticChecker(xml)
-    return d
+    d = U2StaticCheckerForTest()
+    return d.getInstance(xml)
 
 
 class TestHiddenWidget(unittest.TestCase):

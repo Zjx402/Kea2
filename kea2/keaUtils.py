@@ -1,22 +1,24 @@
+from collections import deque
 import json
 import os
 from pathlib import Path
 import traceback
 import time
-from typing import Callable, Any, Dict, List, Literal, NewType, TypedDict, Union
+from typing import Callable, Any, Deque, Dict, List, Literal, NewType, TypedDict, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
 from dataclasses import dataclass, asdict
 import requests
-from .absDriver import AbstractDriver
+from kea2.absDriver import AbstractDriver
 from functools import wraps
-from .bug_report_generator import BugReportGenerator
-from .resultSyncer import ResultSyncer
-from .logWatcher import LogWatcher
-from .utils import TimeStamp, getProjectRoot, getLogger
-from .u2Driver import StaticU2UiObject
-from .fastbotManager import FastbotManager
+from kea2.bug_report_generator import BugReportGenerator
+from kea2.resultSyncer import ResultSyncer
+from kea2.logWatcher import LogWatcher
+from kea2.utils import TimeStamp, getProjectRoot, getLogger
+from kea2.u2Driver import StaticU2UiObject
+from kea2.fastbotManager import FastbotManager
+from kea2.adbUtils import ADBDevice
 import uiautomator2 as u2
 import types
 
@@ -30,14 +32,12 @@ logger = getLogger(__name__)
 # Class Typing
 PropName = NewType("PropName", str)
 PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
-PropertyExecutionInfo = TypedDict(
-    "PropertyExecutionInfo",
-    {"propName": PropName, "state": Literal["start", "pass", "fail", "error"]}
-)
+
 
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
 RESFILE: str
+PROP_EXEC_RESFILE: str
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -133,6 +133,10 @@ class Options:
     device_output_root: str = "/sdcard"
     # the debug mode
     debug: bool = False
+    # Activity WhiteList File
+    act_whitelist_file: str = None
+    # Activity BlackList File
+    act_blacklist_file: str = None
 
     def __setattr__(self, name, value):
         if value is None:
@@ -142,6 +146,7 @@ class Options:
     def __post_init__(self):
         import logging
         logging.basicConfig(level=logging.DEBUG if self.debug else logging.INFO)
+        
         if self.Driver:
             target_device = dict()
             if self.serial:
@@ -149,7 +154,9 @@ class Options:
             if self.transport_id:
                 target_device["transport_id"] = self.transport_id
             self.Driver.setDevice(target_device)
-        global LOGFILE, RESFILE, STAMP
+            ADBDevice.setDevice(self.serial, self.transport_id)
+            
+        global LOGFILE, RESFILE, PROP_EXEC_RESFILE, STAMP
         if self.log_stamp:
             illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
             for char in illegal_chars:
@@ -158,9 +165,11 @@ class Options:
                         f"char: `{char}` is illegal in --log-stamp. current stamp: {self.log_stamp}"
                     )
             STAMP = self.log_stamp
+            
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
         RESFILE = f"result_{STAMP}.json"
+        PROP_EXEC_RESFILE = f"property_exec_info_{STAMP}.json"
 
         self.profile_period = int(self.profile_period)
         if self.profile_period < 1:
@@ -170,12 +179,11 @@ class Options:
         if self.throttle < 0:
             raise ValueError("--throttle should be greater than or equal to 0")
 
-        _check_package_installation(self.serial, self.packageNames)
+        _check_package_installation(self.packageNames)
 
 
-def _check_package_installation(serial, packageNames):
-    from .adbUtils import get_packages
-    installed_packages = get_packages(device=serial)
+def _check_package_installation(packageNames):
+    installed_packages = set(ADBDevice().list_packages())
 
     for package in packageNames:
         if package not in installed_packages:
@@ -190,6 +198,16 @@ class PropStatistic:
     fail: int = 0
     error: int = 0
 
+
+PropertyExecutionInfoStore = NewType("PropertyExecutionInfoStore", Deque["PropertyExecutionInfo"])
+@dataclass
+class PropertyExecutionInfo:
+    startStepsCount: int
+    propName: PropName
+    state: Literal["start", "pass", "fail", "error"]
+    tb: str
+
+
 class PBTTestResult(dict):
     def __getitem__(self, key) -> PropStatistic:
         return super().__getitem__(key)
@@ -202,13 +220,12 @@ def getFullPropName(testCase: TestCase):
         testCase._testMethodName
     ])
 
+
 class JsonResult(TextTestResult):
-    res: PBTTestResult
     
-    lastExecutedInfo: PropertyExecutionInfo = {
-        "propName": "",
-        "state": "",
-    }
+    res: PBTTestResult
+    lastExecutedInfo: PropertyExecutionInfo
+    executionInfoStore: PropertyExecutionInfoStore = deque()
 
     @classmethod
     def setProperties(cls, allProperties: Dict):
@@ -216,19 +233,28 @@ class JsonResult(TextTestResult):
         for testCase in allProperties.values():
             cls.res[getFullPropName(testCase)] = PropStatistic()
 
-    def flushResult(self, outfile):
+    def flushResult(self):
+        global RESFILE, PROP_EXEC_RESFILE
         json_res = dict()
         for propName, propStatitic in self.res.items():
             json_res[propName] = asdict(propStatitic)
-        with open(outfile, "w", encoding="utf-8") as fp:
+        with open(RESFILE, "w", encoding="utf-8") as fp:
             json.dump(json_res, fp, indent=4)
 
-    def addExcuted(self, test: TestCase):
+        while self.executionInfoStore:
+            execInfo = self.executionInfoStore.popleft()
+            with open(PROP_EXEC_RESFILE, "a", encoding="utf-8") as fp:
+                fp.write(f"{json.dumps(asdict(execInfo))}\n")
+
+    def addExcuted(self, test: TestCase, stepsCount: int):
         self.res[getFullPropName(test)].executed += 1
-        self.lastExecutedInfo = {
-            "propName": getFullPropName(test),
-            "state": "start",
-        }
+
+        self.lastExecutedInfo = PropertyExecutionInfo(
+            propName=getFullPropName(test),
+            state="start",
+            tb="",
+            startStepsCount=stepsCount
+        )
 
     def addPrecondSatisfied(self, test: TestCase):
         self.res[getFullPropName(test)].precond_satisfied += 1
@@ -236,16 +262,21 @@ class JsonResult(TextTestResult):
     def addFailure(self, test, err):
         super().addFailure(test, err)
         self.res[getFullPropName(test)].fail += 1
-        self.lastExecutedInfo["state"] = "fail"
+        self.lastExecutedInfo.state = "fail"
+        self.lastExecutedInfo.tb = self._exc_info_to_string(err, test)
 
     def addError(self, test, err):
         super().addError(test, err)
         self.res[getFullPropName(test)].error += 1
-        self.lastExecutedInfo["state"] = "error"
+        self.lastExecutedInfo.state = "error"
+        self.lastExecutedInfo.tb = self._exc_info_to_string(err, test)
 
     def updateExectedInfo(self):
-        if self.lastExecutedInfo["state"] == "start":
-            self.lastExecutedInfo["state"] = "pass"
+        if self.lastExecutedInfo.state == "start":
+            self.lastExecutedInfo.state = "pass"
+
+        self.executionInfoStore.append(self.lastExecutedInfo)
+        
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
@@ -270,11 +301,13 @@ class KeaTestRunner(TextTestRunner):
     def _setOuputDir(self):
         output_dir = Path(self.options.output_dir).absolute()
         output_dir.mkdir(parents=True, exist_ok=True)
-        global LOGFILE, RESFILE
+        global LOGFILE, RESFILE, PROP_EXEC_RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)
+        PROP_EXEC_RESFILE = output_dir / Path(PROP_EXEC_RESFILE)
         logger.info(f"Log file: {LOGFILE}")
         logger.info(f"Result file: {RESFILE}")
+        logger.info(f"Property execution info file: {PROP_EXEC_RESFILE}")
 
     def run(self, test):
 
@@ -318,7 +351,7 @@ class KeaTestRunner(TextTestRunner):
             
             if self.options.agent == "u2":
                 # initialize the result.json file
-                result.flushResult(outfile=RESFILE)
+                result.flushResult()
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 fb.check_alive()
@@ -377,7 +410,7 @@ class KeaTestRunner(TextTestRunner):
                     setattr(test, self.options.driverName, self.scriptDriver)
                     print("execute property %s." % execPropName, flush=True)
 
-                    result.addExcuted(test)
+                    result.addExcuted(test, self.stepsCount)
                     fb.logScript(result.lastExecutedInfo)
                     try:
                         test(result)
@@ -386,11 +419,11 @@ class KeaTestRunner(TextTestRunner):
 
                     result.updateExectedInfo()
                     fb.logScript(result.lastExecutedInfo)
-                    result.flushResult(outfile=RESFILE)
+                    result.flushResult()
 
                 if not end_by_remote:
                     fb.stopMonkey()
-                result.flushResult(outfile=RESFILE)
+                result.flushResult()
                 resultSyncer.close()
                 
             fb.join()
@@ -432,30 +465,6 @@ class KeaTestRunner(TextTestRunner):
             self.stream.write("\n")
         self.stream.flush()
         return result
-
-    # def stepMonkey(self) -> str:
-    #     """
-    #     send a step monkey request to the server and get the xml string.
-    #     """
-    #     block_dict = self._getBlockedWidgets()
-    #     block_widgets: List[str] = block_dict['widgets']
-    #     block_trees: List[str] = block_dict['trees']
-    #     URL = f"http://localhost:{self.scriptDriver.lport}/stepMonkey"
-    #     logger.debug(f"Sending request: {URL}")
-    #     logger.debug(f"Blocking widgets: {block_widgets}")
-    #     logger.debug(f"Blocking trees: {block_trees}")
-    #     r = requests.post(
-    #         url=URL,
-    #         json={
-    #             "steps_count": self.stepsCount,
-    #             "block_widgets": block_widgets,
-    #             "block_trees": block_trees
-    #         }
-    #     )
-
-    #     res = json.loads(r.content)
-    #     xml_raw = res["result"]
-    #     return xml_raw
 
     @property
     def _monkeyStepInfo(self):

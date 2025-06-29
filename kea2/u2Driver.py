@@ -285,13 +285,14 @@ class _HindenWidgetFilter:
 
 
 class U2StaticDevice(u2.Device):
-    def __init__(self, script_driver):
+    def __init__(self, script_driver=None):
         self.xml: etree._Element = None
         self._script_driver = script_driver
 
     def __call__(self, **kwargs):
         ui = StaticU2UiObject(session=self, selector=u2.Selector(**kwargs))
-        ui.jsonrpc = self._script_driver.jsonrpc
+        if self._script_driver:
+            ui.jsonrpc = self._script_driver.jsonrpc
         return ui
 
     @property
@@ -380,7 +381,8 @@ class U2Driver(AbstractDriver):
 
     @classmethod
     def tearDown(self):
-        self.scriptDriver.tearDown()
+        if self.scriptDriver:
+            self.scriptDriver.tearDown()
 
 
 """
