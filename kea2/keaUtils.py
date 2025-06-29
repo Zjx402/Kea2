@@ -36,6 +36,7 @@ PropertyStore = NewType("PropertyStore", Dict[PropName, TestCase])
 STAMP = TimeStamp().getTimeStamp()
 LOGFILE: str
 RESFILE: str
+PROP_EXEC_RESFILE: str
 
 def precondition(precond: Callable[[Any], bool]) -> Callable:
     """the decorator @precondition
@@ -151,7 +152,7 @@ class Options:
             if self.transport_id:
                 target_device["transport_id"] = self.transport_id
             self.Driver.setDevice(target_device)
-        global LOGFILE, RESFILE, STAMP
+        global LOGFILE, RESFILE, PROP_EXEC_RESFILE, STAMP
         if self.log_stamp:
             illegal_chars = ['/', '\\', ':', '*', '?', '"', '<', '>', '|', '\n', '\r', '\t', '\0']
             for char in illegal_chars:
@@ -163,6 +164,7 @@ class Options:
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"
         RESFILE = f"result_{STAMP}.json"
+        PROP_EXEC_RESFILE = f"property_exec_info_{STAMP}.json"
 
         self.profile_period = int(self.profile_period)
         if self.profile_period < 1:
@@ -196,10 +198,10 @@ class PropStatistic:
 PropertyExecutionInfoStore = NewType("PropertyExecutionInfoStore", Deque["PropertyExecutionInfo"])
 @dataclass
 class PropertyExecutionInfo:
+    startStepsCount: int
     propName: PropName
     state: Literal["start", "pass", "fail", "error"]
     tb: str
-    startStepsCount: int
 
 
 class PBTTestResult(dict):
@@ -227,16 +229,17 @@ class JsonResult(TextTestResult):
         for testCase in allProperties.values():
             cls.res[getFullPropName(testCase)] = PropStatistic()
 
-    def flushResult(self, outfile):
+    def flushResult(self):
+        global RESFILE, PROP_EXEC_RESFILE
         json_res = dict()
         for propName, propStatitic in self.res.items():
             json_res[propName] = asdict(propStatitic)
-        with open(outfile, "w", encoding="utf-8") as fp:
+        with open(RESFILE, "w", encoding="utf-8") as fp:
             json.dump(json_res, fp, indent=4)
-        
+
         while self.executionInfoStore:
             execInfo = self.executionInfoStore.popleft()
-            with open("outfile.json", "a", encoding="utf-8") as fp:
+            with open(PROP_EXEC_RESFILE, "a", encoding="utf-8") as fp:
                 fp.write(f"{json.dumps(asdict(execInfo))}\n")
 
     def addExcuted(self, test: TestCase, stepsCount: int):
@@ -294,11 +297,13 @@ class KeaTestRunner(TextTestRunner):
     def _setOuputDir(self):
         output_dir = Path(self.options.output_dir).absolute()
         output_dir.mkdir(parents=True, exist_ok=True)
-        global LOGFILE, RESFILE
+        global LOGFILE, RESFILE, PROP_EXEC_RESFILE
         LOGFILE = output_dir / Path(LOGFILE)
         RESFILE = output_dir / Path(RESFILE)
+        PROP_EXEC_RESFILE = output_dir / Path(PROP_EXEC_RESFILE)
         logger.info(f"Log file: {LOGFILE}")
         logger.info(f"Result file: {RESFILE}")
+        logger.info(f"Property execution info file: {PROP_EXEC_RESFILE}")
 
     def run(self, test):
 
@@ -342,7 +347,7 @@ class KeaTestRunner(TextTestRunner):
             
             if self.options.agent == "u2":
                 # initialize the result.json file
-                result.flushResult(outfile=RESFILE)
+                result.flushResult()
                 # setUp for the u2 driver
                 self.scriptDriver = self.options.Driver.getScriptDriver()
                 fb.check_alive()
@@ -410,11 +415,11 @@ class KeaTestRunner(TextTestRunner):
 
                     result.updateExectedInfo()
                     fb.logScript(result.lastExecutedInfo)
-                    result.flushResult(outfile=RESFILE)
+                    result.flushResult()
 
                 if not end_by_remote:
                     fb.stopMonkey()
-                result.flushResult(outfile=RESFILE)
+                result.flushResult()
                 resultSyncer.close()
                 
             fb.join()
