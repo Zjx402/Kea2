@@ -50,6 +50,7 @@ class ReportData(TypedDict):
     executed_properties_count: int
     property_violations: List[Dict]
     property_stats: List
+    property_error_details: Dict[str, List[Dict]]  # Support multiple errors per property
     screenshot_info: Dict
     coverage_trend: List
 
@@ -71,6 +72,7 @@ class DataPath:
     result_json: Path
     coverage_log: Path
     screenshots_dir: Path
+    property_exec_info: Path
 
 
 class BugReportGenerator:
@@ -174,7 +176,8 @@ class BugReportGenerator:
             steps_log=self.result_dir / f"output_{self.log_timestamp}" / "steps.log",
             result_json=self.result_dir / f"result_{self.log_timestamp}.json",
             coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
-            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
+            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots",
+            property_exec_info=self.result_dir / f"property_exec_info_{self.log_timestamp}.json"
         )
 
         self.screenshots = deque()
@@ -234,8 +237,9 @@ class BugReportGenerator:
             "executed_properties_count": 0,
             "property_violations": [],
             "property_stats": [],
-            "screenshot_info": {},  # Store detailed information for each screenshot
-            "coverage_trend": []  # Store coverage trend data
+            "property_error_details": {},
+            "screenshot_info": {},
+            "coverage_trend": []
         }
 
         # Parse steps.log file to get test step numbers and screenshot mappings
@@ -333,6 +337,9 @@ class BugReportGenerator:
 
         # Generate Property Violations list
         self._generate_property_violations_list(property_violations, data)
+
+        # Load error details for properties with fail/error state
+        data["property_error_details"] = self._load_property_error_details()
 
         return data
 
@@ -483,6 +490,7 @@ class BugReportGenerator:
                 'screenshots': self.screenshots,
                 'property_violations': data["property_violations"],
                 'property_stats': data["property_stats"],
+                'property_error_details': data["property_error_details"],
                 'coverage_data': coverage_trend_json,
                 'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
             }
@@ -615,11 +623,97 @@ class BugReportGenerator:
                     })
                     index += 1
 
+    def _load_property_error_details(self) -> Dict[str, List[Dict]]:
+        """
+        Load property execution error details from property_exec_info file
+        
+        Returns:
+            Dict[str, List[Dict]]: Mapping of property names to their error tracebacks with context
+        """
+        error_details = {}
+        
+        if not self.data_path.property_exec_info.exists():
+            logger.warning(f"Property exec info file {self.data_path.property_exec_info} not found")
+            return error_details
+            
+        try:
+            with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
+                # Use hash map for efficient deduplication
+                error_hash_map = {}  # property_name -> {error_hash: error_data}
+                
+                for line_number, line in enumerate(f, 1):
+                    line = line.strip()
+                    if not line:
+                        continue
+                        
+                    try:
+                        exec_info = json.loads(line)
+                        prop_name = exec_info.get("propName", "")
+                        state = exec_info.get("state", "")
+                        tb = exec_info.get("tb", "")
+                        
+                        # Only process error details for failed or error states
+                        if prop_name and state in ["fail", "error"] and tb:
+                            if prop_name not in error_hash_map:
+                                error_hash_map[prop_name] = {}
+                            
+                            # Create hash key for this specific error (state + traceback)
+                            error_hash = hash((state, tb))
+                            
+                            if error_hash in error_hash_map[prop_name]:
+                                # Error already exists, increment count
+                                error_hash_map[prop_name][error_hash]["occurrence_count"] += 1
+                            else:
+                                # New error, create entry
+                                short_desc = self._extract_error_summary(tb)
+                                error_hash_map[prop_name][error_hash] = {
+                                    "state": state,
+                                    "traceback": tb,
+                                    "occurrence_count": 1,
+                                    "short_description": short_desc
+                                }
+                            
+                    except json.JSONDecodeError as e:
+                        logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
+                        continue
+                        
+                # Convert hash map to list format for template compatibility
+                for prop_name, hash_dict in error_hash_map.items():
+                    error_details[prop_name] = list(hash_dict.values())
+                    # Sort by occurrence count (descending) to show most frequent errors first
+                    error_details[prop_name].sort(key=lambda x: x["occurrence_count"], reverse=True)
+                        
+        except Exception as e:
+            logger.error(f"Error reading property exec info file: {e}")
+            
+        return error_details
+
+    def _extract_error_summary(self, traceback: str) -> str:
+        """
+        Extract a short error summary from the full traceback
+        
+        Args:
+            traceback: Full error traceback string
+            
+        Returns:
+            str: Short error summary
+        """
+        try:
+            lines = traceback.strip().split('\n')
+
+            for line in reversed(lines):
+                line = line.strip()
+                if line and not line.startswith('  '):
+                    return line
+            return "Unknown error"
+        except Exception:
+            return "Error parsing traceback"
+
 
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062723_3025834900"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062921_4535312225"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
