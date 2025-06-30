@@ -9,7 +9,6 @@ from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTe
 import random
 import warnings
 from dataclasses import dataclass, asdict
-import requests
 from kea2.absDriver import AbstractDriver
 from functools import wraps
 from kea2.bug_report_generator import BugReportGenerator
@@ -375,7 +374,7 @@ class KeaTestRunner(TextTestRunner):
                     try:
                         xml_raw = fb.stepMonkey(self._monkeyStepInfo)
                         propsSatisfiedPrecond = self.getValidProperties(xml_raw, result)
-                    except requests.ConnectionError:
+                    except u2.HTTPError:
                         logger.info("Connection refused by remote.")
                         if fb.get_return_code() == 0:
                             logger.info("Exploration times up (--running-minutes).")

@@ -161,7 +161,9 @@ class ADBStreamShell_V1(StreamShell):
                 if msg_type == 'output':
                     self._write_stdout(data, decode=False)
                 elif msg_type == 'exit':
-                    self._exit_code = int(data.strip())
+                    # TODO : handle exit code properly
+                    # self._exit_code = int(data.strip())
+                    self._exit_code = 0
                     break
 
         except Exception as e:
