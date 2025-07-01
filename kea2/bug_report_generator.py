@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, List, Deque, NewType, Union
+from typing import Dict, TypedDict, List, Deque, NewType, Union, Optional
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
@@ -60,6 +60,49 @@ class PropertyExecResult(TypedDict):
     executed: int
     fail: int
     error: int
+
+
+@dataclass
+class PropertyExecInfo:
+    """Class representing property execution information from property_exec_info file"""
+    prop_name: str
+    state: str  # start, pass, fail, error
+    traceback: str
+    start_steps_count: int
+    occurrence_count: int = 1
+    short_description: str = ""
+    start_steps_count_list: List[int] = None
+    
+    def __post_init__(self):
+        if self.start_steps_count_list is None:
+            self.start_steps_count_list = [self.start_steps_count]
+        if not self.short_description and self.traceback:
+            self.short_description = self._extract_error_summary(self.traceback)
+    
+    def _extract_error_summary(self, traceback: str) -> str:
+        """Extract a short error summary from the full traceback"""
+        try:
+            lines = traceback.strip().split('\n')
+            for line in reversed(lines):
+                line = line.strip()
+                if line and not line.startswith('  '):
+                    return line
+            return "Unknown error"
+        except Exception:
+            return "Error parsing traceback"
+    
+    def get_error_hash(self) -> int:
+        """Generate hash key for error deduplication"""
+        return hash((self.state, self.traceback))
+    
+    def is_error_state(self) -> bool:
+        """Check if this is an error or fail state"""
+        return self.state in ["fail", "error"]
+    
+    def add_occurrence(self, start_steps_count: int):
+        """Add another occurrence of the same error"""
+        self.occurrence_count += 1
+        self.start_steps_count_list.append(start_steps_count)
 
 
 PropertyName = NewType("PropertyName", str)
@@ -373,16 +416,16 @@ class BugReportGenerator:
 
     def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
         """
-            Mark interaction on screenshot with colored rectangle
+        Mark interaction on screenshot with colored rectangle
 
-            Args:
-                step_type (str): Type of the step (Monkey or Script)
-                screenshot_name (str): Name of the screenshot file
-                action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
-                position: Position coordinates or parameters (format varies by action type)
+        Args:
+            step_type (str): Type of the step (Monkey or Script)
+            screenshot_name (str): Name of the screenshot file
+            action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
+            position: Position coordinates or parameters (format varies by action type)
 
-            Returns:
-                bool: True if marking was successful, False otherwise
+        Returns:
+            bool: True if marking was successful, False otherwise
         """
         screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
         if not screenshot_path.exists():
@@ -630,88 +673,87 @@ class BugReportGenerator:
         Returns:
             Dict[str, List[Dict]]: Mapping of property names to their error tracebacks with context
         """
-        error_details = {}
-        
         if not self.data_path.property_exec_info.exists():
             logger.warning(f"Property exec info file {self.data_path.property_exec_info} not found")
-            return error_details
+            return {}
             
         try:
-            with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
-                # Use hash map for efficient deduplication
-                error_hash_map = {}  # property_name -> {error_hash: error_data}
-                
-                for line_number, line in enumerate(f, 1):
-                    line = line.strip()
-                    if not line:
-                        continue
-                        
-                    try:
-                        exec_info = json.loads(line)
-                        prop_name = exec_info.get("propName", "")
-                        state = exec_info.get("state", "")
-                        tb = exec_info.get("tb", "")
-                        start_steps_count = exec_info.get("startStepsCount", 0)
-                        
-                        # Only process error details for failed or error states
-                        if prop_name and state in ["fail", "error"] and tb:
-                            if prop_name not in error_hash_map:
-                                error_hash_map[prop_name] = {}
-                            
-                            # Create hash key for this specific error (state + traceback only, not including startStepsCount)
-                            # This way same errors will be grouped together regardless of when they occurred
-                            error_hash = hash((state, tb))
-                            
-                            if error_hash in error_hash_map[prop_name]:
-                                # Error already exists, increment count and add startStepsCount to the list
-                                error_hash_map[prop_name][error_hash]["occurrence_count"] += 1
-                                error_hash_map[prop_name][error_hash]["startStepsCountList"].append(start_steps_count)
-                            else:
-                                # New error, create entry
-                                short_desc = self._extract_error_summary(tb)
-                                error_hash_map[prop_name][error_hash] = {
-                                    "state": state,
-                                    "traceback": tb,
-                                    "occurrence_count": 1,
-                                    "short_description": short_desc,
-                                    "startStepsCountList": [start_steps_count]  # Store as list of step counts
-                                }
-                            
-                    except json.JSONDecodeError as e:
-                        logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
-                        continue
-                        
-                # Convert hash map to list format for template compatibility
-                for prop_name, hash_dict in error_hash_map.items():
-                    error_details[prop_name] = list(hash_dict.values())
-                    # Sort by the earliest startStepsCount, then by occurrence count (descending)
-                    error_details[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
-                        
+            property_exec_infos = self._parse_property_exec_infos()
+            return self._group_errors_by_property(property_exec_infos)
+            
         except Exception as e:
             logger.error(f"Error reading property exec info file: {e}")
-            
-        return error_details
+            return {}
 
-    def _extract_error_summary(self, traceback: str) -> str:
-        """
-        Extract a short error summary from the full traceback
+    def _parse_property_exec_infos(self) -> List[PropertyExecInfo]:
+        """Parse property execution info from file"""
+        exec_infos = []
         
-        Args:
-            traceback: Full error traceback string
-            
-        Returns:
-            str: Short error summary
-        """
-        try:
-            lines = traceback.strip().split('\n')
-
-            for line in reversed(lines):
+        with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
+            for line_number, line in enumerate(f, 1):
                 line = line.strip()
-                if line and not line.startswith('  '):
-                    return line
-            return "Unknown error"
-        except Exception:
-            return "Error parsing traceback"
+                if not line:
+                    continue
+                    
+                try:
+                    exec_info_data = json.loads(line)
+                    prop_name = exec_info_data.get("propName", "")
+                    state = exec_info_data.get("state", "")
+                    tb = exec_info_data.get("tb", "")
+                    start_steps_count = exec_info_data.get("startStepsCount", 0)
+                    
+                    exec_info = PropertyExecInfo(
+                        prop_name=prop_name,
+                        state=state,
+                        traceback=tb,
+                        start_steps_count=start_steps_count
+                    )
+                    
+                    if exec_info.is_error_state() and prop_name and tb:
+                        exec_infos.append(exec_info)
+                        
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
+                    continue
+                    
+        return exec_infos
+
+    def _group_errors_by_property(self, exec_infos: List[PropertyExecInfo]) -> Dict[str, List[Dict]]:
+        """Group errors by property name and deduplicate"""
+        error_details = {}
+        
+        for exec_info in exec_infos:
+            prop_name = exec_info.prop_name
+            
+            if prop_name not in error_details:
+                error_details[prop_name] = {}
+            
+            error_hash = exec_info.get_error_hash()
+            
+            if error_hash in error_details[prop_name]:
+                # Error already exists, add occurrence
+                error_details[prop_name][error_hash].add_occurrence(exec_info.start_steps_count)
+            else:
+                # New error, create entry
+                error_details[prop_name][error_hash] = exec_info
+        
+        # Convert to template-compatible format
+        result = {}
+        for prop_name, hash_dict in error_details.items():
+            result[prop_name] = []
+            for exec_info in hash_dict.values():
+                result[prop_name].append({
+                    "state": exec_info.state,
+                    "traceback": exec_info.traceback,
+                    "occurrence_count": exec_info.occurrence_count,
+                    "short_description": exec_info.short_description,
+                    "startStepsCountList": exec_info.start_steps_count_list
+                })
+            
+            # Sort by earliest startStepsCount, then by occurrence count (descending)
+            result[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
+        
+        return result
 
 
 if __name__ == "__main__":
