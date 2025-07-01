@@ -651,18 +651,21 @@ class BugReportGenerator:
                         prop_name = exec_info.get("propName", "")
                         state = exec_info.get("state", "")
                         tb = exec_info.get("tb", "")
+                        start_steps_count = exec_info.get("startStepsCount", 0)
                         
                         # Only process error details for failed or error states
                         if prop_name and state in ["fail", "error"] and tb:
                             if prop_name not in error_hash_map:
                                 error_hash_map[prop_name] = {}
                             
-                            # Create hash key for this specific error (state + traceback)
+                            # Create hash key for this specific error (state + traceback only, not including startStepsCount)
+                            # This way same errors will be grouped together regardless of when they occurred
                             error_hash = hash((state, tb))
                             
                             if error_hash in error_hash_map[prop_name]:
-                                # Error already exists, increment count
+                                # Error already exists, increment count and add startStepsCount to the list
                                 error_hash_map[prop_name][error_hash]["occurrence_count"] += 1
+                                error_hash_map[prop_name][error_hash]["startStepsCountList"].append(start_steps_count)
                             else:
                                 # New error, create entry
                                 short_desc = self._extract_error_summary(tb)
@@ -670,7 +673,8 @@ class BugReportGenerator:
                                     "state": state,
                                     "traceback": tb,
                                     "occurrence_count": 1,
-                                    "short_description": short_desc
+                                    "short_description": short_desc,
+                                    "startStepsCountList": [start_steps_count]  # Store as list of step counts
                                 }
                             
                     except json.JSONDecodeError as e:
@@ -680,8 +684,8 @@ class BugReportGenerator:
                 # Convert hash map to list format for template compatibility
                 for prop_name, hash_dict in error_hash_map.items():
                     error_details[prop_name] = list(hash_dict.values())
-                    # Sort by occurrence count (descending) to show most frequent errors first
-                    error_details[prop_name].sort(key=lambda x: x["occurrence_count"], reverse=True)
+                    # Sort by the earliest startStepsCount, then by occurrence count (descending)
+                    error_details[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
                         
         except Exception as e:
             logger.error(f"Error reading property exec info file: {e}")

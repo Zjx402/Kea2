@@ -730,6 +730,11 @@
                                                             Occurred {{ error_list[0].occurrence_count }} times
                                                         </span>
                                                     {% endif %}
+                                                    {% if error_list[0].startStepsCountList is defined and error_list[0].startStepsCountList|length > 0 %}
+                                                        <span class="badge bg-secondary ms-2">
+                                                            <i class="bi bi-step-forward"></i> Steps: {{ error_list[0].startStepsCountList|join(', ') }}
+                                                        </span>
+                                                    {% endif %}
                                                 </div>
                                                 {% if error_list[0].short_description %}
                                                     <div class="mb-2">
@@ -759,6 +764,9 @@
                                                             <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
                                                                 {{ error.state|upper }} #{{ loop.index }}
                                                                 {% if error.occurrence_count > 1 %} ({{ error.occurrence_count }}x){% endif %}
+                                                                {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                                    @{% if error.startStepsCountList|length == 1 %}{{ error.startStepsCountList[0] }}{% else %}{{ error.startStepsCountList[0] }}-{{ error.startStepsCountList[-1] }}{% endif %}
+                                                                {% endif %}
                                                             </span>
                                                         {% endfor %}
                                                     </div>
@@ -799,6 +807,11 @@
                                                             {% if error.occurrence_count > 1 %}
                                                                 <span class="badge bg-info ms-2">
                                                                     {{ error.occurrence_count }} occurrences
+                                                                </span>
+                                                            {% endif %}
+                                                            {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                                <span class="badge bg-secondary ms-2">
+                                                                    <i class="bi bi-step-forward"></i> Steps: {{ error.startStepsCountList|join(', ') }}
                                                                 </span>
                                                             {% endif %}
                                                         </div>
