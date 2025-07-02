@@ -53,6 +53,7 @@ class ReportData(TypedDict):
     property_error_details: Dict[str, List[Dict]]  # Support multiple errors per property
     screenshot_info: Dict
     coverage_trend: List
+    property_execution_trend: List  # Track executed properties count over steps
 
 
 class PropertyExecResult(TypedDict):
@@ -282,11 +283,14 @@ class BugReportGenerator:
             "property_stats": [],
             "property_error_details": {},
             "screenshot_info": {},
-            "coverage_trend": []
+            "coverage_trend": [],
+            "property_execution_trend": []
         }
 
         # Parse steps.log file to get test step numbers and screenshot mappings
         property_violations = {}  # Store multiple violation records for each property
+        executed_properties_by_step = {}  # Track executed properties at each step: {step_count: set()}
+        executed_properties = set()  # Track unique executed properties
 
         if not self.data_path.steps_log.exists():
             logger.error(f"{self.data_path.steps_log} not exists")
@@ -322,11 +326,18 @@ class BugReportGenerator:
                 if screenshot and screenshot not in data["screenshot_info"]:
                     self._add_screenshot_info(step_data, step_index, data)
 
-                # Process ScriptInfo for property violations
+                # Process ScriptInfo for property violations and execution tracking
                 if step_type == "ScriptInfo":
                     try:
                         property_name = info.get("propName", "")
                         state = info.get("state", "")
+                        
+                        # Track executed properties (properties that have been started)
+                        if property_name and state == "start":
+                            executed_properties.add(property_name)
+                            # Record the monkey steps count for this property execution
+                            executed_properties_by_step[monkey_events_count] = executed_properties.copy()
+                        
                         current_property, current_test = self._process_script_info(
                             property_name, state, step_index, screenshot,
                             current_property, current_test, property_violations
@@ -377,6 +388,9 @@ class BugReportGenerator:
             data["tested_activities"] = final_trend["testedActivities"]
             data["total_activities_count"] = final_trend["totalActivitiesCount"]
             data["tested_activities_count"] = final_trend["testedActivitiesCount"]
+
+        # Generate property execution trend aligned with coverage trend
+        data["property_execution_trend"] = self._generate_property_execution_trend(executed_properties_by_step)
 
         # Generate Property Violations list
         self._generate_property_violations_list(property_violations, data)
@@ -535,7 +549,9 @@ class BugReportGenerator:
                 'property_stats': data["property_stats"],
                 'property_error_details': data["property_error_details"],
                 'coverage_data': coverage_trend_json,
-                'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
+                'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
+                'property_execution_trend': data["property_execution_trend"],
+                'property_execution_data': json.dumps(data["property_execution_trend"])
             }
 
             # Check if template exists, if not create it
@@ -754,6 +770,45 @@ class BugReportGenerator:
             result[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
         
         return result
+
+    def _generate_property_execution_trend(self, executed_properties_by_step: Dict[int, set]) -> List[Dict]:
+        """
+        Generate property execution trend aligned with coverage trend
+        
+        Args:
+            executed_properties_by_step: Dictionary containing executed properties at each step
+            
+        Returns:
+            List[Dict]: Property execution trend data aligned with coverage trend
+        """
+        property_execution_trend = []
+        
+        # Get step points from coverage trend to ensure alignment
+        coverage_step_points = []
+        if self.cov_trend:
+            coverage_step_points = [cov_data["stepsCount"] for cov_data in self.cov_trend]
+        
+        # If no coverage data, use property execution data points
+        if not coverage_step_points and executed_properties_by_step:
+            coverage_step_points = sorted(executed_properties_by_step.keys())
+        
+        # Generate property execution data for each coverage step point
+        for step_count in coverage_step_points:
+            # Find the latest executed properties count up to this step
+            executed_count = 0
+            latest_step = 0
+            
+            for exec_step in executed_properties_by_step.keys():
+                if exec_step <= step_count and exec_step >= latest_step:
+                    latest_step = exec_step
+                    executed_count = len(executed_properties_by_step[exec_step])
+            
+            property_execution_trend.append({
+                "stepsCount": step_count,
+                "executedPropertiesCount": executed_count
+            })
+        
+        return property_execution_trend
 
 
 if __name__ == "__main__":
