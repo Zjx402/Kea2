@@ -581,8 +581,10 @@ class BugReportGenerator:
         caption = ""
 
         if step_data["Type"] == "Monkey":
-            # Extract 'act' attribute for Monkey type and convert to lowercase
-            caption = f"{step_data['Info'].get('act', 'N/A')}"
+            # Extract 'act' attribute for Monkey type and add MonkeyStepsCount
+            monkey_steps_count = step_data.get('MonkeyStepsCount', 'N/A')
+            action = step_data['Info'].get('act', 'N/A')
+            caption = f"Monkey Step {monkey_steps_count}: {action}"
         elif step_data["Type"] == "Script":
             # Extract 'method' attribute for Script type
             caption = f"{step_data['Info'].get('method', 'N/A')}"
@@ -814,7 +816,7 @@ class BugReportGenerator:
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062921_4535312225"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062922_3102395887"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
