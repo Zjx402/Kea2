@@ -89,4 +89,5 @@ class LogWatcher:
 
 
 if __name__ == "__main__":
-    LogWatcher("/Users/atria/Desktop/coding/Kea2/output/res_2025062510_0420056539/fastbot_2025062510_0420056539.log")
+    # LogWatcher()
+    pass
