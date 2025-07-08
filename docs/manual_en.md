@@ -18,7 +18,7 @@ Basically, you can write Kea2's scripts by following two steps:
 1. Create a test class which extends `unittest.TestCase`. 
 
 ```python
-import unittest
+import unittest 
 
 class MyFirstTest(unittest.TestCase):
     ...

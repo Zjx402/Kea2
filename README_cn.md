@@ -66,7 +66,7 @@ Kea2当前工作流程：
 
 通过 `pip` 安装Kea2：
 ```bash
-python3 -m pip install kea2-python
+python3 -m pip install kea2-python 
 ```
 
 通过运行以下命令查看Kea2的选项：
