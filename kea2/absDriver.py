@@ -38,7 +38,7 @@ class AbstractDriver(abc.ABC):
     
     @classmethod
     @abc.abstractmethod
-    def setDeviceSerial(self):
+    def setDevice(self):
         pass
     
     @classmethod

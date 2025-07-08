@@ -2,6 +2,9 @@ import logging
 import os
 from pathlib import Path
 from typing import TYPE_CHECKING
+
+import time
+from functools import wraps
 if TYPE_CHECKING:
     from .keaUtils import Options
 
@@ -13,6 +16,7 @@ def getLogger(name: str) -> logging.Logger:
         if not logger.handlers:
             # Configure handler
             handler = logging.StreamHandler()
+            handler.flush = lambda: handler.stream.flush()  # 确保每次都flush
             formatter = logging.Formatter('[%(levelname)1s][%(asctime)s %(module)s:%(lineno)d pid:%(process)d] %(message)s')
             handler.setFormatter(formatter)
             logger.addHandler(handler)
@@ -54,3 +58,14 @@ def getProjectRoot():
             return None
         cur_dir = cur_dir.parent
     return cur_dir
+
+
+def timer(func):
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start_time = time.time()
+        result = func(*args, **kwargs)
+        end_time = time.time()
+        print(f"Function '{func.__name__}' executed in {(end_time - start_time):.4f} seconds.")
+        return result
+    return wrapper

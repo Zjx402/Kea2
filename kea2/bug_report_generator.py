@@ -1,13 +1,124 @@
-import os
 import json
-import datetime
-import re
+from datetime import datetime
+from dataclasses import dataclass
 from pathlib import Path
-import shutil
+from typing import Dict, TypedDict, List, Deque, NewType, Union, Optional
+from collections import deque
+from concurrent.futures import ThreadPoolExecutor
+
+from PIL import Image, ImageDraw, ImageFont
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
-from .utils import getLogger
+from kea2.utils import getLogger
 
 logger = getLogger(__name__)
+
+
+class StepData(TypedDict):
+    # The type of the action (Monkey / Script / Script Info)
+    Type: str
+    # The steps of monkey event when the action happened
+    # ps: since we insert script actions into monkey actions. Total actions count >= Monkey actions count
+    MonkeyStepsCount: int
+    # The time stamp of the action
+    Time: str
+    # The execution info of the action
+    Info: Dict
+    # The screenshot of the action
+    Screenshot: str
+
+
+class CovData(TypedDict):
+    stepsCount: int
+    coverage: float
+    totalActivitiesCount: int
+    testedActivitiesCount: int
+    totalActivities: List[str]
+    testedActivities: List[str]
+    activityCountHistory: Dict[str, int]
+
+
+class ReportData(TypedDict):
+    timestamp: str
+    bugs_found: int
+    executed_events: int
+    total_testing_time: float
+    coverage: float
+    total_activities_count: int
+    tested_activities_count: int
+    total_activities: List
+    tested_activities: List
+    all_properties_count: int
+    executed_properties_count: int
+    property_violations: List[Dict]
+    property_stats: List
+    property_error_details: Dict[str, List[Dict]]  # Support multiple errors per property
+    screenshot_info: Dict
+    coverage_trend: List
+    property_execution_trend: List  # Track executed properties count over steps
+    activity_count_history: Dict[str, int]  # Activity traversal count from final coverage data
+
+
+class PropertyExecResult(TypedDict):
+    precond_satisfied: int
+    executed: int
+    fail: int
+    error: int
+
+
+@dataclass
+class PropertyExecInfo:
+    """Class representing property execution information from property_exec_info file"""
+    prop_name: str
+    state: str  # start, pass, fail, error
+    traceback: str
+    start_steps_count: int
+    occurrence_count: int = 1
+    short_description: str = ""
+    start_steps_count_list: List[int] = None
+    
+    def __post_init__(self):
+        if self.start_steps_count_list is None:
+            self.start_steps_count_list = [self.start_steps_count]
+        if not self.short_description and self.traceback:
+            self.short_description = self._extract_error_summary(self.traceback)
+    
+    def _extract_error_summary(self, traceback: str) -> str:
+        """Extract a short error summary from the full traceback"""
+        try:
+            lines = traceback.strip().split('\n')
+            for line in reversed(lines):
+                line = line.strip()
+                if line and not line.startswith('  '):
+                    return line
+            return "Unknown error"
+        except Exception:
+            return "Error parsing traceback"
+    
+    def get_error_hash(self) -> int:
+        """Generate hash key for error deduplication"""
+        return hash((self.state, self.traceback))
+    
+    def is_error_state(self) -> bool:
+        """Check if this is an error or fail state"""
+        return self.state in ["fail", "error"]
+    
+    def add_occurrence(self, start_steps_count: int):
+        """Add another occurrence of the same error"""
+        self.occurrence_count += 1
+        self.start_steps_count_list.append(start_steps_count)
+
+
+PropertyName = NewType("PropertyName", str)
+TestResult = NewType("TestResult", Dict[PropertyName, PropertyExecResult])
+
+
+@dataclass
+class DataPath:
+    steps_log: Path
+    result_json: Path
+    coverage_log: Path
+    screenshots_dir: Path
+    property_exec_info: Path
 
 
 class BugReportGenerator:
@@ -15,18 +126,67 @@ class BugReportGenerator:
     Generate HTML format bug reports
     """
 
-    def __init__(self, result_dir):
+    _cov_trend: Deque[CovData] = None
+    _test_result: TestResult = None
+    _take_screenshots: bool = None
+    _data_path: DataPath = None
+
+    @property
+    def cov_trend(self):
+        if self._cov_trend is not None:
+            return self._cov_trend
+
+        # Parse coverage data
+        if not self.data_path.coverage_log.exists():
+            logger.error(f"{self.data_path.coverage_log} not exists")
+
+        cov_trend = list()
+
+        with open(self.data_path.coverage_log, "r", encoding="utf-8") as f:
+            for line in f:
+                if not line.strip():
+                    continue
+
+                coverage_data = json.loads(line)
+                cov_trend.append(coverage_data)
+        self._cov_trend = cov_trend
+        return self._cov_trend
+
+    @property
+    def take_screenshots(self) -> bool:
+        """Whether the `--take-screenshots` enabled. Should we report the screenshots?
+
+        Returns:
+            bool: Whether the `--take-screenshots` enabled.
+        """
+        if self._take_screenshots is None:
+            self._take_screenshots = self.data_path.screenshots_dir.exists()
+        return self._take_screenshots
+
+    @property
+    def test_result(self) -> TestResult:
+        if self._test_result is not None:
+            return self._test_result
+
+        if not self.data_path.result_json.exists():
+            logger.error(f"{self.data_path.result_json} not found")
+        with open(self.data_path.result_json, "r", encoding="utf-8") as f:
+            self._test_result: TestResult = json.load(f)
+
+        return self._test_result
+
+    def __init__(self, result_dir=None):
         """
         Initialize the bug report generator
 
         Args:
             result_dir: Directory path containing test results
         """
-        self.result_dir = Path(result_dir)
-        self.log_timestamp = self.result_dir.name.split("_", 1)[1]
-        self.screenshots_dir = self.result_dir / f"output_{self.log_timestamp}" / "screenshots"
-        self.take_screenshots = self._detect_screenshots_setting()
-        
+        if result_dir is not None:
+            self._setup_paths(result_dir)
+
+        self.executor = ThreadPoolExecutor(max_workers=128)
+
         # Set up Jinja2 environment
         # First try to load templates from the package
         try:
@@ -38,27 +198,58 @@ class BugReportGenerator:
             # If unable to load from package, load from current directory's templates folder
             current_dir = Path(__file__).parent
             templates_dir = current_dir / "templates"
-            
+
             # Ensure template directory exists
             if not templates_dir.exists():
                 templates_dir.mkdir(parents=True, exist_ok=True)
-                
+
             self.jinja_env = Environment(
                 loader=FileSystemLoader(templates_dir),
                 autoescape=select_autoescape(['html', 'xml'])
             )
-            
-            # If template file doesn't exist, it will be created on first report generation
 
-    def generate_report(self):
+    def _setup_paths(self, result_dir):
+        """
+        Setup paths for a given result directory
+
+        Args:
+            result_dir: Directory path containing test results
+        """
+        self.result_dir = Path(result_dir)
+        self.log_timestamp = self.result_dir.name.split("_", 1)[1]
+
+        self.data_path: DataPath = DataPath(
+            steps_log=self.result_dir / f"output_{self.log_timestamp}" / "steps.log",
+            result_json=self.result_dir / f"result_{self.log_timestamp}.json",
+            coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
+            screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots",
+            property_exec_info=self.result_dir / f"property_exec_info_{self.log_timestamp}.json"
+        )
+
+        self.screenshots = deque()
+
+    def generate_report(self, result_dir_path=None):
         """
         Generate bug report and save to result directory
+
+        Args:
+            result_dir_path: Directory path containing test results (optional)
+                           If not provided, uses the path from initialization
         """
         try:
+            # Setup paths if result_dir_path is provided
+            if result_dir_path is not None:
+                self._setup_paths(result_dir_path)
+
+            # Check if paths are properly set up
+            if not hasattr(self, 'result_dir') or self.result_dir is None:
+                raise ValueError(
+                    "No result directory specified. Please provide result_dir_path or initialize with a directory.")
+
             logger.debug("Starting bug report generation")
 
             # Collect test data
-            test_data = self._collect_test_data()
+            test_data: ReportData = self._collect_test_data()
 
             # Generate HTML report
             html_content = self._generate_html_report(test_data)
@@ -68,287 +259,421 @@ class BugReportGenerator:
             with open(report_path, "w", encoding="utf-8") as f:
                 f.write(html_content)
 
-            logger.info(f"Bug report saved to: {report_path}")
+            logger.debug(f"Bug report saved to: {report_path}")
+            return str(report_path)
 
         except Exception as e:
             logger.error(f"Error generating bug report: {e}")
+        finally:
+            self.executor.shutdown()
 
-    def _collect_test_data(self):
+    def _collect_test_data(self) -> ReportData:
         """
         Collect test data, including results, coverage, etc.
         """
-        data = {
+        data: ReportData = {
             "timestamp": self.log_timestamp,
             "bugs_found": 0,
-            "preconditions_satisfied": 0,
             "executed_events": 0,
             "total_testing_time": 0,
-            "first_bug_time": 0,
-            "first_precondition_time": 0,
             "coverage": 0,
             "total_activities": [],
             "tested_activities": [],
+            "all_properties_count": 0,
+            "executed_properties_count": 0,
             "property_violations": [],
             "property_stats": [],
-            "screenshots_count": 0,
-            "screenshot_info": {},  # Store detailed information for each screenshot
-            "coverage_trend": []  # Store coverage trend data
+            "property_error_details": {},
+            "screenshot_info": {},
+            "coverage_trend": [],
+            "property_execution_trend": [],
+            "activity_count_history": {}
         }
 
-        # Get screenshot count
-        if self.screenshots_dir.exists():
-            screenshots = sorted(self.screenshots_dir.glob("screenshot-*.png"),
-                                 key=lambda x: int(x.name.split("-")[1].split(".")[0]))
-            data["screenshots_count"] = len(screenshots)
-
         # Parse steps.log file to get test step numbers and screenshot mappings
-        steps_log_path = self.result_dir / f"output_{self.log_timestamp}" / "steps.log"
-        property_violations = {}  # Store multiple violation records for each property: {property_name: [{start, end, screenshot}, ...]}
-        start_screenshot = None  # Screenshot name at the start of testing
-        fail_screenshot = None  # Screenshot name at test failure
-        
-        # For storing time data
-        first_precond_time = None  # Time of the first ScriptInfo entry with state=start
-        first_fail_time = None     # Time of the first ScriptInfo entry with state=fail
+        property_violations = {}  # Store multiple violation records for each property
+        executed_properties_by_step = {}  # Track executed properties at each step: {step_count: set()}
+        executed_properties = set()  # Track unique executed properties
 
-        if steps_log_path.exists():
-            with open(steps_log_path, "r", encoding="utf-8") as f:
-                # First read all steps
-                steps = []
-                
-                for line in f:
-                    try:
-                        step_data = json.loads(line)
-                        steps.append(step_data)
-                        
-                        # Extract time from ScriptInfo entries
-                        if step_data.get("Type") == "ScriptInfo":
-                            try:
-                                info = json.loads(step_data.get("Info", "{}")) if isinstance(step_data.get("Info"), str) else step_data.get("Info", {})
-                                state = info.get("state", "")
-                                
-                                # Record the first ScriptInfo with state=start as precondition time
-                                if state == "start" and first_precond_time is None:
-                                    first_precond_time = step_data.get("Time")
-                                
-                                # Record the first ScriptInfo with state=fail as fail time
-                                elif state == "fail" and first_fail_time is None:
-                                    first_fail_time = step_data.get("Time")
-                            except Exception as e:
-                                logger.error(f"Error parsing ScriptInfo: {e}")
-                    except:
-                        pass
+        if not self.data_path.steps_log.exists():
+            logger.error(f"{self.data_path.steps_log} not exists")
+            return
 
-                # Calculate number of Monkey events
-                monkey_events_count = sum(1 for step in steps if step.get("Type") == "Monkey")
-                data["executed_events"] = monkey_events_count
+        current_property = None
+        current_test = {}
+        step_index = 0
+        monkey_events_count = 0  # Track monkey events separately
 
-                # Track current test state
-                current_property = None
-                current_test = {}
+        with open(self.data_path.steps_log, "r", encoding="utf-8") as f:
+            # Track current test state
+
+            for step_index, line in enumerate(f, start=1):
+                step_data = self._parse_step_data(line)
+
+                if not step_data:
+                    continue
+
+                step_type = step_data.get("Type", "")
+                screenshot = step_data.get("Screenshot", "")
+                info = step_data.get("Info", {})
+
+                # Count Monkey events separately
+                if step_type == "Monkey":
+                    monkey_events_count += 1
+
+                # If screenshots are enabled, mark the screenshot
+                if self.take_screenshots and step_data["Screenshot"]:
+                    self.executor.submit(self._mark_screenshot, step_data)
 
                 # Collect detailed information for each screenshot
-                for step in steps:
-                    step_type = step.get("Type", "")
-                    screenshot = step.get("Screenshot", "")
-                    info = step.get("Info", "{}")
+                if screenshot and screenshot not in data["screenshot_info"]:
+                    self._add_screenshot_info(step_data, step_index, data)
 
-                    if screenshot and screenshot not in data["screenshot_info"]:
-                        try:
-                            info_obj = json.loads(info) if isinstance(info, str) else info
-                            caption = ""
-
-                            if step_type == "Monkey":
-                                # Extract 'act' attribute for Monkey type and convert to lowercase
-                                caption = f"{info_obj.get('act', 'N/A').lower()}"
-                            elif step_type == "Script":
-                                # Extract 'method' attribute for Script type
-                                caption = f"{info_obj.get('method', 'N/A')}"
-                            elif step_type == "ScriptInfo":
-                                # Extract 'propName' and 'state' attributes for ScriptInfo type
-                                prop_name = info_obj.get('propName', '')
-                                state = info_obj.get('state', 'N/A')
-                                caption = f"{prop_name} {state}" if prop_name else f"{state}"
-
-                            data["screenshot_info"][screenshot] = {
-                                "type": step_type,
-                                "caption": caption
-                            }
-                        except Exception as e:
-                            logger.error(f"Error parsing screenshot info: {e}")
-                            data["screenshot_info"][screenshot] = {
-                                "type": step_type,
-                                "caption": step_type
-                            }
-
-                # Find start and end step numbers and corresponding screenshots for all tests
-                for i, step in enumerate(steps, 1):  # Start counting from 1 to match screenshot numbering
-                    if step.get("Type") == "ScriptInfo":
-                        try:
-                            info = json.loads(step.get("Info", "{}"))
-                            property_name = info.get("propName", "")
-                            state = info.get("state", "")
-                            screenshot = step.get("Screenshot", "")
-
-                            if property_name and state:
-                                if state == "start":
-                                    # Record new test start
-                                    current_property = property_name
-                                    current_test = {
-                                        "start": i,
-                                        "end": None,
-                                        "screenshot_start": screenshot
-                                    }
-                                    # Record screenshot at test start
-                                    if not start_screenshot and screenshot:
-                                        start_screenshot = screenshot
-
-                                elif state == "fail" or state == "pass":
-                                    if current_property == property_name:
-                                        # Update test end information
-                                        current_test["end"] = i
-                                        current_test["screenshot_end"] = screenshot
-
-                                        if state == "fail":
-                                            # Record failed test
-                                            if property_name not in property_violations:
-                                                property_violations[property_name] = []
-
-                                            property_violations[property_name].append({
-                                                "start": current_test["start"],
-                                                "end": current_test["end"],
-                                                "screenshot_start": current_test["screenshot_start"],
-                                                "screenshot_end": screenshot
-                                            })
-
-                                            # Record screenshot at test failure
-                                            if not fail_screenshot and screenshot:
-                                                fail_screenshot = screenshot
-
-                                        # Reset current test
-                                        current_property = None
-                                        current_test = {}
-                        except:
-                            pass
-        
-        # Calculate test time
-        start_time = None
-        
-        # Parse fastbot log file to get start time
-        fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
-        if fastbot_log_path:
-            try:
-                with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
-                    log_content = f.read()
-
-                    # Extract test start time
-                    start_match = re.search(r'\[Fastbot\]\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]  @Version',
-                                            log_content)
-                    if start_match:
-                        start_time_str = start_match.group(1)
-                        start_time = datetime.datetime.strptime(start_time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    
-                    # Extract test end time (last timestamp)
-                    end_matches = re.findall(r'\[Fastbot\]\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\.\d{3})\]',
-                                         log_content)
-                    end_time = None
-                    if end_matches:
-                        end_time_str = end_matches[-1]
-                        end_time = datetime.datetime.strptime(end_time_str, "%Y-%m-%d %H:%M:%S.%f")
-                    
-                    # Calculate total test time (in seconds)
-                    if start_time and end_time:
-                        data["total_testing_time"] = int((end_time - start_time).total_seconds())
-            except Exception as e:
-                logger.error(f"Error parsing fastbot log file: {e}")
-                logger.error(f"Error details: {str(e)}")
-        
-        # Calculate first_bug_time and first_precondition_time from steps.log data
-        if start_time:
-            # If first_precond_time exists, calculate first_precondition_time
-            if first_precond_time:
-                try:
-                    precond_time = datetime.datetime.strptime(first_precond_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_precondition_time"] = int((precond_time - start_time).total_seconds())
-                except Exception as e:
-                    logger.error(f"Error parsing precond_time: {e}")
-            
-            # If first_fail_time exists, calculate first_bug_time
-            if first_fail_time:
-                try:
-                    fail_time = datetime.datetime.strptime(first_fail_time, "%Y-%m-%d %H:%M:%S.%f")
-                    data["first_bug_time"] = int((fail_time - start_time).total_seconds())
-                except Exception as e:
-                    logger.error(f"Error parsing fail_time: {e}")
-
-        # Parse result file
-        result_json_path = list(self.result_dir.glob("result_*.json"))
-        property_stats = {}  # Store property names and corresponding statistics
-
-        if result_json_path:
-            with open(result_json_path[0], "r", encoding="utf-8") as f:
-                result_data = json.load(f)
-
-            # Calculate bug count and get property names
-            for property_name, test_result in result_data.items():
-                # Extract property name (last part of test name)
-
-                # Initialize property statistics
-                if property_name not in property_stats:
-                    property_stats[property_name] = {
-                        "precond_satisfied": 0,
-                        "precond_checked": 0,
-                        "postcond_violated": 0,
-                        "error": 0
-                    }
-
-                # Extract statistics directly from result_*.json file
-                property_stats[property_name]["precond_satisfied"] += test_result.get("precond_satisfied", 0)
-                property_stats[property_name]["precond_checked"] += test_result.get("executed", 0)
-                property_stats[property_name]["postcond_violated"] += test_result.get("fail", 0)
-                property_stats[property_name]["error"] += test_result.get("error", 0)
-
-                # Check if failed or error
-                if test_result.get("fail", 0) > 0 or test_result.get("error", 0) > 0:
-                    data["bugs_found"] += 1
-
-                data["preconditions_satisfied"] += test_result.get("precond_satisfied", 0)
-                # data["executed_events"] += test_result.get("executed", 0)
-
-        # Parse coverage data
-        coverage_log_path = self.result_dir / f"output_{self.log_timestamp}" / "coverage.log"
-        if coverage_log_path.exists():
-            with open(coverage_log_path, "r", encoding="utf-8") as f:
-                lines = f.readlines()
-                if lines:
-                    # Collect coverage trend data
-                    for line in lines:
-                        if not line.strip():
-                            continue
-                        try:
-                            coverage_data = json.loads(line)
-                            data["coverage_trend"].append({
-                                "steps": coverage_data.get("stepsCount", 0),
-                                "coverage": coverage_data.get("coverage", 0),
-                                "tested_activities_count": len(coverage_data.get("testedActivities", []))
-                            })
-                        except Exception as e:
-                            logger.error(f"Error parsing coverage data: {e}")
-                            continue
-                    
-                    # Ensure sorted by steps
-                    data["coverage_trend"].sort(key=lambda x: x["steps"])
-                    
+                # Process ScriptInfo for property violations and execution tracking
+                if step_type == "ScriptInfo":
                     try:
-                        # Read last line to get final coverage data
-                        coverage_data = json.loads(lines[-1])
-                        data["coverage"] = coverage_data.get("coverage", 0)
-                        data["total_activities"] = coverage_data.get("totalActivities", [])
-                        data["tested_activities"] = coverage_data.get("testedActivities", [])
+                        property_name = info.get("propName", "")
+                        state = info.get("state", "")
+                        
+                        # Track executed properties (properties that have been started)
+                        if property_name and state == "start":
+                            executed_properties.add(property_name)
+                            # Record the monkey steps count for this property execution
+                            executed_properties_by_step[monkey_events_count] = executed_properties.copy()
+                        
+                        current_property, current_test = self._process_script_info(
+                            property_name, state, step_index, screenshot,
+                            current_property, current_test, property_violations
+                        )
                     except Exception as e:
-                        logger.error(f"Error parsing final coverage data: {e}")
+                        logger.error(f"Error processing ScriptInfo step {step_index}: {e}")
+
+                # Store first and last step for time calculation
+                if step_index == 1:
+                    first_step_time = step_data["Time"]
+                last_step_time = step_data["Time"]
+
+            # Set the monkey events count correctly
+            data["executed_events"] = monkey_events_count
+
+            # Calculate test time
+            if first_step_time and last_step_time:
+                def _get_datetime(raw_datetime) -> datetime:
+                    return datetime.strptime(raw_datetime, r"%Y-%m-%d %H:%M:%S.%f")
+
+                test_time = _get_datetime(last_step_time) - _get_datetime(first_step_time)
+
+                total_seconds = int(test_time.total_seconds())
+                hours, remainder = divmod(total_seconds, 3600)
+                minutes, seconds = divmod(remainder, 60)
+                data["total_testing_time"] = f"{hours:02d}:{minutes:02d}:{seconds:02d}"
+
+        # Calculate bug count directly from result data
+        for property_name, test_result in self.test_result.items():
+            # Check if failed or error
+            if test_result["fail"] > 0 or test_result["error"] > 0:
+                data["bugs_found"] += 1
+
+        # Store the raw result data for direct use in HTML template
+        data["property_stats"] = self.test_result
+
+        # Calculate properties statistics
+        data["all_properties_count"] = len(self.test_result)
+        data["executed_properties_count"] = sum(1 for result in self.test_result.values() if result.get("executed", 0) > 0)
+
+        # Process coverage data
+        data["coverage_trend"] = self.cov_trend
+
+        if self.cov_trend:
+            final_trend = self.cov_trend[-1]
+            data["coverage"] = final_trend["coverage"]
+            data["total_activities"] = final_trend["totalActivities"]
+            data["tested_activities"] = final_trend["testedActivities"]
+            data["total_activities_count"] = final_trend["totalActivitiesCount"]
+            data["tested_activities_count"] = final_trend["testedActivitiesCount"]
+            data["activity_count_history"] = final_trend["activityCountHistory"]
+
+        # Generate property execution trend aligned with coverage trend
+        data["property_execution_trend"] = self._generate_property_execution_trend(executed_properties_by_step)
 
         # Generate Property Violations list
+        self._generate_property_violations_list(property_violations, data)
+
+        # Load error details for properties with fail/error state
+        data["property_error_details"] = self._load_property_error_details()
+
+        return data
+
+    def _parse_step_data(self, raw_step_info: str) -> StepData:
+        step_data: StepData = json.loads(raw_step_info)
+        step_data["Info"] = json.loads(step_data["Info"])
+        return step_data
+
+    def _mark_screenshot(self, step_data: StepData):
+        try:
+            step_type = step_data["Type"]
+            screenshot_name = step_data["Screenshot"]
+            if not screenshot_name:
+                return
+
+            if step_type == "Monkey":
+                act = step_data["Info"].get("act")
+                pos = step_data["Info"].get("pos")
+                if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
+                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
+
+            elif step_type == "Script":
+                act = step_data["Info"].get("method")
+                pos = step_data["Info"].get("params")
+                if act in ["click", "setText", "swipe"]:
+                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
+
+        except Exception as e:
+            logger.error(f"Error when marking screenshots: {e}")
+
+
+    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
+        """
+        Mark interaction on screenshot with colored rectangle
+
+        Args:
+            step_type (str): Type of the step (Monkey or Script)
+            screenshot_name (str): Name of the screenshot file
+            action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
+            position: Position coordinates or parameters (format varies by action type)
+
+        Returns:
+            bool: True if marking was successful, False otherwise
+        """
+        screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
+        if not screenshot_path.exists():
+            logger.error(f"Screenshot file {screenshot_path} not exists.")
+            return False
+
+        img = Image.open(screenshot_path).convert("RGB")
+        draw = ImageDraw.Draw(img)
+        line_width = 5
+
+        if step_type == "Monkey":
+            if len(position) < 4:
+                logger.warning(f"Monkey action requires 4 coordinates, got {len(position)}. Skip drawing.")
+                return False
+
+            x1, y1, x2, y2 = map(int, position[:4])
+
+            if action_type == "CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+            elif action_type == "LONG_CLICK":
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 0, 255))
+            elif action_type.startswith("SCROLL"):
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(0, 255, 0))
+
+        elif step_type == "Script":
+            if action_type == "click":
+
+                if len(position) < 2:
+                    logger.warning(f"Script click action requires 2 coordinates, got {len(position)}. Skip drawing.")
+                    return False
+                
+                x, y = map(float, position[:2])
+                x1, y1, x2, y2 = x - 50, y - 50, x + 50, y + 50
+
+                for i in range(line_width):
+                    draw.rectangle([x1 - i, y1 - i, x2 + i, y2 + i], outline=(255, 0, 0))
+                    
+            elif action_type == "swipe":
+
+                if len(position) < 4:
+                    logger.warning(f"Script swipe action requires 4 coordinates, got {len(position)}. Skip drawing.")
+                    return False
+                
+                x1, y1, x2, y2 = map(float, position[:4])
+                
+                # mark start and end positions with rectangles
+                start_x1, start_y1, start_x2, start_y2 = x1 - 50, y1 - 50, x1 + 50, y1 + 50
+                for i in range(line_width):
+                    draw.rectangle([start_x1 - i, start_y1 - i, start_x2 + i, start_y2 + i], outline=(255, 0, 0))
+
+                end_x1, end_y1, end_x2, end_y2 = x2 - 50, y2 - 50, x2 + 50, y2 + 50
+                for i in range(line_width):
+                    draw.rectangle([end_x1 - i, end_y1 - i, end_x2 + i, end_y2 + i], outline=(255, 0, 0))
+                
+                # draw line between start and end positions
+                draw.line([(x1, y1), (x2, y2)], fill=(255, 0, 0), width=line_width)
+                
+                # add text labels for start and end positions
+                font = ImageFont.truetype("arial.ttf", 80)
+                    
+                # draw "start" at start position
+                draw.text((x1 - 20, y1 - 70), "start", fill=(255, 0, 0), font=font)
+                    
+                # draw "end" at end position
+                draw.text((x2 - 15, y2 - 70), "end", fill=(255, 0, 0), font=font)
+
+        img.save(screenshot_path)
+        return True
+
+    def _generate_html_report(self, data: ReportData):
+        """
+        Generate HTML format bug report
+        """
+        try:
+            # Format timestamp for display
+            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+            # Ensure coverage_trend has data
+            if not data["coverage_trend"]:
+                logger.warning("No coverage trend data")
+                # Use the same field names as in coverage.log file
+                data["coverage_trend"] = [{"stepsCount": 0, "coverage": 0, "testedActivitiesCount": 0}]
+
+            # Convert coverage_trend to JSON string, ensuring all data points are included
+            coverage_trend_json = json.dumps(data["coverage_trend"])
+            logger.debug(f"Number of coverage trend data points: {len(data['coverage_trend'])}")
+
+            # Prepare template data
+            template_data = {
+                'timestamp': timestamp,
+                'bugs_found': data["bugs_found"],
+                'total_testing_time': data["total_testing_time"],
+                'executed_events': data["executed_events"],
+                'coverage_percent': round(data["coverage"], 2),
+                'total_activities_count': data["total_activities_count"],
+                'tested_activities_count': data["tested_activities_count"],
+                'tested_activities': data["tested_activities"],
+                'total_activities': data["total_activities"],
+                'all_properties_count': data["all_properties_count"],
+                'executed_properties_count': data["executed_properties_count"],
+                'items_per_page': 10,  # Items to display per page
+                'screenshots': self.screenshots,
+                'property_violations': data["property_violations"],
+                'property_stats': data["property_stats"],
+                'property_error_details': data["property_error_details"],
+                'coverage_data': coverage_trend_json,
+                'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
+                'property_execution_trend': data["property_execution_trend"],
+                'property_execution_data': json.dumps(data["property_execution_trend"]),
+                'activity_count_history': data["activity_count_history"]
+            }
+
+            # Check if template exists, if not create it
+            template_path = Path(__file__).parent / "templates" / "bug_report_template.html"
+            if not template_path.exists():
+                logger.warning("Template file does not exist, creating default template...")
+
+            # Use Jinja2 to render template
+            template = self.jinja_env.get_template("bug_report_template.html")
+            html_content = template.render(**template_data)
+
+            return html_content
+
+        except Exception as e:
+            logger.error(f"Error rendering template: {e}")
+            raise
+
+    def _add_screenshot_info(self, step_data: StepData, step_index: int, data: Dict):
+        """
+        Add screenshot information to data structure
+
+        Args:
+            step_data: data for the current step
+            step_index: Current step index
+            data: Data dictionary to update
+        """
+        caption = ""
+
+        if step_data["Type"] == "Monkey":
+            # Extract 'act' attribute for Monkey type and add MonkeyStepsCount
+            monkey_steps_count = step_data.get('MonkeyStepsCount', 'N/A')
+            action = step_data['Info'].get('act', 'N/A')
+            caption = f"Monkey Step {monkey_steps_count}: {action}"
+        elif step_data["Type"] == "Script":
+            # Extract 'method' attribute for Script type
+            caption = f"{step_data['Info'].get('method', 'N/A')}"
+        elif step_data["Type"] == "ScriptInfo":
+            # Extract 'propName' and 'state' attributes for ScriptInfo type
+            prop_name = step_data["Info"].get('propName', '')
+            state = step_data["Info"].get('state', 'N/A')
+            caption = f"{prop_name}: {state}" if prop_name else f"{state}"
+
+        screenshot_name = step_data["Screenshot"]
+        # Use relative path string instead of Path object
+        relative_screenshot_path = f"output_{self.log_timestamp}/screenshots/{screenshot_name}"
+
+        data["screenshot_info"][screenshot_name] = {
+            "type": step_data["Type"],
+            "caption": caption,
+            "step_index": step_index
+        }
+
+        self.screenshots.append({
+            'id': step_index,
+            'path': relative_screenshot_path,  # Now using string path
+            'caption': f"{step_index}. {caption}"
+        })
+
+    def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str,
+                             current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
+        """
+        Process ScriptInfo step for property violations tracking
+
+        Args:
+            property_name: Property name from ScriptInfo
+            state: State from ScriptInfo (start, pass, fail, error)
+            step_index: Current step index
+            screenshot: Screenshot filename
+            current_property: Currently tracked property
+            current_test: Current test data
+            property_violations: Dictionary to store violations
+
+        Returns:
+            tuple: (updated_current_property, updated_current_test)
+        """
+        if property_name and state:
+            if state == "start":
+                # Record new test start
+                current_property = property_name
+                current_test = {
+                    "start": step_index,
+                    "end": None,
+                    "screenshot_start": screenshot
+                }
+
+            elif state in ["pass", "fail", "error"]:
+                if current_property == property_name:
+                    # Update test end information
+                    current_test["end"] = step_index
+                    current_test["screenshot_end"] = screenshot
+
+                    if state == "fail" or state == "error":
+                        # Record failed/error test
+                        if property_name not in property_violations:
+                            property_violations[property_name] = []
+
+                        property_violations[property_name].append({
+                            "start": current_test["start"],
+                            "end": current_test["end"],
+                            "screenshot_start": current_test["screenshot_start"],
+                            "screenshot_end": screenshot
+                        })
+
+                    # Reset current test
+                    current_property = None
+                    current_test = {}
+
+        return current_property, current_test
+
+    def _generate_property_violations_list(self, property_violations: Dict, data: Dict):
+        """
+        Generate property violations list from collected violation data
+
+        Args:
+            property_violations: Dictionary containing property violations
+            data: Data dictionary to update with property violations list
+        """
         if property_violations:
             index = 1
             for property_name, violations in property_violations.items():
@@ -364,116 +689,140 @@ class BugReportGenerator:
                     })
                     index += 1
 
-        # Generate Property Stats list
-        if property_stats:
-            index = 1
-            for property_name, stats in property_stats.items():
-                data["property_stats"].append({
-                    "index": index,
-                    "property_name": property_name,
-                    "precond_satisfied": stats["precond_satisfied"],
-                    "precond_checked": stats["precond_checked"],
-                    "postcond_violated": stats["postcond_violated"],
-                    "error": stats["error"]
-                })
-                index += 1
-
-        return data
-
-    def _detect_screenshots_setting(self):
+    def _load_property_error_details(self) -> Dict[str, List[Dict]]:
         """
-        Detect if screenshots were enabled during test run.
-        Returns True if screenshots were taken, False otherwise.
+        Load property execution error details from property_exec_info file
+        
+        Returns:
+            Dict[str, List[Dict]]: Mapping of property names to their error tracebacks with context
         """
-        # Method 1: Check if screenshots directory exists and has content
-        if self.screenshots_dir.exists() and any(self.screenshots_dir.glob("screenshot-*.png")):
-            return True
+        if not self.data_path.property_exec_info.exists():
+            logger.warning(f"Property exec info file {self.data_path.property_exec_info} not found")
+            return {}
             
-        # Method 2: Try to read init config from logs
-        fastbot_log_path = list(self.result_dir.glob("fastbot_*.log"))
-        if fastbot_log_path:
-            try:
-                with open(fastbot_log_path[0], "r", encoding="utf-8") as f:
-                    log_content = f.read()
-                    if '"takeScreenshots": true' in log_content:
-                        return True
-            except Exception:
-                pass
-                
-        return False
-
-    def _generate_html_report(self, data):
-        """
-        Generate HTML format bug report
-        """
         try:
-            # Prepare screenshot data
-            screenshots = []
-            relative_path = f"output_{self.log_timestamp}/screenshots"
-
-            if self.screenshots_dir.exists():
-                screenshot_files = sorted(self.screenshots_dir.glob("screenshot-*.png"),
-                                     key=lambda x: int(x.name.split("-")[1].split(".")[0]))
-
-                for i, screenshot in enumerate(screenshot_files, 1):
-                    screenshot_name = screenshot.name
-
-                    # Get information for this screenshot
-                    caption = f"{i}"
-                    if screenshot_name in data["screenshot_info"]:
-                        info = data["screenshot_info"][screenshot_name]
-                        caption = f"{i}. {info.get('caption', '')}"
-
-                    screenshots.append({
-                        'id': i,
-                        'path': f"{relative_path}/{screenshot_name}",
-                        'caption': caption
-                    })
-            
-            # Format timestamp for display
-            timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-            
-            # Ensure coverage_trend has data
-            if not data["coverage_trend"]:
-                logger.warning("No coverage trend data")
-                data["coverage_trend"] = [{"steps": 0, "coverage": 0, "tested_activities_count": 0}]
-            
-            # Convert coverage_trend to JSON string, ensuring all data points are included
-            coverage_trend_json = json.dumps(data["coverage_trend"])
-            logger.debug(f"Number of coverage trend data points: {len(data['coverage_trend'])}")
-            
-            # Prepare template data
-            template_data = {
-                'timestamp': timestamp,
-                'bugs_found': data["bugs_found"],
-                'total_testing_time': data["total_testing_time"],
-                'executed_events': data["executed_events"],
-                'coverage_percent': round(data["coverage"], 2),
-                'first_bug_time': data["first_bug_time"],
-                'first_precondition_time': data["first_precondition_time"],
-                'total_activities_count': len(data["total_activities"]),
-                'tested_activities_count': len(data["tested_activities"]),
-                'tested_activities': data["tested_activities"],  # Pass list of tested Activities
-                'total_activities': data["total_activities"],    # Pass list of all Activities
-                'items_per_page': 10,  # Items to display per page
-                'screenshots': screenshots,
-                'property_violations': data["property_violations"],
-                'property_stats': data["property_stats"],
-                'coverage_data': coverage_trend_json,
-                'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
-            }
-            
-            # Check if template exists, if not create it
-            template_path = Path(__file__).parent / "templates" / "bug_report_template.html"
-            if not template_path.exists():
-                logger.warning("Template file does not exist, creating default template...")
-            
-            # Use Jinja2 to render template
-            template = self.jinja_env.get_template("bug_report_template.html")
-            html_content = template.render(**template_data)
-            
-            return html_content
+            property_exec_infos = self._parse_property_exec_infos()
+            return self._group_errors_by_property(property_exec_infos)
             
         except Exception as e:
-            logger.error(f"Error rendering template: {e}")
-            raise
+            logger.error(f"Error reading property exec info file: {e}")
+            return {}
+
+    def _parse_property_exec_infos(self) -> List[PropertyExecInfo]:
+        """Parse property execution info from file"""
+        exec_infos = []
+        
+        with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
+            for line_number, line in enumerate(f, 1):
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                try:
+                    exec_info_data = json.loads(line)
+                    prop_name = exec_info_data.get("propName", "")
+                    state = exec_info_data.get("state", "")
+                    tb = exec_info_data.get("tb", "")
+                    start_steps_count = exec_info_data.get("startStepsCount", 0)
+                    
+                    exec_info = PropertyExecInfo(
+                        prop_name=prop_name,
+                        state=state,
+                        traceback=tb,
+                        start_steps_count=start_steps_count
+                    )
+                    
+                    if exec_info.is_error_state() and prop_name and tb:
+                        exec_infos.append(exec_info)
+                        
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
+                    continue
+                    
+        return exec_infos
+
+    def _group_errors_by_property(self, exec_infos: List[PropertyExecInfo]) -> Dict[str, List[Dict]]:
+        """Group errors by property name and deduplicate"""
+        error_details = {}
+        
+        for exec_info in exec_infos:
+            prop_name = exec_info.prop_name
+            
+            if prop_name not in error_details:
+                error_details[prop_name] = {}
+            
+            error_hash = exec_info.get_error_hash()
+            
+            if error_hash in error_details[prop_name]:
+                # Error already exists, add occurrence
+                error_details[prop_name][error_hash].add_occurrence(exec_info.start_steps_count)
+            else:
+                # New error, create entry
+                error_details[prop_name][error_hash] = exec_info
+        
+        # Convert to template-compatible format
+        result = {}
+        for prop_name, hash_dict in error_details.items():
+            result[prop_name] = []
+            for exec_info in hash_dict.values():
+                result[prop_name].append({
+                    "state": exec_info.state,
+                    "traceback": exec_info.traceback,
+                    "occurrence_count": exec_info.occurrence_count,
+                    "short_description": exec_info.short_description,
+                    "startStepsCountList": exec_info.start_steps_count_list
+                })
+            
+            # Sort by earliest startStepsCount, then by occurrence count (descending)
+            result[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
+        
+        return result
+
+    def _generate_property_execution_trend(self, executed_properties_by_step: Dict[int, set]) -> List[Dict]:
+        """
+        Generate property execution trend aligned with coverage trend
+        
+        Args:
+            executed_properties_by_step: Dictionary containing executed properties at each step
+            
+        Returns:
+            List[Dict]: Property execution trend data aligned with coverage trend
+        """
+        property_execution_trend = []
+        
+        # Get step points from coverage trend to ensure alignment
+        coverage_step_points = []
+        if self.cov_trend:
+            coverage_step_points = [cov_data["stepsCount"] for cov_data in self.cov_trend]
+        
+        # If no coverage data, use property execution data points
+        if not coverage_step_points and executed_properties_by_step:
+            coverage_step_points = sorted(executed_properties_by_step.keys())
+        
+        # Generate property execution data for each coverage step point
+        for step_count in coverage_step_points:
+            # Find the latest executed properties count up to this step
+            executed_count = 0
+            latest_step = 0
+            
+            for exec_step in executed_properties_by_step.keys():
+                if exec_step <= step_count and exec_step >= latest_step:
+                    latest_step = exec_step
+                    executed_count = len(executed_properties_by_step[exec_step])
+            
+            property_execution_trend.append({
+                "stepsCount": step_count,
+                "executedPropertiesCount": executed_count
+            })
+        
+        return property_execution_trend
+
+
+if __name__ == "__main__":
+    print("Generating bug report")
+    # OUTPUT_PATH = "<Your output path>"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025070814_4842540549"
+
+    report_generator = BugReportGenerator()
+    report_path = report_generator.generate_report(OUTPUT_PATH)
+    print(f"bug report generated: {report_path}")

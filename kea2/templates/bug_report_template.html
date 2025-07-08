@@ -24,6 +24,47 @@
             line-height: 1.6;
         }
         
+        /* Custom container width - wider than Bootstrap default */
+        .container {
+            max-width: 98% !important;
+            width: 98% !important;
+        }
+        
+        @media (min-width: 1200px) {
+            .container {
+                max-width: 1800px !important;
+                width: 95% !important;
+            }
+        }
+        
+        @media (min-width: 1400px) {
+            .container {
+                max-width: 2000px !important;
+                width: 92% !important;
+            }
+        }
+        
+        @media (min-width: 1600px) {
+            .container {
+                max-width: 2200px !important;
+                width: 90% !important;
+            }
+        }
+        
+        @media (min-width: 1800px) {
+            .container {
+                max-width: 2400px !important;
+                width: 88% !important;
+            }
+        }
+        
+        @media (min-width: 2000px) {
+            .container {
+                max-width: 2600px !important;
+                width: 85% !important;
+            }
+        }
+        
         .header {
             background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
@@ -81,9 +122,10 @@
         
         .screenshot-item {
             flex: 0 0 auto;
-            width: 250px;
+            width: 300px;
             position: relative;
             transition: transform 0.2s;
+            margin-bottom: 10px;
         }
         
         .screenshot-item:hover {
@@ -91,45 +133,111 @@
         }
         
         .screenshot-img {
-            width: 250px;
+            width: 300px;
             height: 400px;
             object-fit: contain;
             border-radius: 8px;
             box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+            margin-bottom: 8px;
         }
         
         .screenshot-caption {
-            font-size: 14px;
+            font-size: 13px;
             color: #555;
-            padding: 8px 4px;
-            text-overflow: ellipsis;
-            overflow: hidden;
+            padding: 12px 8px;
             font-weight: 500;
             text-align: center;
             background-color: white;
-            border-radius: 0 0 8px 8px;
+            border-radius: 8px;
             box-shadow: 0 3px 6px rgba(0, 0, 0, 0.05);
+            line-height: 1.5;
+            white-space: normal;
+            word-wrap: break-word;
+            min-height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .screenshot-caption .step-number {
+            display: block;
+            font-weight: 600;
+            color: var(--primary-color);
+            font-size: 12px;
+            margin-bottom: 4px;
+        }
+        
+        .screenshot-caption .step-action {
+            display: block;
+            font-size: 13px;
+            color: #666;
+            font-weight: 400;
+            line-height: 1.3;
         }
         
         .table-custom {
             border-radius: 10px;
             overflow: hidden;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            table-layout: auto;
         }
         
         .table-custom thead {
-            background-color: var(--primary-color);
+            background-color: #495057;
             color: white;
         }
         
         .table-custom th {
             font-weight: 600;
-            padding: 15px 20px;
+            padding: 15px 12px;
+            white-space: nowrap;
+            text-align: center;
         }
         
         .table-custom td {
-            padding: 15px 20px;
+            padding: 15px 12px;
             vertical-align: middle;
+            text-align: center;
+        }
+        
+        /* Specific column widths for property statistics table */
+        .table-custom th:nth-child(1), .table-custom td:nth-child(1) { /* Index */
+            width: 8%;
+            min-width: 60px;
+        }
+        
+        .table-custom th:nth-child(2), .table-custom td:nth-child(2) { /* Property Name */
+            width: 25%;
+            min-width: 200px;
+            text-align: left;
+        }
+        
+        .table-custom th:nth-child(3), .table-custom td:nth-child(3) { /* Precondition Satisfied */
+            width: 12%;
+            min-width: 100px;
+        }
+        
+        .table-custom th:nth-child(4), .table-custom td:nth-child(4) { /* Executed */
+            width: 10%;
+            min-width: 80px;
+        }
+        
+        .table-custom th:nth-child(5), .table-custom td:nth-child(5) { /* Fails */
+            width: 10%;
+            min-width: 80px;
+        }
+        
+        .table-custom th:nth-child(6), .table-custom td:nth-child(6) { /* Errors */
+            width: 10%;
+            min-width: 80px;
+        }
+        
+        .table-custom th:nth-child(7), .table-custom td:nth-child(7) { /* Error Details */
+            width: 25%;
+            min-width: 200px;
+            text-align: left;
         }
         
         .table-custom tbody tr:nth-of-type(odd) {
@@ -182,7 +290,6 @@
             border-radius: 3px;
         }
         
-        /* 增加板块间距 */
         .section-block {
             margin-bottom: 70px;
         }
@@ -232,7 +339,7 @@
         }
         
         .activity-list {
-            height: 300px; /* 固定高度 */
+            height: 550px;
             overflow-y: auto;
             border-radius: 8px;
             border: 1px solid rgba(0,0,0,0.1);
@@ -240,7 +347,7 @@
             background-color: rgba(255,255,255,0.5);
             scrollbar-width: thin;
             scrollbar-color: var(--primary-color) #eee;
-            margin-bottom: 15px; /* 为翻页按钮留出空间 */
+            margin-bottom: 15px;
         }
         
         .activity-list::-webkit-scrollbar {
@@ -260,7 +367,7 @@
         .activities-container {
             display: flex;
             flex-direction: column;
-            height: 400px; /* 容器总高度 */
+            height: 650px;
         }
         
         .pagination-container {
@@ -280,6 +387,28 @@
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
             transition: all 0.2s;
             line-height: 1.5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .activity-item .activity-content {
+            display: flex;
+            align-items: center;
+            flex: 1;
+            min-width: 0;
+        }
+        
+        .activity-item .activity-name {
+            flex: 1;
+            word-break: break-all;
+            margin-right: 10px;
+        }
+        
+        .activity-item .traversal-badge {
+            flex-shrink: 0;
+            font-size: 0.85rem;
+            font-weight: 500;
         }
         
         .activity-item:hover {
@@ -287,19 +416,160 @@
             transform: translateX(3px);
         }
         
-        /* Responsive adjustments */
+        .nav-tabs .nav-link {
+            color: #666;
+            border: 1px solid transparent;
+            border-radius: 6px 6px 0 0;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tabs .nav-link:hover {
+            color: var(--primary-color);
+            border-color: rgba(52, 152, 219, 0.2);
+            background-color: rgba(52, 152, 219, 0.05);
+        }
+        
+        .nav-tabs .nav-link.active {
+            color: var(--primary-color);
+            background-color: white;
+            border-color: #dee2e6 #dee2e6 #fff;
+            font-weight: 600;
+        }
+        
+        .tab-content {
+            border: 1px solid #dee2e6;
+            border-top: none;
+            border-radius: 0 0 8px 8px;
+            padding: 20px;
+            background-color: #fafafa;
+        }
+        
+        .sorting-controls {
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .sorting-controls .form-select {
+            min-width: 140px;
+        }
+        
+        .sorting-controls .btn {
+            transition: all 0.3s ease;
+        }
+        
+        .sorting-controls .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .sort-icon {
+            margin-left: 8px;
+            transition: all 0.3s ease;
+            font-size: 1.4rem;
+            color: #ffffff !important;
+            opacity: 0.6;
+            text-shadow: 0 0 3px rgba(0,0,0,0.3);
+        }
+        
+        .sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .sort-icon.active {
+            opacity: 1;
+            font-weight: bold;
+            text-shadow: 0 0 5px rgba(0,0,0,0.5);
+        }
+        
+        .sort-icon.asc.active {
+            color: #40e0d0 !important;
+        }
+        
+        .sort-icon.desc.active {
+            color: #ff6b6b !important;
+        }
+        
+        .table-violations thead {
+            background-color: #dc3545 !important;
+            color: white;
+        }
+        
+        .table-violations .sort-icon {
+            color: #ffffff !important;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+        
+        .table-violations .sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.6);
+        }
+        
         @media (max-width: 768px) {
+            .container {
+                max-width: 98% !important;
+                width: 98% !important;
+                padding-left: 10px !important;
+                padding-right: 10px !important;
+            }
+            
             .stat-value {
                 font-size: 1.5rem;
             }
             
             .screenshot-item {
-                width: 200px;
+                width: 280px;
             }
             
             .screenshot-img {
-                width: 200px;
-                height: 320px;
+                width: 280px;
+                height: 400px;
+            }
+            
+            .table-custom {
+                font-size: 0.9rem;
+            }
+            
+            .table-custom th, .table-custom td {
+                padding: 10px 6px;
+            }
+            
+            .badge-custom {
+                font-size: 0.8rem;
+                padding: 4px 8px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .container {
+                max-width: 100% !important;
+                width: 100% !important;
+                padding-left: 5px !important;
+                padding-right: 5px !important;
+            }
+            
+            .screenshot-item {
+                width: 260px;
+            }
+            
+            .screenshot-img {
+                width: 260px;
+                height: 380px;
+            }
+            
+            .table-custom {
+                font-size: 0.8rem;
+            }
+            
+            .table-custom th, .table-custom td {
+                padding: 8px 4px;
+                white-space: normal;
             }
         }
     </style>
@@ -321,32 +591,46 @@
                 <div class="summary-card">
                     <h2 class="section-title">Test Summary</h2>
                     <div class="row g-4">
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-2 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-danger">{{ bugs_found }}</span>
                                 <span class="stat-label">Bugs Found</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-2 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-clock-history text-primary" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
+                                <span class="stat-value value-highlight">{{ total_testing_time }}</span>
                                 <span class="stat-label">Total Testing Time</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-2 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-activity text-success" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-success">{{ executed_events }}</span>
                                 <span class="stat-label">Executed Events</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-md-2 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-warning">{{ coverage_percent }}%</span>
                                 <span class="stat-label">Activity Coverage</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-list-check text-info" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ all_properties_count }}</span>
+                                <span class="stat-label">All Properties</span>
+                            </div>
+                        </div>
+                        <div class="col-md-2 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-check-square text-secondary" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-success">{{ executed_properties_count }}</span>
+                                <span class="stat-label">Executed Properties</span>
                             </div>
                         </div>
                     </div>
@@ -354,78 +638,19 @@
             </div>
         </div>
 
-        <!-- Key Statistics -->
-        <div class="row g-4 mb-4">
-            <div class="col-md-6">
-                <div class="stats-card">
-                    <div class="card-header bg-primary text-white">
-                        <i class="bi bi-stopwatch"></i> Time Statistics
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>First Bug Discovery Time:</span>
-                                <span class="value-danger">{{ (first_bug_time / 60)|int }} min: {{ (first_bug_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-danger" role="progressbar" 
-                                     style="width: calc({{ first_bug_time }} / {{ total_testing_time }} * 100%);" 
-                                     aria-valuenow="{{ first_bug_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>First Precondition Satisfaction Time:</span>
-                                <span class="value-success">{{ (first_precondition_time / 60)|int }} min: {{ (first_precondition_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-success" role="progressbar" 
-                                     style="width: calc({{ first_precondition_time }} / {{ total_testing_time }} * 100%);" 
-                                     aria-valuenow="{{ first_precondition_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                        <div>
-                            <h5 class="d-flex justify-content-between">
-                                <span>Total Testing Time:</span>
-                                <span class="value-primary">{{ (total_testing_time / 60)|int }} min: {{ (total_testing_time % 60)|int }} sec</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-primary" role="progressbar" style="width: 100%;" 
-                                     aria-valuenow="{{ total_testing_time }}" aria-valuemin="0" aria-valuemax="{{ total_testing_time }}"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        <!-- Coverage Trend Chart -->
+        <div class="section-block">
+            <h2 class="section-title">Coverage Trend</h2>
+            <div class="chart-container">
+                <canvas id="coverageChart"></canvas>
             </div>
-            <div class="col-md-6">
-                <div class="stats-card">
-                    <div class="card-header bg-success text-white">
-                        <i class="bi bi-bar-chart"></i> Coverage Statistics
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <h5 class="d-flex justify-content-between">
-                                <span>Activity Coverage:</span>
-                                <span class="value-warning">{{ coverage_percent }}%</span>
-                            </h5>
-                            <div class="progress">
-                                <div class="progress-bar bg-warning" role="progressbar" 
-                                     style="width: {{ coverage_percent }}%;" 
-                                     aria-valuenow="{{ coverage_percent }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
-                        <div class="row mt-4">
-                            <div class="col-6 text-center">
-                                <div class="stat-value value-primary">{{ total_activities_count }}</div>
-                                <div class="stat-label">Total Activities</div>
-                            </div>
-                            <div class="col-6 text-center">
-                                <div class="stat-value value-success">{{ tested_activities_count }}</div>
-                                <div class="stat-label">Tested Activities</div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+        </div>
+
+        <!-- Property Execution Trend Chart -->
+        <div class="section-block">
+            <h2 class="section-title">Property Execution Trend</h2>
+            <div class="chart-container">
+                <canvas id="propertyExecutionChart"></canvas>
             </div>
         </div>
 
@@ -433,25 +658,67 @@
         <div class="section-block">
             <h2 class="section-title">Activities Coverage</h2>
             
-            <div class="row g-4">
-                <!-- Tested Activities Panel -->
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-success text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})</span>
-                                <span class="badge bg-light text-dark">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-app"></i> Activities Coverage Overview</span>
+                        <span class="badge bg-light text-dark" style="font-size: 1.1em; font-weight: 600;">Coverage: {{ coverage_percent }}%</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-3" style="border-left: 4px solid #17a2b8; background-color: #f8f9fa;">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Traversal Count Explanation:</strong> 
+                            The number after the <i class="bi bi-eye"></i> icon indicates how many times each Activity was visited during testing.
+                        </small>
+                    </div>
+                    
+                    <!-- Navigation Tabs -->
+                    <ul class="nav nav-tabs mb-3" id="activitiesTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="tested-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#tested-activities" type="button" role="tab" 
+                                    aria-controls="tested-activities" aria-selected="true">
+                                <i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="all-tab" data-bs-toggle="tab" 
+                                    data-bs-target="#all-activities" type="button" role="tab" 
+                                    aria-controls="all-activities" aria-selected="false">
+                                <i class="bi bi-app"></i> All Activities ({{ total_activities|length }})
+                            </button>
+                        </li>
+                    </ul>
+                    
+                    <!-- Tab Content -->
+                    <div class="tab-content" id="activitiesTabContent">
+                        <!-- Tested Activities Tab -->
+                        <div class="tab-pane fade show active" id="tested-activities" role="tabpanel" 
+                             aria-labelledby="tested-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-success">
+                                    <i class="bi bi-check-circle-fill"></i> Tested Activities
+                                </h5>
+                                <span class="badge bg-success">{{ tested_activities|length }} / {{ total_activities_count }}</span>
                             </div>
-                        </div>
-                        <div class="card-body">
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if tested_activities|length > 0 %}
                                         <div id="tested-activities-container">
                                             {% for activity in tested_activities %}
                                                 <div class="activity-item tested-activity" data-page="1">
-                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                    {{ activity }}
+                                                    <div class="activity-content">
+                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                        <span class="activity-name">{{ activity }}</span>
+                                                    </div>
+                                                    {% if activity in activity_count_history %}
+                                                        <span class="badge bg-info text-white traversal-badge">
+                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
+                                                        </span>
+                                                    {% endif %}
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -462,40 +729,55 @@
                                     {% endif %}
                                 </div>
                                 <!-- Pagination for Tested Activities -->
-                                <div class="pagination-container d-flex justify-content-center">
+                                <div class="pagination-container d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <label for="tested-page-size" class="form-label me-2 mb-0">Show:</label>
+                                        <select class="form-select form-select-sm" id="tested-page-size" style="width: auto;">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
                                     <nav aria-label="Tested Activities Pagination">
-                                        <ul class="pagination pagination-sm" id="tested-pagination">
+                                        <ul class="pagination pagination-sm mb-0" id="tested-pagination">
                                             <!-- Pagination will be generated by JavaScript -->
                                         </ul>
                                     </nav>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- All Activities Panel -->
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header bg-primary text-white">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><i class="bi bi-app"></i> All Activities ({{ total_activities|length }})</span>
-                                <span class="badge bg-light text-dark">Coverage: {{ coverage_percent }}%</span>
+                        
+                        <!-- All Activities Tab -->
+                        <div class="tab-pane fade" id="all-activities" role="tabpanel" 
+                             aria-labelledby="all-tab">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <h5 class="mb-0 text-primary">
+                                    <i class="bi bi-app"></i> All Activities Overview
+                                </h5>
+                                <span class="badge bg-primary">Total: {{ total_activities|length }}</span>
                             </div>
-                        </div>
-                        <div class="card-body">
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if total_activities|length > 0 %}
                                         <div id="all-activities-container">
                                             {% for activity in total_activities %}
                                                 <div class="activity-item all-activity" data-page="1">
-                                                    {% if activity in tested_activities %}
-                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-dash-circle text-secondary me-2"></i>
+                                                    <div class="activity-content">
+                                                        {% if activity in tested_activities %}
+                                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                        {% else %}
+                                                            <i class="bi bi-dash-circle text-secondary me-2"></i>
+                                                        {% endif %}
+                                                        <span class="activity-name">{{ activity }}</span>
+                                                    </div>
+                                                    {% if activity in activity_count_history %}
+                                                        <span class="badge bg-info text-white traversal-badge">
+                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
+                                                        </span>
                                                     {% endif %}
-                                                    {{ activity }}
                                                 </div>
                                             {% endfor %}
                                         </div>
@@ -506,9 +788,19 @@
                                     {% endif %}
                                 </div>
                                 <!-- Pagination for All Activities -->
-                                <div class="pagination-container d-flex justify-content-center">
+                                <div class="pagination-container d-flex justify-content-between align-items-center">
+                                    <div class="d-flex align-items-center">
+                                        <label for="all-page-size" class="form-label me-2 mb-0">Show:</label>
+                                        <select class="form-select form-select-sm" id="all-page-size" style="width: auto;">
+                                            <option value="5">5</option>
+                                            <option value="10" selected>10</option>
+                                            <option value="20">20</option>
+                                            <option value="50">50</option>
+                                            <option value="100">100</option>
+                                        </select>
+                                    </div>
                                     <nav aria-label="All Activities Pagination">
-                                        <ul class="pagination pagination-sm" id="all-pagination">
+                                        <ul class="pagination pagination-sm mb-0" id="all-pagination">
                                             <!-- Pagination will be generated by JavaScript -->
                                         </ul>
                                     </nav>
@@ -541,20 +833,12 @@
         </div>
         {% endif %}
 
-        <!-- Coverage Trend Chart -->
-        <div class="section-block">
-            <h2 class="section-title">Coverage Trend</h2>
-            <div class="chart-container">
-                <canvas id="coverageChart"></canvas>
-            </div>
-        </div>
-
         <!-- Property Violations List -->
         {% if take_screenshots %}
         <div class="section-block">
             <h2 class="section-title">Property Violations</h2>
             <div class="table-responsive">
-                <table class="table table-custom">
+                <table class="table table-custom table-violations">
                     <thead>
                         <tr>
                             <th>Index</th>
@@ -578,9 +862,19 @@
                 </table>
                 
                 <!-- Pagination for Property Violations -->
-                <div class="d-flex justify-content-center mt-3">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                        <label for="violations-page-size" class="form-label me-2 mb-0">Show:</label>
+                        <select class="form-select form-select-sm" id="violations-page-size" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                     <nav aria-label="Property Violations Pagination">
-                        <ul class="pagination pagination-sm" id="violations-pagination">
+                        <ul class="pagination pagination-sm mb-0" id="violations-pagination">
                             <!-- Pagination will be generated by JavaScript -->
                         </ul>
                     </nav>
@@ -592,6 +886,7 @@
         <!-- Property Checking Statistics -->
         <div class="section-block">
             <h2 class="section-title">Property Checking Statistics</h2>
+            
             <div class="table-responsive">
                 <table class="table table-custom">
                     <thead>
@@ -600,28 +895,171 @@
                             <th>Property Name</th>
                             <th>Precondition Satisfied</th>
                             <th>Executed</th>
-                            <th>Fails</th>
-                            <th>Errors</th>
+                            <th>Fails <i class="bi bi-arrow-down-up text-muted sort-icon" id="fails-sort" data-column="fails" data-order="none" style="cursor: pointer;"></i></th>
+                            <th>Errors <i class="bi bi-arrow-down-up text-muted sort-icon" id="errors-sort" data-column="errors" data-order="none" style="cursor: pointer;"></i></th>
+                            <th>Error Details</th>
                         </tr>
                     </thead>
                     <tbody id="property-stats-container">
-                        {% for stat in property_stats %}
-                        <tr class="property-stat-row" data-page="1">
-                            <td>{{ stat.index }}</td>
-                            <td><span class="badge bg-light text-dark badge-custom">{{ stat.property_name }}</span></td>
-                            <td>{{ stat.precond_satisfied }}</td>
-                            <td>{{ stat.precond_checked }}</td>
-                            <td><span class="badge bg-danger text-white">{{ stat.postcond_violated }}</span></td>
-                            <td><span class="badge bg-warning text-dark">{{ stat.error }}</span></td>
+                        {% for property_name, test_result in property_stats.items() %}
+                        <tr class="property-stat-row" data-page="1" 
+                            data-index="{{ loop.index }}"
+                            data-property-name="{{ property_name }}"
+                            data-precond-satisfied="{{ test_result.precond_satisfied|default(0) }}"
+                            data-executed="{{ test_result.executed|default(0) }}"
+                            data-fails="{{ test_result.fail|default(0) }}"
+                            data-errors="{{ test_result.error|default(0) }}">
+                            <td>{{ loop.index }}</td>
+                            <td><span class="badge bg-light text-dark badge-custom">{{ property_name }}</span></td>
+                            <td>{{ test_result.precond_satisfied|default(0) }}</td>
+                            <td>{{ test_result.executed|default(0) }}</td>
+                            <td><span class="badge bg-danger text-white">{{ test_result.fail|default(0) }}</span></td>
+                            <td><span class="badge bg-warning text-dark">{{ test_result.error|default(0) }}</span></td>
+                            <td>
+                                {% if (test_result.fail|default(0) > 0 or test_result.error|default(0) > 0) and property_name in property_error_details %}
+                                    {% set error_list = property_error_details[property_name] %}
+                                    {% set property_index = loop.index %}
+                                    {% if error_list|length == 1 %}
+                                        <!-- Single error - simple display -->
+                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#single-error-detail-{{ property_index }}" aria-expanded="false" 
+                                                aria-controls="single-error-detail-{{ property_index }}">
+                                            <i class="bi bi-exclamation-triangle"></i> View Error
+                                        </button>
+                                        <div class="collapse mt-2" id="single-error-detail-{{ property_index }}">
+                                            <div class="card card-body bg-light">
+                                                <div class="mb-2">
+                                                    <span class="badge bg-{{ 'danger' if error_list[0].state == 'fail' else 'warning' }}">
+                                                        {{ error_list[0].state|upper }}
+                                                    </span>
+                                                    {% if error_list[0].occurrence_count > 1 %}
+                                                        <span class="badge bg-info ms-2">
+                                                            Occurred {{ error_list[0].occurrence_count }} times
+                                                        </span>
+                                                    {% endif %}
+                                                    {% if error_list[0].startStepsCountList is defined and error_list[0].startStepsCountList|length > 0 %}
+                                                        <span class="badge bg-secondary ms-2">
+                                                            <i class="bi bi-step-forward"></i> Monkey Steps: {{ error_list[0].startStepsCountList|join(', ') }}
+                                                        </span>
+                                                    {% endif %}
+                                                </div>
+                                                {% if error_list[0].short_description %}
+                                                    <div class="mb-2">
+                                                        <strong>Error:</strong> <code>{{ error_list[0].short_description }}</code>
+                                                    </div>
+                                                {% endif %}
+                                                <details>
+                                                    <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
+                                                    <pre class="text-danger mb-0" style="font-size: 0.85rem; white-space: pre-wrap;">{{ error_list[0].traceback }}</pre>
+                                                </details>
+                                            </div>
+                                        </div>
+                                    {% else %}
+                                        <!-- Multiple errors - tabbed display -->
+                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" 
+                                                data-bs-target="#multi-error-detail-{{ property_index }}" aria-expanded="false" 
+                                                aria-controls="multi-error-detail-{{ property_index }}">
+                                            <i class="bi bi-exclamation-triangle"></i> View {{ error_list|length }} Errors
+                                        </button>
+                                        <div class="collapse mt-2" id="multi-error-detail-{{ property_index }}">
+                                            <div class="card card-body bg-light">
+                                                <!-- Error summary -->
+                                                <div class="mb-3">
+                                                    <h6 class="text-danger">Multiple Errors Detected</h6>
+                                                    <div class="d-flex flex-wrap gap-1">
+                                                        {% for error in error_list %}
+                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
+                                                                {{ error.state|upper }} #{{ loop.index }}
+                                                                {% if error.occurrence_count > 1 %} ({{ error.occurrence_count }}x){% endif %}
+                                                                {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                                    @{% if error.startStepsCountList|length == 1 %}{{ error.startStepsCountList[0] }}{% else %}{{ error.startStepsCountList[0] }}-{{ error.startStepsCountList[-1] }}{% endif %}
+                                                                {% endif %}
+                                                            </span>
+                                                        {% endfor %}
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Error tabs -->
+                                                <ul class="nav nav-pills nav-fill mb-3" id="multi-error-tabs-{{ property_index }}" role="tablist">
+                                                    {% for error in error_list %}
+                                                    <li class="nav-item" role="presentation">
+                                                        <button class="nav-link {{ 'active' if loop.first else '' }} btn-sm" 
+                                                                id="multi-error-tab-{{ property_index }}-{{ loop.index }}" 
+                                                                data-bs-toggle="pill" 
+                                                                data-bs-target="#multi-error-content-{{ property_index }}-{{ loop.index }}" 
+                                                                type="button" role="tab" 
+                                                                aria-controls="multi-error-content-{{ property_index }}-{{ loop.index }}" 
+                                                                aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }} me-1">
+                                                                {{ error.state|upper }}
+                                                            </span>
+                                                            #{{ loop.index }}
+                                                        </button>
+                                                    </li>
+                                                    {% endfor %}
+                                                </ul>
+                                                
+                                                <!-- Error content -->
+                                                <div class="tab-content" id="multi-error-content-{{ property_index }}">
+                                                    {% for error in error_list %}
+                                                    <div class="tab-pane fade {{ 'show active' if loop.first else '' }}" 
+                                                         id="multi-error-content-{{ property_index }}-{{ loop.index }}" 
+                                                         role="tabpanel" 
+                                                         aria-labelledby="multi-error-tab-{{ property_index }}-{{ loop.index }}">
+                                                        <div class="mb-2">
+                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
+                                                                {{ error.state|upper }} #{{ loop.index }}
+                                                            </span>
+                                                            <small class="text-muted ms-2">Error {{ loop.index }} of {{ loop.length }}</small>
+                                                            {% if error.occurrence_count > 1 %}
+                                                                <span class="badge bg-info ms-2">
+                                                                    {{ error.occurrence_count }} occurrences
+                                                                </span>
+                                                            {% endif %}
+                                                            {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                                <span class="badge bg-secondary ms-2">
+                                                                    <i class="bi bi-step-forward"></i> Monkey Steps: {{ error.startStepsCountList|join(', ') }}
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                        {% if error.short_description %}
+                                                            <div class="mb-2">
+                                                                <strong>Error:</strong> <code>{{ error.short_description }}</code>
+                                                            </div>
+                                                        {% endif %}
+                                                        <details>
+                                                            <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
+                                                            <pre class="text-danger mb-0" style="font-size: 0.85rem; white-space: pre-wrap;">{{ error.traceback }}</pre>
+                                                        </details>
+                                                    </div>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
                 
                 <!-- Pagination for Property Checking Statistics -->
-                <div class="d-flex justify-content-center mt-3">
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                        <label for="stats-page-size" class="form-label me-2 mb-0">Show:</label>
+                        <select class="form-select form-select-sm" id="stats-page-size" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
+                    </div>
                     <nav aria-label="Property Stats Pagination">
-                        <ul class="pagination pagination-sm" id="stats-pagination">
+                        <ul class="pagination pagination-sm mb-0" id="stats-pagination">
                             <!-- Pagination will be generated by JavaScript -->
                         </ul>
                     </nav>
@@ -646,12 +1084,12 @@
             console.log("Coverage data points:", coverageData.length);
 
             coverageData.sort(function(a, b) {
-                return a.steps - b.steps;
+                return a.stepsCount - b.stepsCount;
             });
             
-            var steps = coverageData.map(function(item) { return item.steps; });
+            var steps = coverageData.map(function(item) { return item.stepsCount; });
             var coverages = coverageData.map(function(item) { return item.coverage; });
-            var testedActivities = coverageData.map(function(item) { return item.tested_activities_count; });
+            var testedActivities = coverageData.map(function(item) { return item.testedActivitiesCount; });
 
             if (steps.length > 0 && steps[0] > 0) {
                 steps.unshift(0);
@@ -737,6 +1175,7 @@
                         x: {
                             type: 'linear',
                             beginAtZero: true,
+                            max: steps.length > 0 ? Math.max(...steps) : 10,
                             grid: {
                                 display: false
                             },
@@ -748,9 +1187,12 @@
                                 }
                             },
                             ticks: {
-                                stepSize: Math.max(10, Math.ceil(Math.max(...steps) / 10)),
+                                stepSize: steps.length > 0 ? Math.max(1, Math.ceil(Math.max(...steps) / 10)) : 1,
                                 callback: function(value) {
+                                    if (Number.isInteger(value) && value <= (steps.length > 0 ? Math.max(...steps) : 10)) {
                                     return value;
+                                    }
+                                    return null;
                                 }
                             }
                         },
@@ -797,82 +1239,219 @@
                 }
             });
             
+            // Draw property execution trend chart
+            var propertyExecutionData = {{ property_execution_data|safe }};
+            console.log("Property execution data points:", propertyExecutionData.length);
+
+            // Ensure we have valid data
+            if (propertyExecutionData.length === 0) {
+                propertyExecutionData = [{"stepsCount": 0, "executedPropertiesCount": 0}];
+            }
+
+            propertyExecutionData.sort(function(a, b) {
+                return a.stepsCount - b.stepsCount;
+            });
+            
+            var propSteps = propertyExecutionData.map(function(item) { return item.stepsCount; });
+            var executedProps = propertyExecutionData.map(function(item) { return item.executedPropertiesCount; });
+
+            // Add zero starting point if needed
+            if (propSteps.length > 0 && propSteps[0] > 0) {
+                propSteps.unshift(0);
+                executedProps.unshift(0);
+            }
+
+            console.log("Property execution steps:", propSteps);
+            console.log("Executed properties values:", executedProps);
+
+            var propCtx = document.getElementById('propertyExecutionChart').getContext('2d');
+            var propChart = new Chart(propCtx, {
+                type: 'line',
+                data: {
+                    labels: propSteps,
+                    datasets: [
+                        {
+                            label: 'Executed Properties',
+                            data: executedProps.map((value, index) => ({x: propSteps[index], y: value})),
+                            borderColor: '#e74c3c',
+                            backgroundColor: 'rgba(231, 76, 60, 0.1)',
+                            borderWidth: 3,
+                            fill: true,
+                            tension: 0.4,
+                            pointRadius: 4,
+                            pointHoverRadius: 6
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    aspectRatio: 2,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                boxWidth: 15,
+                                usePointStyle: true,
+                                pointStyle: 'circle'
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            padding: 10,
+                            displayColors: true,
+                            callbacks: {
+                                label: function(context) {
+                                    return 'Executed Properties: ' + context.parsed.y;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            type: 'linear',
+                            beginAtZero: true,
+                            max: propSteps.length > 0 ? Math.max(...propSteps) : 10,
+                            grid: {
+                                display: false
+                            },
+                            title: {
+                                display: true,
+                                text: 'Steps Count',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                stepSize: propSteps.length > 0 ? Math.max(1, Math.ceil(Math.max(...propSteps) / 10)) : 1,
+                                callback: function(value) {
+                                    if (Number.isInteger(value) && value <= (propSteps.length > 0 ? Math.max(...propSteps) : 10)) {
+                                        return value;
+                                    }
+                                    return null;
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Executed Properties',
+                                font: {
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                borderDash: [5, 5]
+                            },
+                            ticks: {
+                                stepSize: 1,
+                                callback: function(value) {
+                                    if (Number.isInteger(value)) {
+                                        return value;
+                                    }
+                                    return null;
+                                }
+                            }
+                        }
+                    },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    hover: {
+                        mode: 'index',
+                        intersect: false
+                    },
+                    animation: {
+                        duration: 1000,
+                        easing: 'easeOutQuart'
+                    }
+                }
+            });
+            
             // Initialize pagination for Activities lists
-            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', {{ items_per_page }});
-            initPagination('all-activities-container', 'all-activity', 'all-pagination', {{ items_per_page }});
+            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
+            initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');
             
             // Initialize pagination for Property tables
-            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', {{ items_per_page }});
-            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', {{ items_per_page }});
+            initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', 'violations-page-size');
+            initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
             
-            // Pagination function
-            function initPagination(containerId, itemClass, paginationId, itemsPerPage) {
-                const container = document.getElementById(containerId);
-                if (!container) return;
+            // Initialize sorting for Property Checking Statistics
+            initSorting();
+            
+            // Simplified sorting function for Fails and Errors columns
+            function initSorting() {
+                const sortIcons = document.querySelectorAll('.sort-icon');
                 
-                const items = container.getElementsByClassName(itemClass);
-                const totalItems = items.length;
-                const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
-                
-                // Create pagination
-                const paginationElement = document.getElementById(paginationId);
-                if (!paginationElement) return;
-                
-                // Clear pagination
-                paginationElement.innerHTML = '';
-                
-                // Previous button
-                const prevLi = document.createElement('li');
-                prevLi.className = 'page-item disabled';
-                prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
-                paginationElement.appendChild(prevLi);
-                
-                // Add page numbers
-                for (let i = 1; i <= totalPages; i++) {
-                    const pageLi = document.createElement('li');
-                    pageLi.className = i === 1 ? 'page-item active' : 'page-item';
-                    pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
-                    pageLi.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
-                    });
-                    paginationElement.appendChild(pageLi);
-                }
-                
-                // Next button
-                const nextLi = document.createElement('li');
-                nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
-                nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
-                paginationElement.appendChild(nextLi);
-                
-                // Initialize page 1
-                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
-                
-                // Add event listeners to prev/next buttons
-                if (paginationElement.firstChild) {
-                    paginationElement.firstChild.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const activePage = paginationElement.querySelector('.active');
-                        if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
-                            const pageNum = parseInt(activePage.textContent) - 1;
-                            if (pageNum >= 1) {
-                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                sortIcons.forEach(function(icon) {
+                    icon.addEventListener('click', function() {
+                        const column = this.dataset.column;
+                        const currentOrder = this.dataset.order;
+                        
+                        // Reset all other sort icons
+                        sortIcons.forEach(function(otherIcon) {
+                            if (otherIcon !== icon) {
+                                otherIcon.dataset.order = 'none';
+                                otherIcon.className = 'bi bi-arrow-down-up sort-icon';
+                                otherIcon.style.color = '#6c757d';
                             }
+                        });
+                        
+                        // Toggle current sort order
+                        let newOrder;
+                        if (currentOrder === 'none' || currentOrder === 'desc') {
+                            newOrder = 'asc';
+                            this.className = 'bi bi-arrow-up sort-icon active asc';
+                            this.style.color = '#28a745';
+                        } else {
+                            newOrder = 'desc';
+                            this.className = 'bi bi-arrow-down sort-icon active desc';
+                            this.style.color = '#dc3545';
+                        }
+                        
+                        this.dataset.order = newOrder;
+                        sortTable(column, newOrder);
+                    });
+                });
+                
+                function sortTable(column, order) {
+                    const container = document.getElementById('property-stats-container');
+                    const rows = Array.from(container.getElementsByClassName('property-stat-row'));
+                    
+                    rows.sort(function(a, b) {
+                        let valueA, valueB;
+                        
+                        if (column === 'fails') {
+                            valueA = parseInt(a.dataset.fails);
+                            valueB = parseInt(b.dataset.fails);
+                        } else if (column === 'errors') {
+                            valueA = parseInt(a.dataset.errors);
+                            valueB = parseInt(b.dataset.errors);
+                        }
+                        
+                        if (order === 'asc') {
+                            return valueA - valueB;
+                        } else {
+                            return valueB - valueA;
                         }
                     });
-                }
-                
-                if (paginationElement.lastChild) {
-                    paginationElement.lastChild.addEventListener('click', function(e) {
-                        e.preventDefault();
-                        const activePage = paginationElement.querySelector('.active');
-                        if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
-                            const pageNum = parseInt(activePage.textContent) + 1;
-                            if (pageNum <= totalPages) {
-                                goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
-                            }
-                        }
+                    
+                    // Clear container and append sorted rows
+                    container.innerHTML = '';
+                    rows.forEach(function(row) {
+                        container.appendChild(row);
                     });
+                    
+                    // Re-initialize pagination after sorting
+                    initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
                 }
             }
             
@@ -921,6 +1500,94 @@
                 }
             }
             
+            // Pagination function
+            function initPagination(containerId, itemClass, paginationId, pageSizeSelectId) {
+                const container = document.getElementById(containerId);
+                const pageSizeSelect = document.getElementById(pageSizeSelectId);
+                if (!container) return;
+                
+                // Get initial page size
+                let itemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
+                
+                // Add event listener for page size changes
+                if (pageSizeSelect) {
+                    pageSizeSelect.addEventListener('change', function() {
+                        itemsPerPage = parseInt(this.value);
+                        renderPagination();
+                        goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                    });
+                }
+                
+                function renderPagination() {
+                    const items = container.getElementsByClassName(itemClass);
+                    const totalItems = items.length;
+                    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+                    
+                    // Create pagination
+                    const paginationElement = document.getElementById(paginationId);
+                    if (!paginationElement) return;
+                    
+                    // Clear pagination
+                    paginationElement.innerHTML = '';
+                    
+                    // Previous button
+                    const prevLi = document.createElement('li');
+                    prevLi.className = 'page-item disabled';
+                    prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                    paginationElement.appendChild(prevLi);
+                    
+                    // Add page numbers
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageLi = document.createElement('li');
+                        pageLi.className = i === 1 ? 'page-item active' : 'page-item';
+                        pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                        pageLi.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
+                        });
+                        paginationElement.appendChild(pageLi);
+                    }
+                    
+                    // Next button
+                    const nextLi = document.createElement('li');
+                    nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
+                    nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                    paginationElement.appendChild(nextLi);
+                    
+                    // Add event listeners to prev/next buttons
+                    if (paginationElement.firstChild) {
+                        paginationElement.firstChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) - 1;
+                                if (pageNum >= 1) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                    
+                    if (paginationElement.lastChild) {
+                        paginationElement.lastChild.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            const activePage = paginationElement.querySelector('.active');
+                            if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
+                                const pageNum = parseInt(activePage.textContent) + 1;
+                                const totalPages = Math.ceil(container.getElementsByClassName(itemClass).length / itemsPerPage);
+                                if (pageNum <= totalPages) {
+                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                }
+                            }
+                        });
+                    }
+                }
+                
+                // Initial render
+                renderPagination();
+                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+            }
+            
             // Scroll functionality
             const screenshots = document.getElementById('screenshots');
             if (screenshots) {
@@ -931,6 +1598,56 @@
                     }
                 });
             }
+            
+            // Beautify screenshot captions
+            function beautifyScreenshotCaptions() {
+                const captions = document.querySelectorAll('.screenshot-caption');
+                captions.forEach(function(caption) {
+                    const originalText = caption.textContent.trim();
+                    
+                    // Handle Monkey Step format: "1. Monkey Step 6: SCROLL_TOP_DOWN"
+                    const monkeyStepMatch = originalText.match(/^(\d+)\.\s*Monkey Step (\d+):\s*(.+)$/);
+                    if (monkeyStepMatch) {
+                        const stepIndex = monkeyStepMatch[1];
+                        const monkeyStep = monkeyStepMatch[2];
+                        const action = monkeyStepMatch[3];
+                        
+                        caption.innerHTML = `
+                            <div class="step-number">${stepIndex}. Monkey Step ${monkeyStep}</div>
+                            <div class="step-action">${action}</div>
+                        `;
+                        return;
+                    }
+                    
+                    // Handle Script format: "1. click" or similar
+                    const scriptMatch = originalText.match(/^(\d+)\.\s*(.+)$/);
+                    if (scriptMatch) {
+                        const stepIndex = scriptMatch[1];
+                        const action = scriptMatch[2];
+                        
+                        // Check if it's a property info
+                        if (action.includes(':')) {
+                            const parts = action.split(':');
+                            if (parts.length === 2) {
+                                caption.innerHTML = `
+                                    <div class="step-number">${stepIndex}. ${parts[0].trim()}</div>
+                                    <div class="step-action">${parts[1].trim()}</div>
+                                `;
+                                return;
+                            }
+                        }
+                        
+                        // Simple action
+                        caption.innerHTML = `
+                            <div class="step-number">${stepIndex}. Script Step</div>
+                            <div class="step-action">${action}</div>
+                        `;
+                    }
+                });
+            }
+            
+            // Call beautify function after DOM is ready
+            beautifyScreenshotCaptions();
         });
     </script>
 </body>
