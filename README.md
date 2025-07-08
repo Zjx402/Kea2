@@ -6,7 +6,7 @@
 
 
 <div>
-    <img src="https://github.com/user-attachments/assets/36ec9f2f-a3d8-482a-9a61-4785f3278991" style="border-radius: 14px; width: 20%; height: 20%;"/> 
+    <img src="https://github.com/user-attachments/assets/d3de40a9-04a4-47ab-b14b-a1f8d08cb88b" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
 ### Github repo link

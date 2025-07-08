@@ -51,9 +51,10 @@ class LogWatcher:
                 )
         
         statistic_match = PATTERN_STATISTIC.search(content)
-        if statistic_match:
+        if statistic_match and not self.statistic_printed:
             statistic_body = statistic_match.group(1).strip()
             if statistic_body:
+                self.statistic_printed = True
                 print(
                     "[INFO] Fastbot exit:\n" + 
                     statistic_body
@@ -63,6 +64,7 @@ class LogWatcher:
         logger.info(f"Watching log: {log_file}")
         self.log_file = log_file
         self.end_flag = False
+        self.statistic_printed = False
 
         threading.excepthook = thread_excepthook
         self.t = threading.Thread(target=self.watcher, daemon=True)
