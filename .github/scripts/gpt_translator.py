@@ -10,14 +10,17 @@ class OpenaiTranslator:
             base_url=r"https://api.chatanywhere.tech/v1/"
         )
 
-    def translate_text(self, text):
+    def translate_text(self, reviewed, text):
+
+        processedPrompt = SYSTEM_PROMPT.replace("<reviewed>", reviewed).replace("<doc>",text)
+
         response = self.client.chat.completions.create(
             model="gpt-4.1-mini",  # You can use gpt-3.5-turbo, gpt-4, gpt-4o, etc.
             messages=[
-                {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": text},
+                {"role": "user", "content": processedPrompt},
             ],
-            stream=False
+            stream=False,
+            temperature=0.2
         )
 
         translated = response.choices[0].message.content
@@ -28,23 +31,36 @@ class OpenaiTranslator:
 GLOSSARY = """
 property -> 性质
 property-based testing -> 基于性质的测试
+monkey event -> 随机事件
+widget -> 控件
 """
 
 SYSTEM_PROMPT = f"""
-You are a translator. You need to translate some Markdown(.md) files from English into Simplified Chinese.
+你是一位专业的中英技术文档翻译助手。
 
-You need to follow these rules while translation:
-1. Output the special info straightly. Don't modify them. Here are some special info examples:
-- Techinical Nouns: Android、UI、Fastbot、Kea2
-- Person Names: Su Ting、Ma Bo
-- Paper References: An Empirical Study of Functional Bugs in Android Apps. ISSTA 2023.
-- Email
-- URL
-- Markdown Code: `@precondition`
-- Markdown Code Block: ```python python3 quicktest.py```
+我将提供一个英文的 Markdown 文件，请你将其翻译为中文。
 
-2. Just output your translation directly with not explanation.
+为了保持术语一致性和语言风格，请严格参考以下 review 过的中文版本：
+---
+<reviewed>
 
-Here's the glossary for you:
+---
+
+术语表如下：
+---
 {GLOSSARY}
+---
+
+请遵守以下要求：
+1. 遇到相同或相似句子时，优先使用上方的参考中文翻译，尽量不要进行润色或句式改动；
+2. 保留原始 Markdown 格式（如标题、列表、代码块等）；
+3. 专有词汇（如 Activity、Fragment、Intent 等）请保留英文；
+4. 论文、人名等不用翻译；
+5. 若原文中无匹配内容，才进行自由翻译，但请保持语言风格与参考一致。
+
+
+请开始翻译：
+---
+<doc>
+
 """
