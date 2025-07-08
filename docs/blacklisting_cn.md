@@ -1,4 +1,3 @@
-```markdown
 ## Blacklisting specific UI widgets/regions (黑白名单/控件/界面特定区域)
 
 [中文文档](docs/blacklisting_cn.md)
@@ -145,10 +144,10 @@ d(text="Alarm", className="android.widget.Button")
 - 基于位置关系的查询：
 
   ```python
-  d(A).left(B)    # 选择位于 A 左侧的 B
-  d(A).right(B)   # 选择位于 A 右侧的 B
-  d(A).up(B)      # 选择位于 A 上方的 B
-  d(A).down(B)    # 选择位于 A 下方的 B
+  d(A).left(B)    # Select B to the left of A
+  d(A).right(B)   # Select B to the right of A
+  d(A).up(B)      # Select B above A
+  d(A).down(B)    # Select B below A
   ```
 
 - 子元素查询方法，例如`child_by_text`, `child_by_description`以及`child_by_instance`等，如下所示：
@@ -160,20 +159,22 @@ d(text="Alarm", className="android.widget.Button")
   d(className="android.widget.ListView", resourceId="android:id/list") \
     .child_by_text(
       "Bluetooth",
-      allow_scroll_search=True,  # 默认 False
+      allow_scroll_search=True,  # default False
       className="android.widget.LinearLayout"
     )
   ```
-- 基于实例参数的方法，例如：
+- 基于距离参数的方法，例如：
 
-  ```python
-  d(className="android.widget.Button", instance=2)
-  ```
+ ```python
+    d(className="android.widget.Button", instance=2)
+ ```
 
 - 基于正则表达式匹配的方法：  
   `textMatches`, `classNameMatches`, `descriptionMatches`, `packageNameMatches`, `resourceIdMatches`
 
+
 请避免使用这些不支持的方法，这样可以确保你的黑名单配置正确生效。
+
 
 ## Activity黑白名单配置
 
@@ -236,5 +237,3 @@ d(text="Alarm", className="android.widget.Button")
 ### 重要说明
 - 白名单和黑名单**不能同时设置**。这符合一个原则：非黑即白。如果设置了白名单，那么所有不在白名单中的Activity将被视为在黑名单中。
 - 通过Fastbot的钩子函数，程序可以监听activity的启动和切换。如果一个位于黑名单的activity将要启动，该启动过程会被阻塞，在此切换过程当中，UI页面看上去会失去响应。
-
-```

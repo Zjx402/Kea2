@@ -17,7 +17,7 @@ Kea2 使用 [Uiautomator2](https://github.com/openatx/uiautomator2) 操控 Andro
 1. 创建继承 `unittest.TestCase` 的测试类。
 
 ```python
-import unittest 
+import unittest
 
 class MyFirstTest(unittest.TestCase):
     ...
@@ -115,7 +115,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | 参数 | 意义 | 默认值 |
 | --- | --- | --- |
 | -s | 设备序列号，可通过 `adb devices` 查看 |  |
-| -t | 设备的 transport id，可通过 `adb devices -l` 查看 |  |
+| -t | 设备传输 ID，可通过 `adb devices -l` 查看 |  |
 | -p | 被测试应用的包名（例如 com.example.app） |  |
 | -o | 日志和结果输出目录 | `output` |
 | --agent | {native, u2}。默认使用 `u2`，支持 Kea2 三个重要功能。如果想运行原生 Fastbot，请使用 `native`。 | `u2` |
