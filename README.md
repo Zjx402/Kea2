@@ -14,7 +14,7 @@
 
 ### [点击此处：查看中文文档](README_cn.md)
 
-## About 
+## About
 
 Kea2 is an easy-to-use tool for fuzzing mobile apps. Its key *novelty* is able to fuse automated UI testing with scripts (usually written by human), thus empowering automated UI testing with human intelligence for effectively finding *crashing bugs* as well as *non-crashing functional (logic) bugs*. 
 
