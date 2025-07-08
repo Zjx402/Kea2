@@ -2,7 +2,7 @@ import json
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, List, Deque, NewType, Union
+from typing import Dict, TypedDict, List, Deque, NewType, Union, Optional
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
@@ -28,12 +28,13 @@ class StepData(TypedDict):
 
 
 class CovData(TypedDict):
-    stepsCount: int  # The MonkeyStepsCount when profiling the Coverage data
+    stepsCount: int
     coverage: float
     totalActivitiesCount: int
     testedActivitiesCount: int
     totalActivities: List[str]
     testedActivities: List[str]
+    activityCountHistory: Dict[str, int]
 
 
 class ReportData(TypedDict):
@@ -53,6 +54,8 @@ class ReportData(TypedDict):
     property_error_details: Dict[str, List[Dict]]  # Support multiple errors per property
     screenshot_info: Dict
     coverage_trend: List
+    property_execution_trend: List  # Track executed properties count over steps
+    activity_count_history: Dict[str, int]  # Activity traversal count from final coverage data
 
 
 class PropertyExecResult(TypedDict):
@@ -60,6 +63,49 @@ class PropertyExecResult(TypedDict):
     executed: int
     fail: int
     error: int
+
+
+@dataclass
+class PropertyExecInfo:
+    """Class representing property execution information from property_exec_info file"""
+    prop_name: str
+    state: str  # start, pass, fail, error
+    traceback: str
+    start_steps_count: int
+    occurrence_count: int = 1
+    short_description: str = ""
+    start_steps_count_list: List[int] = None
+    
+    def __post_init__(self):
+        if self.start_steps_count_list is None:
+            self.start_steps_count_list = [self.start_steps_count]
+        if not self.short_description and self.traceback:
+            self.short_description = self._extract_error_summary(self.traceback)
+    
+    def _extract_error_summary(self, traceback: str) -> str:
+        """Extract a short error summary from the full traceback"""
+        try:
+            lines = traceback.strip().split('\n')
+            for line in reversed(lines):
+                line = line.strip()
+                if line and not line.startswith('  '):
+                    return line
+            return "Unknown error"
+        except Exception:
+            return "Error parsing traceback"
+    
+    def get_error_hash(self) -> int:
+        """Generate hash key for error deduplication"""
+        return hash((self.state, self.traceback))
+    
+    def is_error_state(self) -> bool:
+        """Check if this is an error or fail state"""
+        return self.state in ["fail", "error"]
+    
+    def add_occurrence(self, start_steps_count: int):
+        """Add another occurrence of the same error"""
+        self.occurrence_count += 1
+        self.start_steps_count_list.append(start_steps_count)
 
 
 PropertyName = NewType("PropertyName", str)
@@ -239,11 +285,15 @@ class BugReportGenerator:
             "property_stats": [],
             "property_error_details": {},
             "screenshot_info": {},
-            "coverage_trend": []
+            "coverage_trend": [],
+            "property_execution_trend": [],
+            "activity_count_history": {}
         }
 
         # Parse steps.log file to get test step numbers and screenshot mappings
         property_violations = {}  # Store multiple violation records for each property
+        executed_properties_by_step = {}  # Track executed properties at each step: {step_count: set()}
+        executed_properties = set()  # Track unique executed properties
 
         if not self.data_path.steps_log.exists():
             logger.error(f"{self.data_path.steps_log} not exists")
@@ -279,11 +329,18 @@ class BugReportGenerator:
                 if screenshot and screenshot not in data["screenshot_info"]:
                     self._add_screenshot_info(step_data, step_index, data)
 
-                # Process ScriptInfo for property violations
+                # Process ScriptInfo for property violations and execution tracking
                 if step_type == "ScriptInfo":
                     try:
                         property_name = info.get("propName", "")
                         state = info.get("state", "")
+                        
+                        # Track executed properties (properties that have been started)
+                        if property_name and state == "start":
+                            executed_properties.add(property_name)
+                            # Record the monkey steps count for this property execution
+                            executed_properties_by_step[monkey_events_count] = executed_properties.copy()
+                        
                         current_property, current_test = self._process_script_info(
                             property_name, state, step_index, screenshot,
                             current_property, current_test, property_violations
@@ -334,6 +391,10 @@ class BugReportGenerator:
             data["tested_activities"] = final_trend["testedActivities"]
             data["total_activities_count"] = final_trend["totalActivitiesCount"]
             data["tested_activities_count"] = final_trend["testedActivitiesCount"]
+            data["activity_count_history"] = final_trend["activityCountHistory"]
+
+        # Generate property execution trend aligned with coverage trend
+        data["property_execution_trend"] = self._generate_property_execution_trend(executed_properties_by_step)
 
         # Generate Property Violations list
         self._generate_property_violations_list(property_violations, data)
@@ -373,16 +434,16 @@ class BugReportGenerator:
 
     def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
         """
-            Mark interaction on screenshot with colored rectangle
+        Mark interaction on screenshot with colored rectangle
 
-            Args:
-                step_type (str): Type of the step (Monkey or Script)
-                screenshot_name (str): Name of the screenshot file
-                action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
-                position: Position coordinates or parameters (format varies by action type)
+        Args:
+            step_type (str): Type of the step (Monkey or Script)
+            screenshot_name (str): Name of the screenshot file
+            action_type (str): Type of action (CLICK/LONG_CLICK/SCROLL for Monkey, click/setText/swipe for Script)
+            position: Position coordinates or parameters (format varies by action type)
 
-            Returns:
-                bool: True if marking was successful, False otherwise
+        Returns:
+            bool: True if marking was successful, False otherwise
         """
         screenshot_path: Path = self.data_path.screenshots_dir / screenshot_name
         if not screenshot_path.exists():
@@ -492,7 +553,10 @@ class BugReportGenerator:
                 'property_stats': data["property_stats"],
                 'property_error_details': data["property_error_details"],
                 'coverage_data': coverage_trend_json,
-                'take_screenshots': self.take_screenshots  # Pass screenshot setting to template
+                'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
+                'property_execution_trend': data["property_execution_trend"],
+                'property_execution_data': json.dumps(data["property_execution_trend"]),
+                'activity_count_history': data["activity_count_history"]
             }
 
             # Check if template exists, if not create it
@@ -522,8 +586,10 @@ class BugReportGenerator:
         caption = ""
 
         if step_data["Type"] == "Monkey":
-            # Extract 'act' attribute for Monkey type and convert to lowercase
-            caption = f"{step_data['Info'].get('act', 'N/A')}"
+            # Extract 'act' attribute for Monkey type and add MonkeyStepsCount
+            monkey_steps_count = step_data.get('MonkeyStepsCount', 'N/A')
+            action = step_data['Info'].get('act', 'N/A')
+            caption = f"Monkey Step {monkey_steps_count}: {action}"
         elif step_data["Type"] == "Script":
             # Extract 'method' attribute for Script type
             caption = f"{step_data['Info'].get('method', 'N/A')}"
@@ -630,90 +696,132 @@ class BugReportGenerator:
         Returns:
             Dict[str, List[Dict]]: Mapping of property names to their error tracebacks with context
         """
-        error_details = {}
-        
         if not self.data_path.property_exec_info.exists():
             logger.warning(f"Property exec info file {self.data_path.property_exec_info} not found")
-            return error_details
+            return {}
             
         try:
-            with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
-                # Use hash map for efficient deduplication
-                error_hash_map = {}  # property_name -> {error_hash: error_data}
-                
-                for line_number, line in enumerate(f, 1):
-                    line = line.strip()
-                    if not line:
-                        continue
-                        
-                    try:
-                        exec_info = json.loads(line)
-                        prop_name = exec_info.get("propName", "")
-                        state = exec_info.get("state", "")
-                        tb = exec_info.get("tb", "")
-                        
-                        # Only process error details for failed or error states
-                        if prop_name and state in ["fail", "error"] and tb:
-                            if prop_name not in error_hash_map:
-                                error_hash_map[prop_name] = {}
-                            
-                            # Create hash key for this specific error (state + traceback)
-                            error_hash = hash((state, tb))
-                            
-                            if error_hash in error_hash_map[prop_name]:
-                                # Error already exists, increment count
-                                error_hash_map[prop_name][error_hash]["occurrence_count"] += 1
-                            else:
-                                # New error, create entry
-                                short_desc = self._extract_error_summary(tb)
-                                error_hash_map[prop_name][error_hash] = {
-                                    "state": state,
-                                    "traceback": tb,
-                                    "occurrence_count": 1,
-                                    "short_description": short_desc
-                                }
-                            
-                    except json.JSONDecodeError as e:
-                        logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
-                        continue
-                        
-                # Convert hash map to list format for template compatibility
-                for prop_name, hash_dict in error_hash_map.items():
-                    error_details[prop_name] = list(hash_dict.values())
-                    # Sort by occurrence count (descending) to show most frequent errors first
-                    error_details[prop_name].sort(key=lambda x: x["occurrence_count"], reverse=True)
-                        
+            property_exec_infos = self._parse_property_exec_infos()
+            return self._group_errors_by_property(property_exec_infos)
+            
         except Exception as e:
             logger.error(f"Error reading property exec info file: {e}")
-            
-        return error_details
+            return {}
 
-    def _extract_error_summary(self, traceback: str) -> str:
+    def _parse_property_exec_infos(self) -> List[PropertyExecInfo]:
+        """Parse property execution info from file"""
+        exec_infos = []
+        
+        with open(self.data_path.property_exec_info, "r", encoding="utf-8") as f:
+            for line_number, line in enumerate(f, 1):
+                line = line.strip()
+                if not line:
+                    continue
+                    
+                try:
+                    exec_info_data = json.loads(line)
+                    prop_name = exec_info_data.get("propName", "")
+                    state = exec_info_data.get("state", "")
+                    tb = exec_info_data.get("tb", "")
+                    start_steps_count = exec_info_data.get("startStepsCount", 0)
+                    
+                    exec_info = PropertyExecInfo(
+                        prop_name=prop_name,
+                        state=state,
+                        traceback=tb,
+                        start_steps_count=start_steps_count
+                    )
+                    
+                    if exec_info.is_error_state() and prop_name and tb:
+                        exec_infos.append(exec_info)
+                        
+                except json.JSONDecodeError as e:
+                    logger.warning(f"Failed to parse property exec info line {line_number}: {line[:100]}... Error: {e}")
+                    continue
+                    
+        return exec_infos
+
+    def _group_errors_by_property(self, exec_infos: List[PropertyExecInfo]) -> Dict[str, List[Dict]]:
+        """Group errors by property name and deduplicate"""
+        error_details = {}
+        
+        for exec_info in exec_infos:
+            prop_name = exec_info.prop_name
+            
+            if prop_name not in error_details:
+                error_details[prop_name] = {}
+            
+            error_hash = exec_info.get_error_hash()
+            
+            if error_hash in error_details[prop_name]:
+                # Error already exists, add occurrence
+                error_details[prop_name][error_hash].add_occurrence(exec_info.start_steps_count)
+            else:
+                # New error, create entry
+                error_details[prop_name][error_hash] = exec_info
+        
+        # Convert to template-compatible format
+        result = {}
+        for prop_name, hash_dict in error_details.items():
+            result[prop_name] = []
+            for exec_info in hash_dict.values():
+                result[prop_name].append({
+                    "state": exec_info.state,
+                    "traceback": exec_info.traceback,
+                    "occurrence_count": exec_info.occurrence_count,
+                    "short_description": exec_info.short_description,
+                    "startStepsCountList": exec_info.start_steps_count_list
+                })
+            
+            # Sort by earliest startStepsCount, then by occurrence count (descending)
+            result[prop_name].sort(key=lambda x: (min(x["startStepsCountList"]), -x["occurrence_count"]))
+        
+        return result
+
+    def _generate_property_execution_trend(self, executed_properties_by_step: Dict[int, set]) -> List[Dict]:
         """
-        Extract a short error summary from the full traceback
+        Generate property execution trend aligned with coverage trend
         
         Args:
-            traceback: Full error traceback string
+            executed_properties_by_step: Dictionary containing executed properties at each step
             
         Returns:
-            str: Short error summary
+            List[Dict]: Property execution trend data aligned with coverage trend
         """
-        try:
-            lines = traceback.strip().split('\n')
-
-            for line in reversed(lines):
-                line = line.strip()
-                if line and not line.startswith('  '):
-                    return line
-            return "Unknown error"
-        except Exception:
-            return "Error parsing traceback"
+        property_execution_trend = []
+        
+        # Get step points from coverage trend to ensure alignment
+        coverage_step_points = []
+        if self.cov_trend:
+            coverage_step_points = [cov_data["stepsCount"] for cov_data in self.cov_trend]
+        
+        # If no coverage data, use property execution data points
+        if not coverage_step_points and executed_properties_by_step:
+            coverage_step_points = sorted(executed_properties_by_step.keys())
+        
+        # Generate property execution data for each coverage step point
+        for step_count in coverage_step_points:
+            # Find the latest executed properties count up to this step
+            executed_count = 0
+            latest_step = 0
+            
+            for exec_step in executed_properties_by_step.keys():
+                if exec_step <= step_count and exec_step >= latest_step:
+                    latest_step = exec_step
+                    executed_count = len(executed_properties_by_step[exec_step])
+            
+            property_execution_trend.append({
+                "stepsCount": step_count,
+                "executedPropertiesCount": executed_count
+            })
+        
+        return property_execution_trend
 
 
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062921_4535312225"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025070814_4842540549"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
