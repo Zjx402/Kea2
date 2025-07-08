@@ -1,5 +1,6 @@
 from openai import OpenAI
 import logging
+from string import Template
 
 class OpenaiTranslator:
     def __init__(self, api_key:str):
@@ -12,12 +13,16 @@ class OpenaiTranslator:
 
     def translate_text(self, reviewed, text):
 
-        processedPrompt = SYSTEM_PROMPT.replace("<reviewed>", reviewed).replace("<doc>",text)
+        system_prompt = SYSTEM_PROMPT_TEMPLATE.substitute(
+            REVIEWED=reviewed,
+            GLOSSARY=GLOSSARY,
+            ORIGINAL=text
+        )
 
         response = self.client.chat.completions.create(
             model="gpt-4.1-mini",  # You can use gpt-3.5-turbo, gpt-4, gpt-4o, etc.
             messages=[
-                {"role": "user", "content": processedPrompt},
+                {"role": "user", "content": system_prompt},
             ],
             stream=False,
             temperature=0.2
@@ -35,20 +40,20 @@ monkey event -> 随机事件
 widget -> 控件
 """
 
-SYSTEM_PROMPT = f"""
+SYSTEM_PROMPT_TEMPLATE = Template("""
 你是一位专业的中英技术文档翻译助手。
 
 我将提供一个英文的 Markdown 文件，请你将其翻译为中文。
 
 为了保持术语一致性和语言风格，请严格参考以下 review 过的中文版本：
 ---
-<reviewed>
+$REVIEWED
 
 ---
 
 术语表如下：
 ---
-{GLOSSARY}
+$GLOSSARY
 ---
 
 请遵守以下要求：
@@ -61,6 +66,6 @@ SYSTEM_PROMPT = f"""
 
 请开始翻译：
 ---
-<doc>
+$ORIGINAL
 
-"""
+""")

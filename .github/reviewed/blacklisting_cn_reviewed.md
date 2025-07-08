@@ -81,7 +81,7 @@ def block_tree_sth(d: "Device"):
 ```
 
 > 实现原理：
-> - 控件屏蔽：将指定控件的特定属性（可点击、可长按、可滚动、可选择、可用、可聚焦）设置为false。
+> - 控件屏蔽：将指定控件的特定属性（clickable, long-clickable, scrollable, checkable, enabled, focusable）设置为false。
 > - 树屏蔽：将指定控件视为根节点，并将其自身及其所有子节点的上述属性设为false。
 
 ### 支持的UI控件定位方法
@@ -180,7 +180,7 @@ d(text="Alarm", className="android.widget.Button")
 
 ## Activity黑白名单配置
 
-*(Applicable scenarios: selectively override certain activities or block unnecessary ones.)*
+*（应用场景：有选择性地探索特定Activities，或屏蔽不需要探索的Activities）*
 
 我们以一种更为用户友好的方式来使用Fastbot的页面黑白名单配置功能。
 通过命令行，用户可以显式指定黑白名单配置文件在设备上的存储路径，并且可以查看程序将执行黑名单还是白名单（只能选择其中一种）
@@ -242,5 +242,5 @@ d(text="Alarm", className="android.widget.Button")
 
 ### 重要说明
 - 白名单和黑名单**不能同时设置**。这符合一个原则：非黑即白。如果设置了白名单，那么所有不在白名单中的Activity将被视为在黑名单中。
-- 通过Fastbot的钩子函数，可以监听activity的启动和切换。如果一个在黑名单的activity待启动，启动过程会被阻塞，在这一切换过程中UI页面看上去会失去响应。
+- 通过Fastbot的钩子函数，程序可以监听activity的启动和切换。如果一个位于黑名单的activity将要启动，该启动过程会被阻塞，在此切换过程当中，UI页面看上去会失去响应。
 
