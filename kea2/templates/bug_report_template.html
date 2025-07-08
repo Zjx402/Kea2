@@ -666,6 +666,14 @@
                     </div>
                 </div>
                 <div class="card-body">
+                    <div class="alert alert-info mb-3" style="border-left: 4px solid #17a2b8; background-color: #f8f9fa;">
+                        <small class="text-muted">
+                            <i class="bi bi-info-circle me-1"></i>
+                            <strong>Traversal Count Explanation:</strong> 
+                            The number after the <i class="bi bi-eye"></i> icon indicates how many times each Activity was visited during testing.
+                        </small>
+                    </div>
+                    
                     <!-- Navigation Tabs -->
                     <ul class="nav nav-tabs mb-3" id="activitiesTabs" role="tablist">
                         <li class="nav-item" role="presentation">
@@ -708,7 +716,7 @@
                                                     </div>
                                                     {% if activity in activity_count_history %}
                                                         <span class="badge bg-info text-white traversal-badge">
-                                                            <i class="bi bi-arrow-repeat"></i> {{ activity_count_history[activity] }} times
+                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
                                                         </span>
                                                     {% endif %}
                                                 </div>
@@ -767,7 +775,7 @@
                                                     </div>
                                                     {% if activity in activity_count_history %}
                                                         <span class="badge bg-info text-white traversal-badge">
-                                                            <i class="bi bi-arrow-repeat"></i> {{ activity_count_history[activity] }} times
+                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
                                                         </span>
                                                     {% endif %}
                                                 </div>
