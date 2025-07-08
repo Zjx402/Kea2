@@ -164,6 +164,8 @@ class Options:
                         f"char: `{char}` is illegal in --log-stamp. current stamp: {self.log_stamp}"
                     )
             STAMP = self.log_stamp
+        
+        self.log_stamp = STAMP
             
         self.output_dir = Path(self.output_dir).absolute() / f"res_{STAMP}"
         LOGFILE = f"fastbot_{STAMP}.log"

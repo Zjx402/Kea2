@@ -181,6 +181,7 @@ class FastbotManager:
             "--running-minutes", f"{self.options.running_mins}",
             "--throttle", f"{self.options.throttle}",
             "--bugreport",
+            "--output-directory", f"{self.options.device_output_root}/output_{self.options.log_stamp}",
         ]
 
         if self.options.profile_period:
