@@ -12,7 +12,7 @@
 ### Github repo link
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
 
-### [点击此处：查看中文文档](README_cn.md)
+### [点击此处：查看中文文档](README_cn.md) 
 
 ## About
 

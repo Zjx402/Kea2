@@ -10,7 +10,7 @@ There are two levels of blacklisting:
 - **Widget Blocking:** Use this to disable individual widgets.
 - **Tree Blocking:** Use this to disable all widgets within a specific area by specifying the root node of that area, thereby blocking the entire subtree of widgets under it.
 
-We provide two types of block lists: 
+We provide two types of block lists:
 
 1. **Global Block List** — always in effect.
 2. **Conditional Block List** — effective only when certain conditions are met.

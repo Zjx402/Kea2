@@ -46,7 +46,7 @@ class MyFirstTest(unittest.TestCase):
 
 You can read [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html) for more details.
 
-## Decorators
+## Decorators 
 
 ### `@precondition`
 
