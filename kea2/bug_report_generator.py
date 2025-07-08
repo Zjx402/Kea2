@@ -28,12 +28,13 @@ class StepData(TypedDict):
 
 
 class CovData(TypedDict):
-    stepsCount: int  # The MonkeyStepsCount when profiling the Coverage data
+    stepsCount: int
     coverage: float
     totalActivitiesCount: int
     testedActivitiesCount: int
     totalActivities: List[str]
     testedActivities: List[str]
+    activityCountHistory: Dict[str, int]
 
 
 class ReportData(TypedDict):
@@ -54,6 +55,7 @@ class ReportData(TypedDict):
     screenshot_info: Dict
     coverage_trend: List
     property_execution_trend: List  # Track executed properties count over steps
+    activity_count_history: Dict[str, int]  # Activity traversal count from final coverage data
 
 
 class PropertyExecResult(TypedDict):
@@ -284,7 +286,8 @@ class BugReportGenerator:
             "property_error_details": {},
             "screenshot_info": {},
             "coverage_trend": [],
-            "property_execution_trend": []
+            "property_execution_trend": [],
+            "activity_count_history": {}
         }
 
         # Parse steps.log file to get test step numbers and screenshot mappings
@@ -388,6 +391,7 @@ class BugReportGenerator:
             data["tested_activities"] = final_trend["testedActivities"]
             data["total_activities_count"] = final_trend["totalActivitiesCount"]
             data["tested_activities_count"] = final_trend["testedActivitiesCount"]
+            data["activity_count_history"] = final_trend["activityCountHistory"]
 
         # Generate property execution trend aligned with coverage trend
         data["property_execution_trend"] = self._generate_property_execution_trend(executed_properties_by_step)
@@ -551,7 +555,8 @@ class BugReportGenerator:
                 'coverage_data': coverage_trend_json,
                 'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
                 'property_execution_trend': data["property_execution_trend"],
-                'property_execution_data': json.dumps(data["property_execution_trend"])
+                'property_execution_data': json.dumps(data["property_execution_trend"]),
+                'activity_count_history': data["activity_count_history"]
             }
 
             # Check if template exists, if not create it
@@ -816,7 +821,7 @@ class BugReportGenerator:
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025062922_3102395887"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025070814_4842540549"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
