@@ -16,7 +16,7 @@ We provide two types of block lists:
 2. **Conditional Block List** — effective only when certain conditions are met.
 
 Blocked elements are configured in Kea2’s config file `configs/widget.block.py` (generated when running `kea2 init`).  
-Elements can be flexibly specified using u2 selectors (such as `text` or `description`), XPath, or other selector methods.
+Elements can be flexibly specified using u2 selectors (such as `text` or `description`), XPath, or other selector methods. 
 
 
 #### Widget Blocking
