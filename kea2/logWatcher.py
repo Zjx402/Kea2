@@ -75,6 +75,17 @@ class LogWatcher:
         self.end_flag = True
         if self.t:
             self.t.join()
+        
+        if not self.statistic_printed:
+            self._parse_whole_log()
+    
+    def _parse_whole_log(self):
+        logger.warning(
+            "LogWatcher closed without reading the statistics, parsing the whole log now."
+        )
+        with open(self.log_file, "r", encoding="utf-8") as fp:
+            content = fp.read()
+            self.parse_log(content)
 
 
 if __name__ == "__main__":
