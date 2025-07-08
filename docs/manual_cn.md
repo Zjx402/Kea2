@@ -12,12 +12,12 @@ Kea2 使用 [Unittest](https://docs.python.org/3/library/unittest.html) 来管�
 
 Kea2 使用 [Uiautomator2](https://github.com/openatx/uiautomator2) 操控 Android 设备。详情请参考 [Uiautomator2 文档](https://github.com/openatx/uiautomator2?tab=readme-ov-file#quick-start)。
 
-基本上，你可以通过以下两步编写 Kea2 脚本：
+一般地，你可以通过以下两步编写 Kea2 脚本：
 
 1. 创建继承 `unittest.TestCase` 的测试类。
 
 ```python
-import unittest
+import unittest 
 
 class MyFirstTest(unittest.TestCase):
     ...
@@ -25,9 +25,9 @@ class MyFirstTest(unittest.TestCase):
 
 2. 通过定义测试方法编写脚本
 
-默认情况下，只有以 `test_` 开头的测试方法会被 unittest 识别。你可以用 `@precondition` 装饰函数。装饰器 `@precondition` 以返回布尔值的函数作为参数。当函数返回 `True` 时，前置条件满足，脚本将被激活，Kea2 会根据装饰器 `@prob` 定义的概率运行脚本。
+默认情况下，只有以 `test_` 开头的测试方法会被 unittest 识别。你可以用 `@precondition` 装饰函数。装饰器 `@precondition` 接收一个返回布尔值的函数作为参数。当函数返回 `True` 时，前置条件满足，脚本将被激活，接下来Kea2 会根据装饰器 `@prob` 定义的概率运行脚本。
 
-注意，如果测试方法未被 `@precondition` 装饰，该测试方法在自动化 UI 测试中永远不会被激活，而是作为普通的 unittest 测试方法处理。因此，当测试方法应始终执行时，需要显式指定 `@precondition(lambda self: True)`。如果未装饰 `@prob`，默认概率为 1（即前置条件满足时始终执行）。
+注意，如果测试方法未被 `@precondition` 装饰，该测试方法在自动化 UI 测试中永远不会被激活，而是被当作普通的 unittest 测试方法处理。因此，当测试方法应始终执行时，需要显式指定 `@precondition(lambda self: True)`。如果未装饰 `@prob`，默认概率为 1（即前置条件满足时始终执行）。
 
 ```python
 import unittest
@@ -41,7 +41,7 @@ class MyFirstTest(unittest.TestCase):
         ...
 ```
 
-更多细节请阅读 [Kea - Write your fisrt property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html)。
+更多细节请阅读 [Kea - Write your first property](https://kea-docs.readthedocs.io/en/latest/part-keaUserManuel/first_property.html)。
 
 ## 装饰器
 
@@ -69,7 +69,7 @@ def test_func1(self):
 如果未指定 `@prob`，默认概率值为 1，即当前置条件满足时函数总是执行。
 
 当多个函数的前置条件都满足时，Kea2 会根据它们的概率值随机选择其中一个函数执行。
-具体地，Kea2 会生成一个 0 到 1 之间的随机值 `p`，并用 `p` 来决定哪个函数被选中，依据这些函数的概率值。
+具体地，Kea2 会生成一个 0 到 1 之间的随机值 `p`，并用 `p` 和这些函数的概率值共同决定哪个函数被选中。
 
 例如，若三个函数 `test_func1`、`test_func2` 和 `test_func3` 的前置条件满足，它们的概率值分别为 `0.2`、`0.4` 和 `0.6`：
 - 情况 1：若 `p` 随机取为 `0.3`，由于 `test_func1` 的概率值 `0.2` 小于 `p`，它失去被选中的机会，Kea2 会从 `test_func2` 和 `test_func3` 中随机选一个执行。
@@ -112,22 +112,22 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 
 ### `kea2 run` 参数说明
 
-| 参数 | 意义 | 默认值 | 
+| 参数 | 意义 | 默认值 |
 | --- | --- | --- |
-| -s | 设备序列号，可通过 `adb devices` 查找 |  |
+| -s | 设备序列号，可通过 `adb devices` 查看 |  |
+| -t | 设备的 transport id，可通过 `adb devices -l` 查看 |  |
 | -p | 被测试应用的包名（例如 com.example.app） |  |
 | -o | 日志和结果输出目录 | `output` |
 | --agent | {native, u2}。默认使用 `u2`，支持 Kea2 三个重要功能。如果想运行原生 Fastbot，请使用 `native`。 | `u2` |
 | --running-minutes | 运行 Kea2 的时间（分钟） | `10` |
-| --max-step | 发送的最大猴子事件数（仅在 `--agent u2` 有效） | `inf`（无限） |
-| --throttle | 两次猴子事件之间的延迟时间（毫秒） | `200` |
+| --max-step | 发送的最大随机事件数（仅在 `--agent u2` 有效） | `inf`（无限） |
+| --throttle | 两次随机事件之间的延迟时间（毫秒） | `200` |
 | --driver-name | Kea2 脚本中使用的驱动名称。如果指定 `--driver-name d`，则需用 `d` 操作设备，例如 `self.d(..).click()`。 |  |
 | --log-stamp | 日志文件和结果文件的标识（例如指定 `--log-stamp 123`，日志文件命名为 `fastbot_123.log`，结果文件命名为 `result_123.json`） | 当前时间戳 |
-| --profile-period | 覆盖率分析和截图采集周期（单位为猴子事件数）。截图保存在设备 SD 卡，根据设备存储调整此值。 | `25` |
-| --take-screenshots | 在每个猴子事件执行时截图，截图会被周期性地自动从设备拉取到主机（周期由 `--profile-period` 指定）。 |  |
+| --profile-period | 覆盖率分析和截图采集周期（单位为随机事件数）。截图保存在设备 SD 卡，根据设备存储调整此值。 | `25` |
+| --take-screenshots | 在每个随机事件执行时截图，截图会被周期性地自动从设备拉取到主机（周期由 `--profile-period` 指定）。 |  |
 | --device-output-root | 设备输出目录根路径，Kea2 将暂存截图和结果日志到 `"<device-output-root>/output_*********/"`。确保该目录可访问。 | `/sdcard` |
 | unittest | 指定加载的脚本。该子命令 `unittest` 完全兼容 unittest。更多选项请参阅 `python3 -m unittest -h`。此选项仅在 `--agent u2` 下有效。 |  |
-
 
 ### `kea` 参数
 
@@ -232,11 +232,11 @@ debug: bool = False
 **如何解读 `result.json`**
 
 字段 | 说明 | 含义
---- | --- | --- |
-precond_satisfied | 在探索过程中，测试方法的前置条件满足次数 | 我们是否到达了该状态 |
-executed | UI 测试过程中，测试方法被执行的次数 | 该测试方法是否执行过 |
-fail | UI 测试中，测试方法断言失败次数 | 失败时，测试方法发现了可能的功能缺陷 |
-error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 组件）中断的次数 | 出现错误时，脚本需要更新或修复，因为脚本导致了意外错误 |
+--- | --- | --- 
+precond_satisfied | 在探索过程中，测试方法的前置条件满足次数 | 是否到达了该状态                                             
+executed | UI 测试过程中，测试方法被执行的次数 | 该测试方法是否执行过 
+fail | UI 测试中，测试方法断言失败次数 | 失败时，测试方法发现了可能的功能缺陷 
+error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 组件）中断的次数 | 出现错误时，意味着脚本需要更新或修复，因为脚本导致了意外错误 
 
 ## 配置文件
 
