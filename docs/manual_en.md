@@ -15,7 +15,7 @@ Kea2 uses [Uiautomator2](https://github.com/openatx/uiautomator2) to manipulate 
 
 Basically, you can write Kea2's scripts by following two steps:
 
-1. Create a test class which extends `unittest.TestCase`.
+1. Create a test class which extends `unittest.TestCase`. 
 
 ```python
 import unittest
