@@ -7,11 +7,13 @@
 我们支持两种粒度级别的黑名单：
 
 - 控件屏蔽：屏蔽单个 UI 控件。
-- 树屏蔽：通过指定根节点屏蔽一个 UI 控件树。它可以屏蔽根节点及其所有子节点。
+
+- 树屏蔽：通过指定根节点屏蔽一个 UI 控件树。
+它可以屏蔽根节点及其所有子节点。
 
 我们支持（1）`全局黑名单`（始终生效）和（2）`条件黑名单`（仅在满足某些条件时生效）。
 
-被屏蔽元素在 Kea2 的配置文件 `configs/widget.block.py` 中指定（此文件在运行 `kea2 init` 时生成）。  
+被屏蔽元素在 Kea2 的配置文件 `configs/widget.block.py` 中指定（此文件在运行 `kea2 init` 时生成）。
 需要屏蔽的元素可以灵活地通过 u2 选择器（例如 `text`、`description`）或 `xpath` 等指定。
 
 #### 控件屏蔽
@@ -31,7 +33,7 @@ def global_block_widgets(d: "Device"):
             d(description="widgets to block")]
 ```
 ##### 条件黑名单
-我们可以定义任意以 “block_” 开头（但不要求以 “block_tree_” 开头）的保留函数名，并使用 `@precondition` 装饰该函数，以支持条件黑名单。  
+我们可以定义任意以 “block_” 开头（但不要求以 “block_tree_” 开头）的保留函数名，并使用 `@precondition` 装饰该函数，以支持条件黑名单。
 在这种情况下，屏蔽仅在前置条件满足时生效。
 
 ```python
@@ -62,7 +64,7 @@ def global_block_tree(d: "Device"):
     return [d(text="trees to block"), d.xpath(".//node[@text='tree to block']")]
 ```
 ##### 条件黑名单
-我们可以定义任意以 “block_tree_” 开头的保留函数名，并使用 `@precondition` 装饰该函数，以支持条件黑名单。  
+我们可以定义任意以 “block_tree_” 开头的保留函数名，并使用 `@precondition` 装饰该函数，以支持条件黑名单。
 在这种情况下，屏蔽仅在前置条件满足时生效。
 
 ```python
@@ -180,15 +182,15 @@ d(text="Alarm", className="android.widget.Button")
 
 *（应用场景：有选择性地探索特定Activities，或屏蔽不需要探索的Activities）*
 
-我们以一种更为用户友好的方式来使用Fastbot的页面黑白名单配置功能。  
-通过命令行，用户可以显式指定黑白名单配置文件在设备上的存储路径，并且可以查看程序将执行黑名单还是白名单（只能选择其中一种）。  
-你只需要填写黑名单/白名单配置文件，并在命令行中指定你要运行哪一种名单，以及配置文件在设备上的路径。  
+我们以一种更为用户友好的方式来使用Fastbot的页面黑白名单配置功能。
+通过命令行，用户可以显式指定黑白名单配置文件在设备上的存储路径，并且可以查看程序将执行黑名单还是白名单（只能选择其中一种）
+你只需要填写黑名单/白名单配置文件，并在命令行中指定你要运行哪一种名单，以及配置文件在设备上的路径。
 一旦指定，你不需要手动将配置文件推送到设备上；程序将自动推送这些文件到你指定的设备路径中。
 
 ### Activity白名单配置
 
 1. **添加Activity名称**  
-   将你希望加入白名单的Activity名称写入 `configs/awl.strings`。
+   将你希望加入白名单的Activity名称写入 `configs/awl.strings`.
 
    **例子：** 
   ```
@@ -196,7 +198,9 @@ d(text="Alarm", className="android.widget.Button")
   it.feio.android.omninotes.SettingsActivity
   ```
 
+
   > 注意：你不需要手动将此白名单文件推送到设备上，程序将自动完成这一工作。
+
 
 2. **在运行测试时增加命令行参数**  
 
@@ -220,10 +224,11 @@ d(text="Alarm", className="android.widget.Button")
   it.feio.android.omninotes.MainActivity
   it.feio.android.omninotes.SettingsActivity
   ```
->注意：你不需要手动将此黑名单文件推送到设备上，程序将自动完成这一工作。
+>注意：你不需要手动将此白名单文件推送到设备上，程序将自动完成这一工作。
+
 
 2. **在运行测试时增加命令行参数**  
-   在命令行添加以下参数以指定黑名单文件 (`/sdcard/abl.strings`是设备上的目标路径):  
+   在命令行添加以下参数以指定黑名单文件 (`/sdcard/awl.strings`是设备上的目标路径):  
    
    ```
    --act-blacklist-file /sdcard/abl.strings
@@ -234,6 +239,8 @@ d(text="Alarm", className="android.widget.Button")
    kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --act-blacklist-file /sdcard/abl.strings --driver-name d unittest discover -p quicktest.py
    ```
 
+
 ### 重要说明
 - 白名单和黑名单**不能同时设置**。这符合一个原则：非黑即白。如果设置了白名单，那么所有不在白名单中的Activity将被视为在黑名单中。
 - 通过Fastbot的钩子函数，程序可以监听activity的启动和切换。如果一个位于黑名单的activity将要启动，该启动过程会被阻塞，在此切换过程当中，UI页面看上去会失去响应。
+

@@ -115,7 +115,6 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | 参数 | 意义 | 默认值 |
 | --- | --- | --- |
 | -s | 设备序列号，可通过 `adb devices` 查看 |  |
-| -t | 设备传输 ID，可通过 `adb devices -l` 查看 |  |
 | -p | 被测试应用的包名（例如 com.example.app） |  |
 | -o | 日志和结果输出目录 | `output` |
 | --agent | {native, u2}。默认使用 `u2`，支持 Kea2 三个重要功能。如果想运行原生 Fastbot，请使用 `native`。 | `u2` |
@@ -128,6 +127,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | --take-screenshots | 在每个随机事件执行时截图，截图会被周期性地自动从设备拉取到主机（周期由 `--profile-period` 指定）。 |  |
 | --device-output-root | 设备输出目录根路径，Kea2 将暂存截图和结果日志到 `"<device-output-root>/output_*********/"`。确保该目录可访问。 | `/sdcard` |
 | unittest | 指定加载的脚本。该子命令 `unittest` 完全兼容 unittest。更多选项请参阅 `python3 -m unittest -h`。此选项仅在 `--agent u2` 下有效。 |  |
+
 
 ### `kea` 参数
 
@@ -236,7 +236,7 @@ debug: bool = False
 precond_satisfied | 在探索过程中，测试方法的前置条件满足次数 | 是否到达了该状态                                             
 executed | UI 测试过程中，测试方法被执行的次数 | 该测试方法是否执行过 
 fail | UI 测试中，测试方法断言失败次数 | 失败时，测试方法发现了可能的功能缺陷 
-error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 控件）中断的次数 | 出现错误时，意味着脚本需要更新或修复，因为脚本导致了意外错误 
+error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 组件）中断的次数 | 出现错误时，意味着脚本需要更新或修复，因为脚本导致了意外错误 
 
 ## 配置文件
 

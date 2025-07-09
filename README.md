@@ -12,14 +12,14 @@
 ### Github repo link
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
 
-### [点击此处：查看中文文档](README_cn.md)
+### [点击此处：查看中文文档](README_cn.md) 
 
 ## About 
 
 Kea2 is an easy-to-use tool for fuzzing mobile apps. Its key *novelty* is able to fuse automated UI testing with scripts (usually written by human), thus empowering automated UI testing with human intelligence for effectively finding *crashing bugs* as well as *non-crashing functional (logic) bugs*. 
 
 Kea2 is currently built on top of [Fastbot](https://github.com/bytedance/Fastbot_Android), *an industrial-strength automated UI testing tool*, and [uiautomator2](https://github.com/openatx/uiautomator2), *an easy-to-use and stable Android automation library*.
-Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps.
+Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operating_system)) apps. 
 
 ## Novelty & Important features
 
