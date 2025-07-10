@@ -5,7 +5,6 @@ from __future__ import absolute_import, print_function
 import sys
 from .utils import getProjectRoot, getLogger
 from .kea_launcher import run
-from .bug_report_generator import BugReportGenerator
 import argparse
 
 import os
@@ -48,6 +47,7 @@ def cmd_load_configs(args):
 
 
 def cmd_report(args):
+    from .bug_report_generator import BugReportGenerator
     try:
         report_dir = args.path
         if not report_dir:
