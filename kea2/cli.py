@@ -5,6 +5,7 @@ from __future__ import absolute_import, print_function
 import sys
 from .utils import getProjectRoot, getLogger
 from .kea_launcher import run
+from .bug_report_generator import BugReportGenerator
 import argparse
 
 import os
@@ -46,6 +47,33 @@ def cmd_load_configs(args):
     pass
 
 
+def cmd_report(args):
+    try:
+        report_dir = args.path
+        if not report_dir:
+            logger.error("Report directory path is required. Use -p to specify the path.")
+            return
+
+        report_path = Path(report_dir)
+        if not report_path.exists():
+            logger.error(f"Report directory does not exist: {report_dir}")
+            return
+        
+        logger.debug(f"Generating test report from directory: {report_dir}")
+
+        generator = BugReportGenerator()
+        report_file = generator.generate_report(report_path)
+        
+        if report_file:
+            logger.debug(f"Test report generated successfully: {report_file}")
+            print(f"Report saved to: {report_file}", flush=True)
+        else:
+            logger.error("Failed to generate test report")
+
+    except Exception as e:
+        logger.error(f"Error generating test report: {e}")
+
+
 def cmd_run(args):
     base_dir = getProjectRoot()
     if base_dir is None:
@@ -60,6 +88,20 @@ _commands = [
         action=cmd_init,
         command="init",
         help="init the Kea2 project in current directory",
+    ),
+    dict(
+        action=cmd_report,
+        command="report",
+        help="generate test report from existing test results",
+        flags=[
+            dict(
+                name=["report_dir"],
+                args=["-p", "--path"],
+                type=str,
+                required=True,
+                help="Path to the directory containing test results"
+            )
+        ]
     )
 ]
 
