@@ -4,9 +4,8 @@
 [![PyPI Downloads](https://static.pepy.tech/badge/kea2-python)](https://pepy.tech/projects/kea2-python)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
 
-
 <div>
-    <img src="https://github.com/user-attachments/assets/d3de40a9-04a4-47ab-b14b-a1f8d08cb88b" style="border-radius: 14px; width: 20%; height: 20%;"/> 
+    <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
 ### Github repo link
