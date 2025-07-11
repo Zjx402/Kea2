@@ -204,40 +204,40 @@
         
         /* Specific column widths for property statistics table */
         .table-custom th:nth-child(1), .table-custom td:nth-child(1) { /* Index */
-            width: 8%;
-            min-width: 60px;
+            width: 6%;
+            min-width: 55px;
         }
         
         .table-custom th:nth-child(2), .table-custom td:nth-child(2) { /* Property Name */
-            width: 25%;
+            width: 22%;
             min-width: 200px;
             text-align: left;
         }
         
         .table-custom th:nth-child(3), .table-custom td:nth-child(3) { /* Precondition Satisfied */
-            width: 12%;
-            min-width: 100px;
+            width: 11%;
+            min-width: 95px;
         }
         
         .table-custom th:nth-child(4), .table-custom td:nth-child(4) { /* Executed */
-            width: 10%;
-            min-width: 80px;
+            width: 9%;
+            min-width: 75px;
         }
         
         .table-custom th:nth-child(5), .table-custom td:nth-child(5) { /* Fails */
-            width: 10%;
-            min-width: 80px;
+            width: 9%;
+            min-width: 75px;
         }
         
         .table-custom th:nth-child(6), .table-custom td:nth-child(6) { /* Errors */
-            width: 10%;
-            min-width: 80px;
+            width: 9%;
+            min-width: 75px;
         }
         
         .table-custom th:nth-child(7), .table-custom td:nth-child(7) { /* Error Details */
-            width: 25%;
-            min-width: 200px;
-            text-align: left;
+            width: 34%;
+            min-width: 280px;
+            text-align: center;
         }
         
         .table-custom tbody tr:nth-of-type(odd) {
@@ -572,6 +572,205 @@
                 white-space: normal;
             }
         }
+        
+        /* Modern Sorting Controls Styling */
+        .sorting-controls-modern {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e3e6ea;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sorting-controls-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .sorting-controls-modern:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .sort-label-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .sort-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #3498db, #2980b9);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3);
+        }
+        
+        .sort-icon-wrapper i {
+            color: white;
+            font-size: 20px;
+        }
+        
+        .sort-text {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        
+        .sort-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            line-height: 1.2;
+        }
+        
+        .sort-subtitle {
+            font-size: 13px;
+            color: #7f8c8d;
+            font-weight: 400;
+            line-height: 1.2;
+        }
+        
+        .sort-button-section {
+            display: flex;
+            align-items: center;
+        }
+        
+        .btn-sort-modern {
+            background: linear-gradient(135deg, #27ae60, #2ecc71);
+            border: none;
+            border-radius: 10px;
+            padding: 12px 20px;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn-sort-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+        
+        .btn-sort-modern:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(46, 204, 113, 0.4);
+        }
+        
+        .btn-sort-modern:hover::before {
+            left: 100%;
+        }
+        
+        .btn-sort-modern:active {
+            transform: translateY(0px);
+            box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
+        }
+        
+        .btn-content {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .btn-icon {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .btn-text {
+            font-size: 14px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        
+        .btn-arrow {
+            font-size: 14px;
+            transition: transform 0.3s ease;
+            opacity: 0.8;
+        }
+        
+        .btn-sort-modern:hover .btn-arrow {
+            transform: scale(1.1);
+            opacity: 1;
+        }
+        
+        /* Responsive design for sorting controls */
+        @media (max-width: 768px) {
+            .sorting-controls-modern {
+                padding: 16px 20px;
+            }
+            
+            .sort-label-section {
+                gap: 12px;
+            }
+            
+            .sort-icon-wrapper {
+                width: 40px;
+                height: 40px;
+            }
+            
+            .sort-icon-wrapper i {
+                font-size: 16px;
+            }
+            
+            .sort-title {
+                font-size: 14px;
+            }
+            
+            .sort-subtitle {
+                font-size: 12px;
+            }
+            
+            .btn-sort-modern {
+                padding: 10px 16px;
+            }
+            
+            .btn-text {
+                font-size: 13px;
+            }
+        }
+        
+        @media (max-width: 576px) {
+            .sorting-controls-modern {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .sorting-controls-modern .d-flex {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .sort-label-section {
+                justify-content: center;
+            }
+        }
     </style>
 </head>
 
@@ -701,7 +900,30 @@
                                 <h5 class="mb-0 text-success">
                                     <i class="bi bi-check-circle-fill"></i> Tested Activities
                                 </h5>
-                                <span class="badge bg-success">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+                                <span class="badge bg-success" style="font-size: 1.0em; font-weight: 500;">{{ tested_activities|length }} / {{ total_activities_count }}</span>
+                            </div>
+                            
+                            <!-- Sorting Controls for Tested Activities -->
+                            <div class="sorting-controls-modern mb-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="sort-label-section">
+                                        <div class="sort-icon-wrapper">
+                                            <i class="bi bi-funnel-fill"></i>
+                                        </div>
+                                        <div class="sort-text">
+                                            <span class="sort-title">Sort Activities</span>
+                                        </div>
+                                    </div>
+                                    <div class="sort-button-section">
+                                        <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
+                                            <div class="btn-content">
+                                                <i class="bi bi-eye btn-icon"></i>
+                                                <span class="btn-text">Traversal Count</span>
+                                                <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="activities-container">
@@ -711,7 +933,7 @@
                                             {% for activity in tested_activities %}
                                                 <div class="activity-item tested-activity" data-page="1">
                                                     <div class="activity-content">
-                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
                                                         <span class="activity-name">{{ activity }}</span>
                                                     </div>
                                                     {% if activity in activity_count_history %}
@@ -756,7 +978,30 @@
                                 <h5 class="mb-0 text-primary">
                                     <i class="bi bi-app"></i> All Activities Overview
                                 </h5>
-                                <span class="badge bg-primary">Total: {{ total_activities|length }}</span>
+                                <span class="badge bg-primary" style="font-size: 1.0em; font-weight: 500;">Total: {{ total_activities|length }}</span>
+                            </div>
+                            
+                            <!-- Sorting Controls for All Activities -->
+                            <div class="sorting-controls-modern mb-4">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="sort-label-section">
+                                        <div class="sort-icon-wrapper">
+                                            <i class="bi bi-funnel-fill"></i>
+                                        </div>
+                                        <div class="sort-text">
+                                            <span class="sort-title">Sort Activities</span>
+                                        </div>
+                                    </div>
+                                    <div class="sort-button-section">
+                                        <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
+                                            <div class="btn-content">
+                                                <i class="bi bi-eye btn-icon"></i>
+                                                <span class="btn-text">Traversal Count</span>
+                                                <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
+                                            </div>
+                                        </button>
+                                    </div>
+                                </div>
                             </div>
                             
                             <div class="activities-container">
@@ -766,11 +1011,11 @@
                                             {% for activity in total_activities %}
                                                 <div class="activity-item all-activity" data-page="1">
                                                     <div class="activity-content">
-                                                        {% if activity in tested_activities %}
-                                                            <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                        {% else %}
-                                                            <i class="bi bi-dash-circle text-secondary me-2"></i>
-                                                        {% endif %}
+                                                    {% if activity in tested_activities %}
+                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
+                                                    {% else %}
+                                                        <i class="bi bi-dash-circle text-secondary me-2"></i>
+                                                    {% endif %}
                                                         <span class="activity-name">{{ activity }}</span>
                                                     </div>
                                                     {% if activity in activity_count_history %}
@@ -1380,12 +1625,79 @@
             initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
             initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');
             
+            // Initialize activity sorting
+            initActivitySorting();
+            
             // Initialize pagination for Property tables
             initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', 'violations-page-size');
             initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
             
             // Initialize sorting for Property Checking Statistics
             initSorting();
+            
+            // Activity sorting function
+            function initActivitySorting() {
+                const sortButtons = document.querySelectorAll('.activity-sort-btn');
+                
+                sortButtons.forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        const sortType = this.dataset.sort;
+                        const currentOrder = this.dataset.order;
+                        const parentTab = this.closest('.tab-pane');
+                        const isTestedTab = parentTab.id === 'tested-activities';
+                        
+                        // Toggle sort order
+                        this.className = 'btn btn-success btn-sm activity-sort-btn';
+                        const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
+                        
+                        this.dataset.order = newOrder;
+                        const icon = this.querySelector('.sort-icon');
+                        
+                        if (newOrder === 'asc') {
+                            icon.className = 'bi bi-arrow-up sort-icon';
+                        } else {
+                            icon.className = 'bi bi-arrow-down sort-icon';
+                        }
+                        
+                        // Sort activities
+                        sortActivities(sortType, newOrder, isTestedTab);
+                    });
+                });
+                
+                function sortActivities(sortType, order, isTestedTab) {
+                    const containerId = isTestedTab ? 'tested-activities-container' : 'all-activities-container';
+                    const itemClass = isTestedTab ? 'tested-activity' : 'all-activity';
+                    const paginationId = isTestedTab ? 'tested-pagination' : 'all-pagination';
+                    const pageSizeSelectId = isTestedTab ? 'tested-page-size' : 'all-page-size';
+                    
+                    const container = document.getElementById(containerId);
+                    const items = Array.from(container.getElementsByClassName(itemClass));
+                    
+                    items.sort(function(a, b) {
+                        const badgeA = a.querySelector('.traversal-badge');
+                        const badgeB = b.querySelector('.traversal-badge');
+                        
+                        // Extract traversal count from badge text like "👁 5 times"
+                        const valueA = badgeA ? parseInt(badgeA.textContent.match(/\d+/)[0]) || 0 : 0;
+                        const valueB = badgeB ? parseInt(badgeB.textContent.match(/\d+/)[0]) || 0 : 0;
+                        
+                        if (order === 'asc') {
+                            return valueA - valueB;
+                        } else {
+                            return valueB - valueA;
+                        }
+                    });
+                    
+                    // Clear container and append sorted items
+                    container.innerHTML = '';
+                    items.forEach(function(item) {
+                        container.appendChild(item);
+                    });
+                    
+                    // Re-initialize pagination after sorting
+                    initPagination(containerId, itemClass, paginationId, pageSizeSelectId);
+                }
+            }
             
             // Simplified sorting function for Fails and Errors columns
             function initSorting() {

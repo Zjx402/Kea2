@@ -54,9 +54,15 @@ def cmd_report(args):
             logger.error("Report directory path is required. Use -p to specify the path.")
             return
 
-        report_path = Path(report_dir)
+        if Path(report_dir).is_absolute():
+            report_path = Path(report_dir)
+        else:
+            report_path = Path.cwd() / report_dir
+
+        report_path = report_path.resolve()
+
         if not report_path.exists():
-            logger.error(f"Report directory does not exist: {report_dir}")
+            logger.error(f"Report directory does not exist: {report_path}")
             return
         
         logger.debug(f"Generating test report from directory: {report_dir}")
