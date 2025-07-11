@@ -170,6 +170,8 @@ def driver_info_logger(args):
         print("  log_stamp:", args.log_stamp, flush=True)
     if args.take_screenshots:
         print("  take_screenshots:", args.take_screenshots, flush=True)
+    if args.max_step:
+        print("  max_step:", args.max_step, flush=True)
 
 
 def parse_args(argv: List):
