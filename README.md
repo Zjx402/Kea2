@@ -210,6 +210,7 @@ You can find the [user manual](docs/manual_en.md), which includes:
 - How to run Kea2 and Kea2's command line options
 - How to find and understand Kea2's testing results
 - How to [whitelist or blacklist](docs/blacklisting.md) specific activities, UI widgets and UI regions during fuzzing
+- [Common Q&A for PBT and Kea2](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
 
 ## Open-source projects used by Kea2
 
