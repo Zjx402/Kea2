@@ -8,6 +8,8 @@
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
+The group has reached its capacity. Please contact Xixian Liang at [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn) with your Wechat ID / QR code to be invited to the WeChat group.
+
 ### Github repo link
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
 
