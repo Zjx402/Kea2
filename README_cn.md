@@ -6,6 +6,8 @@
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
+该群已满。如需加入微信群，请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码。
+
 ### Github仓库链接
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
 
@@ -13,7 +15,7 @@
 
 ## 简介
 
-Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）融合，从而赋予自动化UI测试以人工智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
+Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）融合，从而赋予自动化UI测试以人类智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
 
 Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一款工业级自动化UI测试工具*）及[uiautomator2](https://github.com/openatx/uiautomator2)（*一款易用且稳定的Android自动化库*）进行构建。Kea2目前支持[Android](https://en.wikipedia.org/wiki/Android_(operating_system))应用。
 
