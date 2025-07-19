@@ -80,6 +80,48 @@ def cmd_report(args):
         logger.error(f"Error generating test report: {e}")
 
 
+def cmd_merge(args):
+    """Merge multiple test report directories and generate a combined report"""
+    from .report_merger import TestReportMerger
+
+    try:
+        # Validate input paths
+        if not args.paths or len(args.paths) < 2:
+            logger.error("At least 2 test report paths are required for merging. Use -p to specify paths.")
+            return
+
+        # Validate that all paths exist
+        for path in args.paths:
+            path_obj = Path(path)
+            if not path_obj.exists():
+                logger.error(f"Test report path does not exist: {path}")
+                return
+            if not path_obj.is_dir():
+                logger.error(f"Path is not a directory: {path}")
+                return
+
+        logger.info(f"Merging {len(args.paths)} test report directories...")
+
+        # Initialize merger
+        merger = TestReportMerger()
+
+        # Merge test reports
+        merged_dir = merger.merge_reports(args.paths, args.output)
+
+        # Print results
+        print(f"✅ Test reports merged successfully!", flush=True)
+        print(f"📁 Merged report directory: {merged_dir}", flush=True)
+        print(f"📊 Main report: {merged_dir}/merged_report.html", flush=True)
+        print(f"📋 Merge summary: {merged_dir}/merge_summary.html", flush=True)
+
+        # Get merge summary
+        merge_summary = merger.get_merge_summary()
+        print(f"📈 Merged {merge_summary.get('merged_directories', 0)} directories", flush=True)
+
+    except Exception as e:
+        logger.error(f"Error during merge operation: {e}")
+
+
 def cmd_run(args):
     base_dir = getProjectRoot()
     if base_dir is None:
@@ -106,6 +148,28 @@ _commands = [
                 type=str,
                 required=True,
                 help="Path to the directory containing test results"
+            )
+        ]
+    ),
+    dict(
+        action=cmd_merge,
+        command="merge",
+        help="merge multiple test report directories and generate a combined report",
+        flags=[
+            dict(
+                name=["paths"],
+                args=["-p", "--paths"],
+                type=str,
+                nargs='+',
+                required=True,
+                help="Paths to test report directories (res_* directories) to merge"
+            ),
+            dict(
+                name=["output"],
+                args=["-o", "--output"],
+                type=str,
+                required=False,
+                help="Output directory for merged report (optional)"
             )
         ]
     )
