@@ -771,6 +771,107 @@
                 justify-content: center;
             }
         }
+        
+        /* Search Controls Styling */
+        .search-controls-modern {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e3e6ea;
+            border-radius: 12px;
+            padding: 20px 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .search-controls-modern::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #17a2b8, #20c997);
+            border-radius: 12px 12px 0 0;
+        }
+        
+        .search-controls-modern:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateY(-1px);
+        }
+        
+        .search-icon-wrapper {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+        
+        .search-icon-wrapper i {
+            color: white;
+            font-size: 20px;
+        }
+        
+        .activity-search-input {
+            border: 1px solid #ced4da;
+            border-radius: 8px 0 0 8px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .activity-search-input:focus {
+            border-color: #17a2b8;
+            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+        }
+        
+        .search-btn {
+            border-radius: 0;
+            border-left: none;
+            border-right: none;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+            background-color: #17a2b8;
+            border-color: #17a2b8;
+            color: white;
+        }
+        
+        .search-btn:hover {
+            background-color: #138496;
+            border-color: #117a8b;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .search-btn:focus {
+            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.5);
+        }
+        
+        .search-clear-btn {
+            border-radius: 0 8px 8px 0;
+            border-left: none;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .search-clear-btn:hover {
+            background-color: #dc3545;
+            border-color: #dc3545;
+            color: white;
+        }
+        
+        .search-results-count {
+            display: block;
+            margin-top: 8px;
+            font-size: 12px;
+            font-style: italic;
+        }
     </style>
 </head>
 
@@ -926,6 +1027,35 @@
                                 </div>
                             </div>
                             
+                            <!-- Search Controls for Tested Activities -->
+                            <div class="search-controls-modern mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="search-icon-wrapper me-3">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control activity-search-input" 
+                                                   id="tested-activity-search" 
+                                                   placeholder="Search tested activities..." 
+                                                   data-target="tested-activities-container"
+                                                   data-item-class="tested-activity"
+                                                   data-pagination="tested-pagination"
+                                                   data-page-size="tested-page-size">
+                                            <button class="btn btn-primary search-btn" type="button" 
+                                                    data-target="tested-activity-search">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
+                                                    data-target="tested-activity-search">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted search-results-count" id="tested-search-results"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if tested_activities|length > 0 %}
@@ -1004,6 +1134,35 @@
                                 </div>
                             </div>
                             
+                            <!-- Search Controls for All Activities -->
+                            <div class="search-controls-modern mb-4">
+                                <div class="d-flex align-items-center">
+                                    <div class="search-icon-wrapper me-3">
+                                        <i class="bi bi-search"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <div class="input-group">
+                                            <input type="text" class="form-control activity-search-input" 
+                                                   id="all-activity-search" 
+                                                   placeholder="Search all activities..." 
+                                                   data-target="all-activities-container"
+                                                   data-item-class="all-activity"
+                                                   data-pagination="all-pagination"
+                                                   data-page-size="all-page-size">
+                                            <button class="btn btn-primary search-btn" type="button" 
+                                                    data-target="all-activity-search">
+                                                <i class="bi bi-search"></i>
+                                            </button>
+                                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
+                                                    data-target="all-activity-search">
+                                                <i class="bi bi-x-lg"></i>
+                                            </button>
+                                        </div>
+                                        <small class="text-muted search-results-count" id="all-search-results"></small>
+                                    </div>
+                                </div>
+                            </div>
+                            
                             <div class="activities-container">
                                 <div class="activity-list">
                                     {% if total_activities|length > 0 %}
@@ -1078,6 +1237,139 @@
         </div>
         {% endif %}
 
+        <!-- Crash Analysis Section -->
+        {% if crash_events or anr_events %}
+        <div class="section-block">
+            <h2 class="section-title">
+                <i class="bi bi-exclamation-triangle text-danger"></i> Crash Analysis
+            </h2>
+            
+            <!-- Detailed Crash Information -->
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-bug"></i> Crash & ANR Events</span>
+                        <span class="badge bg-light text-dark">{{ (crash_events|length) + (anr_events|length) }} events</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Event Filter -->
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="Event filter">
+                            <input type="radio" class="btn-check" name="event-filter" id="all-events" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="all-events">All Events ({{ (crash_events|length) + (anr_events|length) }})</label>
+                            
+                            <input type="radio" class="btn-check" name="event-filter" id="crashes-only" autocomplete="off">
+                            <label class="btn btn-outline-danger" for="crashes-only">Crashes Only ({{ crash_events|length }})</label>
+                            
+                            <input type="radio" class="btn-check" name="event-filter" id="anr-only" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="anr-only">ANR Only ({{ anr_events|length }})</label>
+                        </div>
+                    </div>
+                    
+                    <!-- Events Table -->
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Time</th>
+                                    <th>Exception</th>
+                                    <th>Process</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crash-events-container">
+                                {% for crash in crash_events %}
+                                <tr class="event-row" data-type="crash" data-page="1">
+                                    <td><span class="badge bg-danger">CRASH</span></td>
+                                    <td>{{ crash.time }}</td>
+                                    <td>{{ crash.exception_type }}</td>
+                                    <td>{{ crash.process }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" type="button" 
+                                                data-bs-toggle="collapse" data-bs-target="#crash-detail-{{ loop.index }}" 
+                                                aria-expanded="false" aria-controls="crash-detail-{{ loop.index }}">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary copy-stack-btn" 
+                                                data-stack-index="{{ loop.index }}">
+                                            <i class="bi bi-clipboard"></i> Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="collapse" id="crash-detail-{{ loop.index }}">
+                                    <td colspan="5">
+                                        <div class="bg-light p-3 rounded">
+                                            <h6 class="text-danger">Stack Trace:</h6>
+                                            <pre class="text-danger mb-0" id="stack-trace-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap;">{{ crash.stack_trace }}</pre>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                                
+                                {% for anr in anr_events %}
+                                <tr class="event-row" data-type="anr" data-page="1">
+                                    <td><span class="badge bg-warning text-dark">ANR</span></td>
+                                    <td>{{ anr.time }}</td>
+                                    <td>{{ anr.reason }}</td>
+                                    <td>{{ anr.process }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" type="button" 
+                                                data-bs-toggle="collapse" data-bs-target="#anr-detail-{{ loop.index }}" 
+                                                aria-expanded="false" aria-controls="anr-detail-{{ loop.index }}">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary copy-stack-btn" 
+                                                data-stack-index="anr-{{ loop.index }}">
+                                            <i class="bi bi-clipboard"></i> Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="collapse" id="anr-detail-{{ loop.index }}">
+                                    <td colspan="5">
+                                        <div class="bg-light p-3 rounded">
+                                            <h6 class="text-warning">ANR Details:</h6>
+                                            <pre class="text-warning mb-0" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap;">{{ anr.trace }}</pre>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        
+                        <!-- Pagination for Crash Events -->
+                        <div class="d-flex justify-content-between align-items-center mt-3">
+                            <div class="d-flex align-items-center">
+                                <label for="events-page-size" class="form-label me-2 mb-0">Show:</label>
+                                <select class="form-select form-select-sm" id="events-page-size" style="width: auto;">
+                                    <option value="5">5</option>
+                                    <option value="10" selected>10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                </select>
+                            </div>
+                            <nav aria-label="Crash Events Pagination">
+                                <ul class="pagination pagination-sm mb-0" id="events-pagination">
+                                    <!-- Pagination will be generated by JavaScript -->
+                                </ul>
+                            </nav>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="section-block">
+            <h2 class="section-title">
+                <i class="bi bi-exclamation-triangle text-danger"></i> Crash Analysis
+            </h2>
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No crash or ANR events detected in this test session.
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Property Violations List -->
         {% if take_screenshots %}
         <div class="section-block">
@@ -1131,6 +1423,35 @@
         <!-- Property Checking Statistics -->
         <div class="section-block">
             <h2 class="section-title">Property Checking Statistics</h2>
+            
+            <!-- Search Controls for Property Statistics -->
+            <div class="search-controls-modern mb-4">
+                <div class="d-flex align-items-center">
+                    <div class="search-icon-wrapper me-3">
+                        <i class="bi bi-search"></i>
+                    </div>
+                    <div class="flex-grow-1">
+                        <div class="input-group">
+                            <input type="text" class="form-control property-search-input" 
+                                   id="property-stats-search" 
+                                   placeholder="Search properties by name..." 
+                                   data-target="property-stats-container"
+                                   data-item-class="property-stat-row"
+                                   data-pagination="stats-pagination"
+                                   data-page-size="stats-page-size">
+                            <button class="btn btn-primary search-btn" type="button" 
+                                    data-target="property-stats-search">
+                                <i class="bi bi-search"></i>
+                            </button>
+                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
+                                    data-target="property-stats-search">
+                                <i class="bi bi-x-lg"></i>
+                            </button>
+                        </div>
+                        <small class="text-muted search-results-count" id="property-search-results"></small>
+                    </div>
+                </div>
+            </div>
             
             <div class="table-responsive">
                 <table class="table table-custom">
@@ -1621,12 +1942,27 @@
                 }
             });
             
+            // Draw crash timeline chart
+            var crashTimelineData = {{ crash_timeline_data|default('{}')|safe }};
+            if (crashTimelineData && Object.keys(crashTimelineData).length > 0) {
+                drawCrashTimelineChart(crashTimelineData);
+            }
+            
+            // Initialize crash events functionality
+            initCrashAnalysis();
+            
             // Initialize pagination for Activities lists
             initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
             initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');
             
             // Initialize activity sorting
             initActivitySorting();
+            
+            // Initialize activity searching
+            initActivitySearching();
+            
+            // Initialize property statistics searching
+            initPropertySearching();
             
             // Initialize pagination for Property tables
             initPagination('property-violations-container', 'property-violation-row', 'violations-pagination', 'violations-page-size');
@@ -1694,8 +2030,16 @@
                         container.appendChild(item);
                     });
                     
-                    // Re-initialize pagination after sorting
+                    // Check if there's an active search and reapply it
+                    const searchInputId = isTestedTab ? 'tested-activity-search' : 'all-activity-search';
+                    const searchInput = document.getElementById(searchInputId);
+                    if (searchInput && searchInput.value.trim() !== '') {
+                        // Reapply search filter after sorting
+                        performActivitySearch(searchInput);
+                    } else {
+                        // No active search, just re-initialize pagination
                     initPagination(containerId, itemClass, paginationId, pageSizeSelectId);
+                    }
                 }
             }
             
@@ -1770,8 +2114,23 @@
             // Function to handle page navigation
             function goToPage(pageNumber, containerId, itemClass, itemsPerPage, paginationId) {
                 const container = document.getElementById(containerId);
-                const items = container.getElementsByClassName(itemClass);
+                const allItems = Array.from(container.getElementsByClassName(itemClass));
                 const paginationElement = document.getElementById(paginationId);
+                
+                console.log('goToPage called with:', {pageNumber, containerId, itemClass, itemsPerPage, paginationId});
+                console.log('Total items found:', allItems.length);
+                
+                // Get items that should be visible based on search filter
+                const filteredItems = allItems.filter(item => {
+                    const searchVisible = item.getAttribute('data-search-visible');
+                    const shouldShow = searchVisible === null || searchVisible === 'true';
+                    return shouldShow;
+                });
+                
+                console.log('Filtered items count:', filteredItems.length);
+                console.log('Items with search-visible=true:', allItems.filter(item => item.getAttribute('data-search-visible') === 'true').length);
+                console.log('Items with search-visible=false:', allItems.filter(item => item.getAttribute('data-search-visible') === 'false').length);
+                console.log('Items with search-visible=null:', allItems.filter(item => item.getAttribute('data-search-visible') === null).length);
                 
                 // Update pagination active state
                 if (paginationElement) {
@@ -1783,33 +2142,28 @@
                             pageItems[i].className = 'page-item';
                         }
                     }
-                    
-                    // Update prev/next buttons
-                    if (pageNumber === 1) {
-                        paginationElement.firstChild.className = 'page-item disabled';
-                    } else {
-                        paginationElement.firstChild.className = 'page-item';
-                    }
-                    
-                    const totalPages = Math.ceil(items.length / itemsPerPage);
-                    if (pageNumber === totalPages) {
-                        paginationElement.lastChild.className = 'page-item disabled';
-                    } else {
-                        paginationElement.lastChild.className = 'page-item';
-                    }
                 }
                 
-                // Show/hide items based on page number
+                // Hide all items first
+                console.log('Hiding all items...');
+                allItems.forEach((item, index) => {
+                    item.style.display = 'none';
+                });
+                
+                // Show items for current page (only from filtered items)
                 const startIndex = (pageNumber - 1) * itemsPerPage;
-                const endIndex = Math.min(startIndex + itemsPerPage, items.length);
+                const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
                 
-                for (let i = 0; i < items.length; i++) {
-                    if (i >= startIndex && i < endIndex) {
-                        items[i].style.display = '';
-                    } else {
-                        items[i].style.display = 'none';
+                console.log('Showing items from index', startIndex, 'to', endIndex - 1);
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    if (filteredItems[i]) {
+                        filteredItems[i].style.display = '';
+                        console.log('Showing item', i, ':', filteredItems[i].querySelector('.activity-name')?.textContent);
                     }
                 }
+                
+                console.log('goToPage completed');
             }
             
             // Pagination function
@@ -1818,22 +2172,33 @@
                 const pageSizeSelect = document.getElementById(pageSizeSelectId);
                 if (!container) return;
                 
-                // Get initial page size
-                let itemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
-                
-                // Add event listener for page size changes
-                if (pageSizeSelect) {
+                // Remove existing event listener to prevent duplicate bindings
+                if (pageSizeSelect && !pageSizeSelect.hasAttribute('data-listener-bound')) {
                     pageSizeSelect.addEventListener('change', function() {
-                        itemsPerPage = parseInt(this.value);
+                        const newItemsPerPage = parseInt(this.value);
                         renderPagination();
-                        goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                        goToPage(1, containerId, itemClass, newItemsPerPage, paginationId);
                     });
+                    // Mark as having listener bound
+                    pageSizeSelect.setAttribute('data-listener-bound', 'true');
                 }
                 
                 function renderPagination() {
-                    const items = container.getElementsByClassName(itemClass);
-                    const totalItems = items.length;
-                    const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+                    const allItems = Array.from(container.getElementsByClassName(itemClass));
+                    
+                    // Always get current page size from select element
+                    const currentPageSizeSelect = document.getElementById(pageSizeSelectId);
+                    const currentItemsPerPage = currentPageSizeSelect ? parseInt(currentPageSizeSelect.value) : 10;
+                    
+                    // Use same filtering logic as goToPage function
+                    const filteredItems = allItems.filter(item => {
+                        const searchVisible = item.getAttribute('data-search-visible');
+                        // If no search filter is applied, show all items
+                        return searchVisible === null || searchVisible === 'true';
+                    });
+                    
+                    const totalItems = filteredItems.length;
+                    const totalPages = Math.max(1, Math.ceil(totalItems / currentItemsPerPage));
                     
                     // Create pagination
                     const paginationElement = document.getElementById(paginationId);
@@ -1841,6 +2206,22 @@
                     
                     // Clear pagination
                     paginationElement.innerHTML = '';
+                    
+                    // Don't show pagination if there's only one page or no items
+                    if (totalPages <= 1) {
+                        // Hide the entire pagination container when not needed
+                        const paginationContainer = paginationElement.closest('.pagination-container');
+                        if (paginationContainer) {
+                            paginationContainer.style.display = 'none';
+                        }
+                        return;
+                    }
+                    
+                    // Show the pagination container when needed
+                    const paginationContainer = paginationElement.closest('.pagination-container');
+                    if (paginationContainer) {
+                        paginationContainer.style.display = '';
+                    }
                     
                     // Previous button
                     const prevLi = document.createElement('li');
@@ -1855,7 +2236,7 @@
                         pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
                         pageLi.addEventListener('click', function(e) {
                             e.preventDefault();
-                            goToPage(i, containerId, itemClass, itemsPerPage, paginationId);
+                            goToPage(i, containerId, itemClass, currentItemsPerPage, paginationId);
                         });
                         paginationElement.appendChild(pageLi);
                     }
@@ -1874,7 +2255,7 @@
                             if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
                                 const pageNum = parseInt(activePage.textContent) - 1;
                                 if (pageNum >= 1) {
-                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                    goToPage(pageNum, containerId, itemClass, currentItemsPerPage, paginationId);
                                 }
                             }
                         });
@@ -1886,9 +2267,8 @@
                             const activePage = paginationElement.querySelector('.active');
                             if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
                                 const pageNum = parseInt(activePage.textContent) + 1;
-                                const totalPages = Math.ceil(container.getElementsByClassName(itemClass).length / itemsPerPage);
                                 if (pageNum <= totalPages) {
-                                    goToPage(pageNum, containerId, itemClass, itemsPerPage, paginationId);
+                                    goToPage(pageNum, containerId, itemClass, currentItemsPerPage, paginationId);
                                 }
                             }
                         });
@@ -1897,7 +2277,9 @@
                 
                 // Initial render
                 renderPagination();
-                goToPage(1, containerId, itemClass, itemsPerPage, paginationId);
+                // Always call goToPage to ensure items are displayed correctly, even if no pagination is shown
+                const currentItemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
+                goToPage(1, containerId, itemClass, currentItemsPerPage, paginationId);
             }
             
             // Scroll functionality
@@ -1960,7 +2342,475 @@
             
             // Call beautify function after DOM is ready
             beautifyScreenshotCaptions();
+            
+            // Crash analysis functions
+            function initCrashAnalysis() {
+                // Initialize event filtering
+                var filterButtons = document.querySelectorAll('input[name="event-filter"]');
+                filterButtons.forEach(function(button) {
+                    button.addEventListener('change', function() {
+                        filterCrashEvents(this.id);
+                    });
+                });
+                
+                // Initialize copy buttons for stack traces
+                var copyButtons = document.querySelectorAll('.copy-stack-btn');
+                copyButtons.forEach(function(button) {
+                    button.addEventListener('click', function() {
+                        var stackIndex = this.dataset.stackIndex;
+                        copyStackTrace(stackIndex);
+                    });
+                });
+                
+                // Initialize pagination for crash events
+                initPagination('crash-events-container', 'event-row', 'events-pagination', 'events-page-size');
+            }
+            
+            function filterCrashEvents(filterType) {
+                var rows = document.querySelectorAll('.event-row');
+                
+                rows.forEach(function(row) {
+                    var rowType = row.dataset.type;
+                    var shouldShow = false;
+                    
+                    switch(filterType) {
+                        case 'all-events':
+                            shouldShow = true;
+                            break;
+                        case 'crashes-only':
+                            shouldShow = rowType === 'crash';
+                            break;
+                        case 'anr-only':
+                            shouldShow = rowType === 'anr';
+                            break;
+                    }
+                    
+                    // Also toggle the corresponding detail row
+                    var detailRow = row.nextElementSibling;
+                    if (shouldShow) {
+                        row.style.display = '';
+                        if (detailRow && detailRow.classList.contains('collapse')) {
+                            detailRow.style.display = '';
+                        }
+                    } else {
+                        row.style.display = 'none';
+                        if (detailRow && detailRow.classList.contains('collapse')) {
+                            detailRow.style.display = 'none';
+                        }
+                    }
+                });
+                
+                // Re-initialize pagination after filtering
+                initPagination('crash-events-container', 'event-row', 'events-pagination', 'events-page-size');
+            }
+            
+            function copyStackTrace(index) {
+                var stackTraceElement = document.getElementById('stack-trace-' + index);
+                if (!stackTraceElement) return;
+                
+                var stackTrace = stackTraceElement.textContent;
+                
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(stackTrace).then(function() {
+                        showCopyNotification('Stack trace copied to clipboard!');
+                    }).catch(function(err) {
+                        console.error('Failed to copy stack trace: ', err);
+                        showCopyNotification('Failed to copy stack trace', 'error');
+                    });
+                } else {
+                    // Fallback for older browsers
+                    var textArea = document.createElement('textarea');
+                    textArea.value = stackTrace;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCopyNotification('Stack trace copied to clipboard!');
+                    } catch (err) {
+                        console.error('Fallback copy failed: ', err);
+                        showCopyNotification('Failed to copy stack trace', 'error');
+                    }
+                    document.body.removeChild(textArea);
+                }
+            }
+            
+            function showCopyNotification(message, type) {
+                type = type || 'success';
+                
+                // Create notification element
+                var notification = document.createElement('div');
+                notification.className = 'alert alert-' + (type === 'error' ? 'danger' : 'success') + ' position-fixed';
+                notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+                notification.innerHTML = '<i class="bi bi-' + (type === 'error' ? 'exclamation-triangle' : 'check-circle') + '"></i> ' + message;
+                
+                document.body.appendChild(notification);
+                
+                // Auto remove after 3 seconds
+                setTimeout(function() {
+                    if (notification.parentNode) {
+                        notification.parentNode.removeChild(notification);
+                    }
+                }, 3000);
+            }
         });
+        
+        // Global activity search functions
+        function performActivitySearch(searchInput) {
+            const searchTerm = searchInput.value.toLowerCase().trim();
+            const containerId = searchInput.dataset.target;
+            const itemClass = searchInput.dataset.itemClass;
+            const paginationId = searchInput.dataset.pagination;
+            const pageSizeSelectId = searchInput.dataset.pageSize;
+            
+            const container = document.getElementById(containerId);
+            const items = Array.from(container.getElementsByClassName(itemClass));
+            
+            // Filter and count matching items
+            let visibleCount = 0;
+            let totalCount = items.length;
+            
+            items.forEach(function(item, index) {
+                const activityName = item.querySelector('.activity-name');
+                if (activityName) {
+                    const text = activityName.textContent.toLowerCase();
+                    const matches = searchTerm === '' || text.includes(searchTerm);
+                    
+                    if (matches) {
+                        item.setAttribute('data-search-visible', 'true');
+                        visibleCount++;
+                    } else {
+                        item.setAttribute('data-search-visible', 'false');
+                    }
+                } else {
+                    // If no activity name found, hide the item
+                    item.setAttribute('data-search-visible', 'false');
+                }
+            });
+            
+            // Update search results count
+            updateSearchResultsCount(searchInput, visibleCount, totalCount, searchTerm);
+            
+            // Re-initialize pagination and go to first page
+            initPagination(containerId, itemClass, paginationId, pageSizeSelectId);
+            
+            // Always go to page 1 after search
+            const currentPageSize = document.getElementById(pageSizeSelectId) ? 
+                parseInt(document.getElementById(pageSizeSelectId).value) : 10;
+            
+            goToPage(1, containerId, itemClass, currentPageSize, paginationId);
+        }
+        
+        function updateSearchResultsCount(searchInput, visibleCount, totalCount, searchTerm) {
+            const isTestedTab = searchInput.id.includes('tested');
+            const resultsElementId = isTestedTab ? 'tested-search-results' : 'all-search-results';
+            const resultsElement = document.getElementById(resultsElementId);
+            
+            if (resultsElement) {
+                if (searchTerm === '') {
+                    resultsElement.innerHTML = `<span class="text-muted">Showing all ${totalCount} activities - Type and click <i class="bi bi-search"></i> or press Enter to search</span>`;
+                } else if (visibleCount === 0) {
+                    resultsElement.innerHTML = `<span class="text-danger">No activities found for "${searchTerm}"</span>`;
+                } else if (visibleCount === totalCount) {
+                    resultsElement.innerHTML = `<span class="text-success">All ${totalCount} activities match "${searchTerm}"</span>`;
+                } else {
+                    resultsElement.innerHTML = `<span class="text-info">Found ${visibleCount} of ${totalCount} activities for "${searchTerm}"</span>`;
+                }
+            }
+        }
+        
+        // Activity searching function
+        function initActivitySearching() {
+            const searchInputs = document.querySelectorAll('.activity-search-input');
+            const searchButtons = document.querySelectorAll('.search-btn');
+            const clearButtons = document.querySelectorAll('.search-clear-btn');
+            
+            // Initialize search functionality for each input
+            searchInputs.forEach(function(input) {
+                // Search on Enter key
+                input.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        performActivitySearch(this);
+                    } else if (e.key === 'Escape') {
+                        clearActivitySearch(this);
+                    }
+                });
+            });
+            
+            // Initialize search button functionality
+            searchButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const targetInputId = this.dataset.target;
+                    const targetInput = document.getElementById(targetInputId);
+                    if (targetInput) {
+                        performActivitySearch(targetInput);
+                    }
+                });
+            });
+            
+            // Initialize clear button functionality
+            clearButtons.forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const targetInputId = this.dataset.target;
+                    const targetInput = document.getElementById(targetInputId);
+                    if (targetInput) {
+                        clearActivitySearch(targetInput);
+                    }
+                });
+            });
+            
+            function clearActivitySearch(searchInput) {
+                searchInput.value = '';
+                performActivitySearch(searchInput);
+                searchInput.focus();
+            }
+        }
+        
+        // Property statistics searching function
+        function initPropertySearching() {
+            const searchInput = document.getElementById('property-stats-search');
+            const searchButton = document.querySelector('.search-btn[data-target="property-stats-search"]');
+            const clearButton = document.querySelector('[data-target="property-stats-search"].search-clear-btn');
+            
+            if (!searchInput) return;
+            
+            // Search on Enter key
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performPropertySearch(this);
+                } else if (e.key === 'Escape') {
+                    clearPropertySearch(this);
+                }
+            });
+            
+            // Search button functionality
+            if (searchButton) {
+                searchButton.addEventListener('click', function() {
+                    performPropertySearch(searchInput);
+                });
+            }
+            
+            // Clear button functionality
+            if (clearButton) {
+                clearButton.addEventListener('click', function() {
+                    clearPropertySearch(searchInput);
+                });
+            }
+            
+            function performPropertySearch(searchInput) {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const container = document.getElementById('property-stats-container');
+                const items = Array.from(container.getElementsByClassName('property-stat-row'));
+                
+                let visibleCount = 0;
+                let totalCount = items.length;
+                
+                // Filter items based on search term
+                items.forEach(function(item) {
+                    const propertyNameElement = item.querySelector('.badge-custom');
+                    if (propertyNameElement) {
+                        const propertyName = propertyNameElement.textContent.toLowerCase();
+                        
+                        if (searchTerm === '' || propertyName.includes(searchTerm)) {
+                            item.setAttribute('data-search-visible', 'true');
+                            visibleCount++;
+                        } else {
+                            item.setAttribute('data-search-visible', 'false');
+                        }
+                    }
+                });
+                
+                // Update search results count
+                updatePropertySearchResults(visibleCount, totalCount, searchTerm);
+                
+                // Re-initialize pagination and go to first page
+                initPagination('property-stats-container', 'property-stat-row', 'stats-pagination', 'stats-page-size');
+                
+                // Always go to page 1 after search
+                const currentPageSize = document.getElementById('stats-page-size') ? 
+                    parseInt(document.getElementById('stats-page-size').value) : 10;
+                goToPage(1, 'property-stats-container', 'property-stat-row', currentPageSize, 'stats-pagination');
+            }
+            
+            function clearPropertySearch(searchInput) {
+                searchInput.value = '';
+                performPropertySearch(searchInput);
+                searchInput.focus();
+            }
+            
+            function updatePropertySearchResults(visibleCount, totalCount, searchTerm) {
+                const resultsElement = document.getElementById('property-search-results');
+                
+                if (resultsElement) {
+                    if (searchTerm === '') {
+                        resultsElement.innerHTML = `<span class="text-muted">Showing all ${totalCount} properties - Type and click <i class="bi bi-search"></i> or press Enter to search</span>`;
+                    } else if (visibleCount === 0) {
+                        resultsElement.innerHTML = `<span class="text-danger">No properties found for "${searchTerm}"</span>`;
+                    } else if (visibleCount === totalCount) {
+                        resultsElement.innerHTML = `<span class="text-success">All ${totalCount} properties match "${searchTerm}"</span>`;
+                    } else {
+                        resultsElement.innerHTML = `<span class="text-info">Found ${visibleCount} of ${totalCount} properties for "${searchTerm}"</span>`;
+                    }
+                }
+            }
+        }
+        
+        // Global pagination and navigation functions
+        function goToPage(pageNumber, containerId, itemClass, itemsPerPage, paginationId) {
+            const container = document.getElementById(containerId);
+            const allItems = Array.from(container.getElementsByClassName(itemClass));
+            const paginationElement = document.getElementById(paginationId);
+            
+            // Get items that should be visible based on search filter
+            const filteredItems = allItems.filter(item => {
+                const searchVisible = item.getAttribute('data-search-visible');
+                const shouldShow = searchVisible === null || searchVisible === 'true';
+                return shouldShow;
+            });
+            
+            // Update pagination active state
+            if (paginationElement) {
+                const pageItems = paginationElement.getElementsByClassName('page-item');
+                for (let i = 0; i < pageItems.length; i++) {
+                    if (pageItems[i].textContent.trim() === pageNumber.toString()) {
+                        pageItems[i].className = 'page-item active';
+                    } else if (pageItems[i].textContent.trim() !== '«' && pageItems[i].textContent.trim() !== '»') {
+                        pageItems[i].className = 'page-item';
+                    }
+                }
+            }
+            
+            // Hide all items first
+            allItems.forEach((item, index) => {
+                item.style.display = 'none';
+            });
+            
+            // Show items for current page (only from filtered items)
+            const startIndex = (pageNumber - 1) * itemsPerPage;
+            const endIndex = Math.min(startIndex + itemsPerPage, filteredItems.length);
+            
+            for (let i = startIndex; i < endIndex; i++) {
+                if (filteredItems[i]) {
+                    filteredItems[i].style.display = '';
+                }
+            }
+        }
+        
+        function initPagination(containerId, itemClass, paginationId, pageSizeSelectId) {
+            const container = document.getElementById(containerId);
+            const pageSizeSelect = document.getElementById(pageSizeSelectId);
+            if (!container) return;
+            
+            // Remove existing event listener to prevent duplicate bindings
+            if (pageSizeSelect && !pageSizeSelect.hasAttribute('data-listener-bound')) {
+                pageSizeSelect.addEventListener('change', function() {
+                    const newItemsPerPage = parseInt(this.value);
+                    renderPagination();
+                    goToPage(1, containerId, itemClass, newItemsPerPage, paginationId);
+                });
+                // Mark as having listener bound
+                pageSizeSelect.setAttribute('data-listener-bound', 'true');
+            }
+            
+            function renderPagination() {
+                const allItems = Array.from(container.getElementsByClassName(itemClass));
+                
+                // Always get current page size from select element
+                const currentPageSizeSelect = document.getElementById(pageSizeSelectId);
+                const currentItemsPerPage = currentPageSizeSelect ? parseInt(currentPageSizeSelect.value) : 10;
+                
+                // Use same filtering logic as goToPage function
+                const filteredItems = allItems.filter(item => {
+                    const searchVisible = item.getAttribute('data-search-visible');
+                    // If no search filter is applied, show all items
+                    return searchVisible === null || searchVisible === 'true';
+                });
+                
+                const totalItems = filteredItems.length;
+                const totalPages = Math.max(1, Math.ceil(totalItems / currentItemsPerPage));
+                
+                // Create pagination
+                const paginationElement = document.getElementById(paginationId);
+                if (!paginationElement) return;
+                
+                // Clear pagination
+                paginationElement.innerHTML = '';
+                
+                // Don't show pagination if there's only one page or no items
+                if (totalPages <= 1) {
+                    // Hide the entire pagination container when not needed
+                    const paginationContainer = paginationElement.closest('.pagination-container');
+                    if (paginationContainer) {
+                        paginationContainer.style.display = 'none';
+                    }
+                    return;
+                }
+                
+                // Show the pagination container when needed
+                const paginationContainer = paginationElement.closest('.pagination-container');
+                if (paginationContainer) {
+                    paginationContainer.style.display = '';
+                }
+                
+                // Previous button
+                const prevLi = document.createElement('li');
+                prevLi.className = 'page-item disabled';
+                prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                paginationElement.appendChild(prevLi);
+                
+                // Add page numbers
+                for (let i = 1; i <= totalPages; i++) {
+                    const pageLi = document.createElement('li');
+                    pageLi.className = i === 1 ? 'page-item active' : 'page-item';
+                    pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                    pageLi.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        goToPage(i, containerId, itemClass, currentItemsPerPage, paginationId);
+                    });
+                    paginationElement.appendChild(pageLi);
+                }
+                
+                // Next button
+                const nextLi = document.createElement('li');
+                nextLi.className = totalPages <= 1 ? 'page-item disabled' : 'page-item';
+                nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                paginationElement.appendChild(nextLi);
+                
+                // Add event listeners to prev/next buttons
+                if (paginationElement.firstChild) {
+                    paginationElement.firstChild.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const activePage = paginationElement.querySelector('.active');
+                        if (activePage && activePage.previousElementSibling && activePage.previousElementSibling.previousElementSibling) {
+                            const pageNum = parseInt(activePage.textContent) - 1;
+                            if (pageNum >= 1) {
+                                goToPage(pageNum, containerId, itemClass, currentItemsPerPage, paginationId);
+                            }
+                        }
+                    });
+                }
+                
+                if (paginationElement.lastChild) {
+                    paginationElement.lastChild.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        const activePage = paginationElement.querySelector('.active');
+                        if (activePage && activePage.nextElementSibling && activePage.nextElementSibling.nextElementSibling) {
+                            const pageNum = parseInt(activePage.textContent) + 1;
+                            if (pageNum <= totalPages) {
+                                goToPage(pageNum, containerId, itemClass, currentItemsPerPage, paginationId);
+                            }
+                        }
+                    });
+                }
+            }
+            
+            // Initial render
+            renderPagination();
+            // Always call goToPage to ensure items are displayed correctly, even if no pagination is shown
+            const currentItemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
+            goToPage(1, containerId, itemClass, currentItemsPerPage, paginationId);
+        }
     </script>
 </body>
 </html> 
