@@ -201,43 +201,86 @@
             vertical-align: middle;
             text-align: center;
         }
+
+        /* Override text alignment for stack trace containers */
+        .table-custom td .bg-light {
+            text-align: left;
+        }
+
+        .table-custom td .bg-light pre {
+            text-align: left !important;
+        }
+
+        /* Enhanced Error Details styling */
+        .table-custom td:nth-child(7) .collapse {
+            position: relative;
+            z-index: 10;
+        }
+
+        .table-custom td:nth-child(7) .card {
+            max-width: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .table-custom td:nth-child(7) .card-body {
+            padding: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .table-custom td:nth-child(7) pre {
+            max-height: 200px;
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.4;
+        }
+
+        .table-custom td:nth-child(7) details {
+            margin-top: 0.5rem;
+        }
+
+        .table-custom td:nth-child(7) summary {
+            cursor: pointer;
+            margin-bottom: 0.5rem;
+        }
         
         /* Specific column widths for property statistics table */
         .table-custom th:nth-child(1), .table-custom td:nth-child(1) { /* Index */
-            width: 6%;
-            min-width: 55px;
+            width: 5%;
+            min-width: 50px;
         }
-        
+
         .table-custom th:nth-child(2), .table-custom td:nth-child(2) { /* Property Name */
-            width: 22%;
-            min-width: 200px;
+            width: 18%;
+            min-width: 180px;
             text-align: left;
         }
-        
+
         .table-custom th:nth-child(3), .table-custom td:nth-child(3) { /* Precondition Satisfied */
-            width: 11%;
-            min-width: 95px;
+            width: 9%;
+            min-width: 85px;
         }
-        
+
         .table-custom th:nth-child(4), .table-custom td:nth-child(4) { /* Executed */
-            width: 9%;
-            min-width: 75px;
+            width: 8%;
+            min-width: 70px;
         }
-        
+
         .table-custom th:nth-child(5), .table-custom td:nth-child(5) { /* Fails */
-            width: 9%;
-            min-width: 75px;
+            width: 7%;
+            min-width: 65px;
         }
-        
+
         .table-custom th:nth-child(6), .table-custom td:nth-child(6) { /* Errors */
-            width: 9%;
-            min-width: 75px;
+            width: 8%;
+            min-width: 70px;
         }
         
         .table-custom th:nth-child(7), .table-custom td:nth-child(7) { /* Error Details */
-            width: 34%;
-            min-width: 280px;
+            width: 45%;
+            min-width: 400px;
             text-align: center;
+            position: relative;
         }
         
         .table-custom tbody tr:nth-of-type(odd) {
@@ -1249,7 +1292,7 @@
                 <div class="card-header bg-danger text-white">
                     <div class="d-flex justify-content-between align-items-center">
                         <span><i class="bi bi-bug"></i> Crash & ANR Events</span>
-                        <span class="badge bg-light text-dark">{{ (crash_events|length) + (anr_events|length) }} events</span>
+                        <span class="badge bg-light text-dark" style="font-size: 1.1em; font-weight: 600;">{{ (crash_events|length) + (anr_events|length) }} events</span>
                     </div>
                 </div>
                 <div class="card-body">
@@ -1302,7 +1345,7 @@
                                     <td colspan="5">
                                         <div class="bg-light p-3 rounded">
                                             <h6 class="text-danger">Stack Trace:</h6>
-                                            <pre class="text-danger mb-0" id="stack-trace-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap;">{{ crash.stack_trace }}</pre>
+                                            <pre class="text-danger mb-0 text-start" id="stack-trace-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ crash.stack_trace }}</pre>
                                         </div>
                                     </td>
                                 </tr>
@@ -1330,31 +1373,32 @@
                                     <td colspan="5">
                                         <div class="bg-light p-3 rounded">
                                             <h6 class="text-warning">ANR Details:</h6>
-                                            <pre class="text-warning mb-0" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap;">{{ anr.trace }}</pre>
+                                            <pre class="text-warning mb-0 text-start" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ anr.trace }}</pre>
                                         </div>
                                     </td>
                                 </tr>
                                 {% endfor %}
                             </tbody>
                         </table>
-                        
-                        <!-- Pagination for Crash Events -->
-                        <div class="d-flex justify-content-between align-items-center mt-3">
-                            <div class="d-flex align-items-center">
-                                <label for="events-page-size" class="form-label me-2 mb-0">Show:</label>
-                                <select class="form-select form-select-sm" id="events-page-size" style="width: auto;">
-                                    <option value="5">5</option>
-                                    <option value="10" selected>10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                </select>
-                            </div>
-                            <nav aria-label="Crash Events Pagination">
-                                <ul class="pagination pagination-sm mb-0" id="events-pagination">
-                                    <!-- Pagination will be generated by JavaScript -->
-                                </ul>
-                            </nav>
+                    </div>
+
+                    <!-- Pagination for Crash Events -->
+                    <div class="pagination-container d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center">
+                            <label for="events-page-size" class="form-label me-2 mb-0">Show:</label>
+                            <select class="form-select form-select-sm" id="events-page-size" style="width: auto;">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
                         </div>
+                        <nav aria-label="Crash Events Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="events-pagination">
+                                <!-- Pagination will be generated by JavaScript -->
+                            </ul>
+                        </nav>
                     </div>
                 </div>
             </div>
@@ -2352,7 +2396,7 @@
                         filterCrashEvents(this.id);
                     });
                 });
-                
+
                 // Initialize copy buttons for stack traces
                 var copyButtons = document.querySelectorAll('.copy-stack-btn');
                 copyButtons.forEach(function(button) {
@@ -2361,49 +2405,257 @@
                         copyStackTrace(stackIndex);
                     });
                 });
-                
+
+                // Initialize page size selector for crash events
+                var pageSizeSelect = document.getElementById('events-page-size');
+                if (pageSizeSelect) {
+                    pageSizeSelect.addEventListener('change', function() {
+                        updateCrashEventsPagination();
+                    });
+                }
+
                 // Initialize pagination for crash events
-                initPagination('crash-events-container', 'event-row', 'events-pagination', 'events-page-size');
+                updateCrashEventsPagination();
             }
             
             function filterCrashEvents(filterType) {
-                var rows = document.querySelectorAll('.event-row');
-                
-                rows.forEach(function(row) {
+                // Simply update pagination, which will handle filtering and display
+                updateCrashEventsPagination();
+            }
+
+            function updateCrashEventsPagination() {
+                var container = document.getElementById('crash-events-container');
+                var pagination = document.getElementById('events-pagination');
+                var pageSizeSelect = document.getElementById('events-page-size');
+
+                if (!container || !pagination || !pageSizeSelect) return;
+
+                // Get all rows and determine which should be visible based on current filter
+                var allRows = Array.from(container.querySelectorAll('.event-row'));
+                var currentFilter = getCurrentEventFilter();
+
+                var visibleRows = allRows.filter(function(row) {
                     var rowType = row.dataset.type;
-                    var shouldShow = false;
-                    
-                    switch(filterType) {
+                    switch(currentFilter) {
                         case 'all-events':
-                            shouldShow = true;
-                            break;
+                            return true;
                         case 'crashes-only':
-                            shouldShow = rowType === 'crash';
-                            break;
+                            return rowType === 'crash';
                         case 'anr-only':
-                            shouldShow = rowType === 'anr';
-                            break;
-                    }
-                    
-                    // Also toggle the corresponding detail row
-                    var detailRow = row.nextElementSibling;
-                    if (shouldShow) {
-                        row.style.display = '';
-                        if (detailRow && detailRow.classList.contains('collapse')) {
-                            detailRow.style.display = '';
-                        }
-                    } else {
-                        row.style.display = 'none';
-                        if (detailRow && detailRow.classList.contains('collapse')) {
-                            detailRow.style.display = 'none';
-                        }
+                            return rowType === 'anr';
+                        default:
+                            return true;
                     }
                 });
-                
-                // Re-initialize pagination after filtering
-                initPagination('crash-events-container', 'event-row', 'events-pagination', 'events-page-size');
+
+                var pageSize = parseInt(pageSizeSelect.value) || 10;
+                var totalPages = Math.ceil(visibleRows.length / pageSize);
+                var currentPage = 1;
+
+                // Hide all rows first
+                allRows.forEach(function(row) {
+                    row.style.display = 'none';
+                    var detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = 'none';
+                    }
+                });
+
+                // Show rows for current page
+                var startIndex = (currentPage - 1) * pageSize;
+                var endIndex = Math.min(startIndex + pageSize, visibleRows.length);
+
+                for (var i = startIndex; i < endIndex; i++) {
+                    visibleRows[i].style.display = '';
+                    var detailRow = visibleRows[i].nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = '';
+                    }
+                }
+
+                // Store current state for pagination callback
+                window.crashEventsState = {
+                    visibleRows: visibleRows,
+                    pageSize: pageSize,
+                    totalPages: totalPages
+                };
+
+                // Update pagination controls
+                updatePaginationControls('events-pagination', currentPage, totalPages, function(page) {
+                    showCrashEventsPage(page, window.crashEventsState.visibleRows, window.crashEventsState.pageSize);
+                });
             }
-            
+
+            function showCrashEventsPage(page, visibleRows, pageSize) {
+                // Hide all visible rows
+                visibleRows.forEach(function(row) {
+                    row.style.display = 'none';
+                    var detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = 'none';
+                    }
+                });
+
+                // Show rows for the specified page
+                var startIndex = (page - 1) * pageSize;
+                var endIndex = Math.min(startIndex + pageSize, visibleRows.length);
+
+                for (var i = startIndex; i < endIndex; i++) {
+                    visibleRows[i].style.display = '';
+                    var detailRow = visibleRows[i].nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = '';
+                    }
+                }
+
+                // Update pagination controls to reflect current page
+                var totalPages = Math.ceil(visibleRows.length / pageSize);
+                var pagination = document.getElementById('events-pagination');
+                if (pagination) {
+                    // Update active page
+                    var pageItems = pagination.querySelectorAll('.page-item');
+                    pageItems.forEach(function(item, index) {
+                        // Skip first (previous) and last (next) buttons
+                        if (index > 0 && index < pageItems.length - 1) {
+                            var pageNum = parseInt(item.textContent);
+                            if (pageNum === page) {
+                                item.classList.add('active');
+                            } else {
+                                item.classList.remove('active');
+                            }
+                        }
+                    });
+
+                    // Update previous button state
+                    if (pageItems.length > 0) {
+                        var prevButton = pageItems[0];
+                        if (page === 1) {
+                            prevButton.classList.add('disabled');
+                        } else {
+                            prevButton.classList.remove('disabled');
+                        }
+                    }
+
+                    // Update next button state
+                    if (pageItems.length > 1) {
+                        var nextButton = pageItems[pageItems.length - 1];
+                        if (page === totalPages) {
+                            nextButton.classList.add('disabled');
+                        } else {
+                            nextButton.classList.remove('disabled');
+                        }
+                    }
+                }
+            }
+
+            function getCurrentEventFilter() {
+                var filterButtons = document.querySelectorAll('input[name="event-filter"]');
+                for (var i = 0; i < filterButtons.length; i++) {
+                    if (filterButtons[i].checked) {
+                        return filterButtons[i].id;
+                    }
+                }
+                return 'all-events'; // default
+            }
+
+            function updatePaginationControls(paginationId, currentPage, totalPages, onPageClick) {
+                var pagination = document.getElementById(paginationId);
+                if (!pagination) return;
+
+                pagination.innerHTML = '';
+
+                if (totalPages <= 1) {
+                    // Hide the entire pagination container when not needed
+                    var paginationContainer = pagination.closest('.pagination-container');
+                    if (paginationContainer) {
+                        paginationContainer.style.display = 'none';
+                    }
+                    return;
+                }
+
+                // Show the pagination container when needed
+                var paginationContainer = pagination.closest('.pagination-container');
+                if (paginationContainer) {
+                    paginationContainer.style.display = '';
+                }
+
+                // Previous button
+                var prevLi = document.createElement('li');
+                prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+                var prevLink = document.createElement('a');
+                prevLink.className = 'page-link';
+                prevLink.href = '#';
+                prevLink.setAttribute('aria-label', 'Previous');
+                prevLink.innerHTML = '<span aria-hidden="true">&laquo;</span>';
+
+                prevLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Get current page dynamically to avoid stale closure values
+                    var currentActivePage = getCurrentPageNumber(paginationId);
+                    if (currentActivePage > 1 && !prevLi.classList.contains('disabled')) {
+                        onPageClick(currentActivePage - 1);
+                    }
+                });
+
+                prevLi.appendChild(prevLink);
+                pagination.appendChild(prevLi);
+
+                // Page numbers
+                for (var i = 1; i <= totalPages; i++) {
+                    var li = document.createElement('li');
+                    li.className = 'page-item' + (i === currentPage ? ' active' : '');
+                    var link = document.createElement('a');
+                    link.className = 'page-link';
+                    link.href = '#';
+                    link.textContent = i;
+                    link.addEventListener('click', (function(page) {
+                        return function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onPageClick(page);
+                        };
+                    })(i));
+                    li.appendChild(link);
+                    pagination.appendChild(li);
+                }
+
+                // Next button
+                var nextLi = document.createElement('li');
+                nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+                var nextLink = document.createElement('a');
+                nextLink.className = 'page-link';
+                nextLink.href = '#';
+                nextLink.setAttribute('aria-label', 'Next');
+                nextLink.innerHTML = '<span aria-hidden="true">&raquo;</span>';
+
+                nextLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Get current page dynamically to avoid stale closure values
+                    var currentActivePage = getCurrentPageNumber(paginationId);
+                    if (currentActivePage < totalPages && !nextLi.classList.contains('disabled')) {
+                        onPageClick(currentActivePage + 1);
+                    }
+                });
+
+                nextLi.appendChild(nextLink);
+                pagination.appendChild(nextLi);
+            }
+
+            function getCurrentPageNumber(paginationId) {
+                var pagination = document.getElementById(paginationId);
+                if (!pagination) return 1;
+
+                var activeItem = pagination.querySelector('.page-item.active');
+                if (activeItem) {
+                    var pageText = activeItem.textContent.trim();
+                    var pageNum = parseInt(pageText);
+                    return isNaN(pageNum) ? 1 : pageNum;
+                }
+                return 1;
+            }
+
             function copyStackTrace(index) {
                 var stackTraceElement = document.getElementById('stack-trace-' + index);
                 if (!stackTraceElement) return;
