@@ -100,7 +100,7 @@ def cmd_merge(args):
                 logger.error(f"Path is not a directory: {path}")
                 return
 
-        logger.info(f"Merging {len(args.paths)} test report directories...")
+        logger.debug(f"Merging {len(args.paths)} test report directories...")
 
         # Initialize merger
         merger = TestReportMerger()
@@ -111,8 +111,7 @@ def cmd_merge(args):
         # Print results
         print(f"✅ Test reports merged successfully!", flush=True)
         print(f"📁 Merged report directory: {merged_dir}", flush=True)
-        print(f"📊 Main report: {merged_dir}/merged_report.html", flush=True)
-        print(f"📋 Merge summary: {merged_dir}/merge_summary.html", flush=True)
+        print(f"📊 Merged report: {merged_dir}/merged_report.html", flush=True)
 
         # Get merge summary
         merge_summary = merger.get_merge_summary()

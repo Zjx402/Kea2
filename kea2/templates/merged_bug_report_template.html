@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kea2 Simple Test Report</title>
+    <title>Kea2 Merged Test Report</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
     <style>
@@ -679,6 +679,233 @@
                 white-space: normal;
             }
         }
+
+        /* Merge Information Styles */
+        .merge-info-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .merge-info-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e3f2fd;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .merge-info-card:hover {
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+            transform: translateY(-1px);
+        }
+
+        .merge-info-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+            border-bottom: 1px solid rgba(23, 162, 184, 0.2);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+
+        .merge-info-header:hover {
+            background: linear-gradient(135deg, #d1ecf1 0%, #e8f4f8 100%);
+        }
+
+        .merge-icon-wrapper {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #17a2b8, #138496);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(23, 162, 184, 0.3);
+        }
+
+        .merge-icon-wrapper i {
+            color: white;
+            font-size: 18px;
+        }
+
+        .merge-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .merge-subtitle {
+            font-size: 13px;
+            color: #6c757d;
+        }
+
+        .merge-count-badge {
+            font-size: 13px;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #007bff, #0056b3) !important;
+            box-shadow: 0 2px 4px rgba(0, 123, 255, 0.3);
+        }
+
+        .collapse-icon {
+            font-size: 16px;
+            color: #6c757d;
+            transition: transform 0.3s ease;
+        }
+
+        .merge-info-header[aria-expanded="true"] .collapse-icon {
+            transform: rotate(180deg);
+        }
+
+        .merge-info-body {
+            padding: 20px;
+            background: #ffffff;
+        }
+
+        .merge-directories-header h6 {
+            color: #495057;
+            font-weight: 600;
+            font-size: 15px;
+        }
+
+        .merged-directories-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            padding: 4px;
+        }
+
+        .directory-item-card {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 14px;
+            transition: all 0.2s ease;
+            cursor: default;
+            min-height: 70px;
+        }
+
+        .directory-item-card:hover {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f0f8ff 100%);
+            border-color: #17a2b8;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .directory-item-content {
+            display: flex;
+            align-items: center;
+        }
+
+        .directory-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, #ffc107, #e0a800);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            flex-shrink: 0;
+        }
+
+        .directory-icon i {
+            color: white;
+            font-size: 16px;
+        }
+
+        .directory-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .directory-name {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 3px;
+            word-break: break-all;
+            line-height: 1.3;
+        }
+
+        .directory-index {
+            font-size: 13px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+
+        .merged-directories-grid::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .merged-directories-grid::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .merged-directories-grid::-webkit-scrollbar-thumb {
+            background: #c1c1c1;
+            border-radius: 3px;
+        }
+
+        .merged-directories-grid::-webkit-scrollbar-thumb:hover {
+            background: #a8a8a8;
+        }
+
+        /* Animation for collapse */
+        .collapse {
+            transition: height 0.35s ease;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .merged-directories-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .merge-info-header {
+                padding: 12px 16px;
+            }
+
+            .merge-info-body {
+                padding: 16px;
+            }
+
+            .merge-icon-wrapper {
+                width: 36px;
+                height: 36px;
+            }
+
+            .merge-title {
+                font-size: 14px;
+            }
+
+            .merge-subtitle {
+                font-size: 12px;
+            }
+
+            .directory-name {
+                font-size: 14px;
+            }
+
+            .directory-index {
+                font-size: 12px;
+            }
+
+            .directory-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .directory-icon i {
+                font-size: 14px;
+            }
+        }
     </style>
 </head>
 
@@ -686,7 +913,7 @@
     <!-- Header -->
     <header class="header text-center">
         <div class="container">
-            <h1><i class="bi bi-bug"></i> Kea2 Simple Test Report</h1>
+            <h1><i class="bi bi-bug"></i> Kea2 Merged Test Report</h1>
             <p class="lead">Test Time: {{ timestamp }}</p>
         </div>
     </header>
@@ -697,6 +924,67 @@
             <div class="col-12">
                 <div class="summary-card">
                     <h2 class="section-title">Test Summary</h2>
+
+                    <!-- Merge Information Section -->
+                    {% if merge_info %}
+                    <div class="merge-info-section mb-4">
+                        <div class="merge-info-card">
+                            <!-- Collapsible Header -->
+                            <div class="merge-info-header" data-bs-toggle="collapse" data-bs-target="#mergeInfoCollapse" aria-expanded="false" aria-controls="mergeInfoCollapse">
+                                <div class="d-flex align-items-center justify-content-between">
+                                    <div class="d-flex align-items-center">
+                                        <div class="merge-icon-wrapper me-3">
+                                            <i class="bi bi-layers"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-0 merge-title">Merged Report</h6>
+                                            <small class="text-muted merge-subtitle">
+                                                <i class="bi bi-clock me-1"></i>
+                                                Generated at {{ merge_info.merge_timestamp }}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-3 merge-count-badge">
+                                            <i class="bi bi-folder2-open me-1"></i>
+                                            {{ merge_info.source_count }} directories
+                                        </span>
+                                        <i class="bi bi-chevron-down collapse-icon"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Collapsible Content -->
+                            <div class="collapse" id="mergeInfoCollapse">
+                                <div class="merge-info-body">
+                                    <div class="merge-directories-header">
+                                        <h6 class="mb-3">
+                                            <i class="bi bi-list-ul me-2"></i>
+                                            Merged Directories
+                                        </h6>
+                                    </div>
+                                    <div class="merged-directories-grid">
+                                        {% for dir_name in merge_info.source_directories %}
+                                        <div class="directory-item-card">
+                                            <div class="directory-item-content">
+                                                <div class="directory-icon">
+                                                    <i class="bi bi-folder-fill"></i>
+                                                </div>
+                                                <div class="directory-info">
+                                                    <div class="directory-name">{{ dir_name }}</div>
+                                                    <div class="directory-index">Directory {{ loop.index }}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Statistics Cards -->
                     <div class="row g-4">
                         <div class="col-md-3 col-sm-6">
                             <div class="text-center">
@@ -1083,7 +1371,7 @@
     <!-- Footer -->
     <footer class="bg-dark text-white text-center py-4">
         <div class="container">
-            <p class="mb-0">Kea2 Simple Test Report | Generated at: {{ timestamp }}</p>
+            <p class="mb-0">Kea2 Merged Test Report | Generated at: {{ timestamp }}</p>
         </div>
     </footer>
 
@@ -1091,6 +1379,9 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            // Initialize merge info collapse functionality
+            initMergeInfoCollapse();
+
             // Initialize pagination for Activities lists
             initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
             initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');

@@ -54,11 +54,15 @@ class TestReportMerger:
             # Calculate final statistics
             final_data = self._calculate_final_statistics(merged_property_stats, merged_coverage_data)
             
-            # Generate HTML report
+            # Add merge information to final data
+            final_data['merge_info'] = {
+                'merge_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                'source_count': len(self.result_dirs),
+                'source_directories': [str(Path(d).name) for d in self.result_dirs]
+            }
+
+            # Generate HTML report (now includes merge info)
             report_file = self._generate_html_report(final_data, output_dir)
-            
-            # Generate summary
-            summary_file = self._generate_summary_report(output_dir)
             
             logger.debug(f"Reports generated successfully in: {output_dir}")
             return output_dir
@@ -275,74 +279,5 @@ class TestReportMerger:
             logger.error(f"Error generating HTML report: {e}")
             raise
 
-    def _generate_summary_report(self, output_dir: Path) -> str:
-        """
-        Generate a summary report showing merge information
 
-        Args:
-            output_dir: Output directory
 
-        Returns:
-            Path to the summary report
-        """
-        try:
-            # Create summary data
-            summary_data = {
-                'merge_timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-                'source_count': len(self.result_dirs),
-                'source_directories': [str(Path(d).name) for d in self.result_dirs],
-                'merged_data_location': str(output_dir)
-            }
-
-            # Generate summary HTML
-            summary_html = self._generate_summary_html(summary_data)
-
-            # Save summary report
-            summary_file = output_dir / "merge_summary.html"
-            with open(summary_file, 'w', encoding='utf-8') as f:
-                f.write(summary_html)
-
-            logger.debug(f"Merge summary report generated: {summary_file}")
-            return str(summary_file)
-
-        except Exception as e:
-            logger.error(f"Error generating merge summary report: {e}")
-            raise
-
-    def _generate_summary_html(self, summary_data: Dict) -> str:
-        """
-        Generate HTML content for merge summary using Jinja2 template
-
-        Args:
-            summary_data: Summary information
-
-        Returns:
-            HTML content string
-        """
-        try:
-            from jinja2 import Environment, FileSystemLoader, PackageLoader, select_autoescape
-
-            # Set up Jinja2 environment (reuse the same setup as _generate_html_report)
-            try:
-                jinja_env = Environment(
-                    loader=PackageLoader("kea2", "templates"),
-                    autoescape=select_autoescape(['html', 'xml'])
-                )
-            except (ImportError, ValueError):
-                # Fallback to file system loader
-                current_dir = Path(__file__).parent
-                templates_dir = current_dir / "templates"
-
-                jinja_env = Environment(
-                    loader=FileSystemLoader(templates_dir),
-                    autoescape=select_autoescape(['html', 'xml'])
-                )
-
-            # Load and render the template
-            template = jinja_env.get_template("merge_summary_template.html")
-            html_content = template.render(**summary_data)
-
-            return html_content
-
-        except Exception as e:
-            logger.error(f"Error rendering summary template: {e}")
