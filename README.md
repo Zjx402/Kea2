@@ -235,8 +235,8 @@ You can find the [user manual](docs/manual_en.md), which includes:
 Kea2 has been actively developed and maintained by the people in [ecnusse](https://github.com/ecnusse):
 
 - [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
-- Bo Ma ([@majuzi123][])
-- Chen Peng ([@Drifterpc][])
+- [Bo Ma](https://github.com/majuzi123) ([@majuzi123][])
+- [Cheng Peng](https://github.com/Drifterpc) ([@Drifterpc][])
 - [Ting Su](https://tingsu.github.io/) ([@tingsu][])
 
 [@XixianLiang]: https://github.com/XixianLiang
