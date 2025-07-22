@@ -46,7 +46,11 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 | **Finding crashes in deep states** |  | :+1: | :+1: |
 | **Finding non-crashing functional (logic) bugs** |  |  | :+1: |
 
+## Kea2's Known Users
 
+[OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- a financial & payment app
+
+We are glad to hear if you are using Kea2 for your app.
 
 ## Design & Roadmap
 Kea2 currently works with:
