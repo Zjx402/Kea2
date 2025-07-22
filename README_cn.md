@@ -6,7 +6,7 @@
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-该群已满。请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码，以便邀请加入微信群。
+该群已满。如需加入微信群，请联系Xixian Liang，邮箱：[xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码。
 
 ### Github仓库链接
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
@@ -15,7 +15,7 @@
 
 ## 简介
 
-Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）进行融合，从而赋能自动化UI测试以人类智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
+Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够融合自动化UI测试与脚本（通常由人工编写），从而赋能自动化UI测试以人类智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
 
 Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一款工业级自动化UI测试工具*）及[uiautomator2](https://github.com/openatx/uiautomator2)（*一款易用且稳定的Android自动化库*）进行构建。Kea2目前支持[Android](https://en.wikipedia.org/wiki/Android_(operating_system))应用。
 
@@ -43,9 +43,14 @@ Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一�
 | **发现深层状态中的崩溃错误** |  | :+1: | :+1: |
 | **发现非崩溃功能（逻辑）错误** |  |  | :+1: |
 
+## Kea2的已知用户
 
+[OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) — 一款金融支付应用
+
+如果你正在使用Kea2测试你的应用，欢迎告诉我们！
 
 ## 设计与展望
+
 Kea2当前工作流程：
 - 使用[unittest](https://docs.python.org/3/library/unittest.html)作为测试框架，用于管理脚本；
 - 使用[uiautomator2](https://github.com/openatx/uiautomator2)作为UI测试驱动；
@@ -55,7 +60,6 @@ Kea2当前工作流程：
 - [pytest](https://docs.pytest.org/en/stable/)，另一款流行的python测试框架；
 - [Appium](https://github.com/appium/appium)、[Hypium](https://developer.huawei.com/consumer/cn/doc/harmonyos-guides/hypium-python-guidelines)（针对HarmonyOS/Open Harmony）；
 - 其他任何自动化UI测试工具（不限于Fastbot）
-
 
 ## 安装
 
@@ -96,7 +100,6 @@ python3 quicktest.py
 
 若能看到应用 `omninotes` 成功运行并被测试，说明Kea2正常工作！  
 否则请协助[提交错误报告](https://github.com/ecnusse/Kea2/issues)，并附上错误信息。谢谢！
-
 
 ## 特性 1（运行基础版Fastbot：查找稳定性错误）
 
@@ -179,7 +182,6 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 
 针对上述一直应保持的性质，可编写以下脚本验证功能正确性：当消息发送页有`input_box`控件时，输入任意非空字符串后，断言`send_button`控件应始终存在。
 
-
 ```python
     @precondition(
         lambda self: self.d(description="input_box").exists
@@ -206,7 +208,7 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 - 如何运行Kea2及命令行选项；
 - 如何发现并理解Kea2的测试结果；
 - 如何在模糊测试过程中将特定Activity、UI控件和UI区域加入[白名单或黑名单](docs/blacklisting.md)；
-- [基于性质测试和Kea2常见问答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
+- [基于性质测试和Kea2的常见问答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
 
 ## Kea2使用的开源项目
 
@@ -230,7 +232,7 @@ Kea2由[ecnusse](https://github.com/ecnusse)团队积极开发与维护：
 
 - [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
 - [Bo Ma](https://github.com/majuzi123) ([@majuzi123][])
-- [Cheng Peng](https://github.com/Drifterpc) ([@Drifterpc][])
+- [Chen Peng](https://github.com/Drifterpc) ([@Drifterpc][])
 - [Ting Su](https://tingsu.github.io/) ([@tingsu][])
 
 [@XixianLiang]: https://github.com/XixianLiang
