@@ -1,5 +1,7 @@
+import functools
 import random
 import socket
+import time
 from time import sleep
 import uiautomator2 as u2
 import adbutils
@@ -208,41 +210,91 @@ class StaticU2UiObject(u2.UiObject):
 """
 The definition of XpathStaticChecker
 """
-class StaticXpathUiObject(u2.UiObject):
+class StaticXpathUiObject(u2.xpath.XPathSelector):
     def __init__(self, session, selector):
         self.session: U2StaticDevice = session
         self.selector = selector
 
     @property
     def exists(self):
-        return len(self.all()) > 0
+        source = self.session.get_page_source()
+        return len(self.selector.all(source)) > 0
 
-    def all(self, source: Optional[u2.xpath.PageSource] = None) -> List["u2.xpath.XMLElement"]:
-        """find all matched elements"""
-        if not source:
-            source = self.session.get_page_source()
+    def __and__(self, value) -> 'StaticXpathUiObjectr':
+        s = u2.xpath.XPathSelector(self.selector)
+        s._next_xpath = u2.xpath.XPathSelector.create(value.selector)
+        s._operator = u2.xpath.Operator.AND
+        s._parent = self.selector._parent
+        self.selector = s
+        return self
 
-        elements = []
-        if isinstance(self.selector._base_xpath, u2.xpath.XPath):
-            elements = source.find_elements(self.selector._base_xpath)
+    def __or__(self, value) -> 'StaticXpathUiObject':
+        s = u2.xpath.XPathSelector(self.selector)
+        s._next_xpath = u2.xpath.XPathSelector.create(value.selector)
+        s._operator = u2.xpath.Operator.OR
+        s._parent = self.selector._parent
+        self.selector = s
+        return self
+
+    def xpath(self, _xpath: Union[list, tuple, str]) -> 'StaticXpathUiObject':
+        """
+        add xpath to condition list
+        the element should match all conditions
+
+        Deprecated, using a & b instead
+        """
+        if isinstance(_xpath, (list, tuple)):
+            self.selector = functools.reduce(lambda a, b: a & b, _xpath, self)
         else:
-            elements = self.selector._base_xpath.all(source)
+            self.selector = self.selector & _xpath
+        return self
 
-        # AND OR
-        if self.selector._next_xpath and self.selector._operator:
-            next_els = self.selector._next_xpath.all(source)
-            if self.selector._operator == u2.xpath.Operator.AND:
-                elements = list(set(elements) & set(next_els))
-            elif self.selector._operator == u2.xpath.Operator.OR:
-                elements = list(set(elements) | set(next_els))
-            else:
-                raise ValueError("Invalid operator", self.selector._operator)
-        for el in elements:
-            el._parent = self.selector._parent
-        return elements
+    def child(self, _xpath: str) -> "StaticXpathUiObject":
+        """
+        add child xpath
+        """
+        if self.selector._operator or not isinstance(self.selector._base_xpath, u2.xpath.XPath):
+            raise u2.xpath.XPathError("can't use child when base is not XPath or operator is set")
+        new = self.selector.copy()
+        new._base_xpath = self.selector._base_xpath.joinpath(_xpath)
+        self.selector = new
+        return self
 
-    def __getattr__(self, attr):
-        return getattr(super(), attr)
+    def get(self, timeout=None) -> "XMLElement":
+        """
+        Get first matched element
+
+        Args:
+            timeout (float): max seconds to wait
+
+        Returns:
+            XMLElement
+
+        """
+        if not self.exists:
+            return None
+        return self.get_last_match()
+
+    def get_last_match(self) -> "u2.xpath.XMLElement":
+        return self.selector.all(self.selector._last_source)[0]
+
+    def parent_exists(self, xpath: Optional[str] = None):
+        el = self.get()
+        if el is None:
+            return False
+        element = el.parent(xpath) if hasattr(el, 'parent') else None
+        return True if element is not None else False
+
+    def __getattr__(self, key: str):
+        """
+              In IPython console, attr:_ipython_canary_method_should_not_exist_ will be called
+              So here ignore all attr startswith _
+              """
+        if key.startswith("_"):
+            raise AttributeError("Invalid attr", key)
+        if not hasattr(u2.xpath.XMLElement, key):
+            raise AttributeError("Invalid attr", key)
+        return getattr(super(), key)
 
 def _get_bounds(raw_bounds):
     pattern = re.compile(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
