@@ -236,7 +236,7 @@ Kea2 has been actively developed and maintained by the people in [ecnusse](https
 
 - [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
 - Bo Ma ([@majuzi123][])
-- Chen Peng ([@Drifterpc][])
+- Cheng Peng ([@Drifterpc][])
 - [Ting Su](https://tingsu.github.io/) ([@tingsu][])
 
 [@XixianLiang]: https://github.com/XixianLiang
