@@ -232,31 +232,7 @@
             margin: 0 2px;
         }
         
-        .activity-list {
-            height: 550px;
-            overflow-y: auto;
-            border-radius: 8px;
-            border: 1px solid rgba(0,0,0,0.1);
-            padding: 15px;
-            background-color: rgba(255,255,255,0.5);
-            scrollbar-width: thin;
-            scrollbar-color: var(--primary-color) #eee;
-            margin-bottom: 15px;
-        }
-        
-        .activity-list::-webkit-scrollbar {
-            width: 8px;
-        }
-        
-        .activity-list::-webkit-scrollbar-track {
-            background: #eee;
-            border-radius: 10px;
-        }
-        
-        .activity-list::-webkit-scrollbar-thumb {
-            background-color: var(--primary-color);
-            border-radius: 10px;
-        }
+
         
         .activities-container {
             display: flex;
@@ -271,43 +247,76 @@
             box-shadow: 0 2px 4px rgba(0,0,0,0.05);
         }
         
+        /* Modern Activity Item Styling */
         .activity-item {
-            padding: 10px 15px;
-            border-radius: 6px;
-            margin-bottom: 10px;
-            font-size: 0.95rem;
-            word-break: break-all;
-            background-color: white;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            transition: all 0.2s;
-            line-height: 1.5;
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: space-between;
         }
-        
-        .activity-item .activity-content {
+
+        .activity-item:hover {
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            transform: translateY(-1px);
+        }
+
+        .activity-content {
             display: flex;
             align-items: center;
-            flex: 1;
-            min-width: 0;
+            gap: 12px;
         }
-        
-        .activity-item .activity-name {
-            flex: 1;
-            word-break: break-all;
-            margin-right: 10px;
-        }
-        
-        .activity-item .traversal-badge {
-            flex-shrink: 0;
-            font-size: 0.85rem;
+
+        .activity-name {
             font-weight: 500;
+            color: #374151;
+            font-size: 14px;
         }
-        
-        .activity-item:hover {
-            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-            transform: translateX(3px);
+
+        .traversal-badge {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Modern Activity List Container */
+        .activity-list {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 16px;
+            height: 550px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: var(--primary-color) #eee;
+            margin-bottom: 15px;
+        }
+
+        .activity-list::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .activity-list::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 10px;
+        }
+
+        .activity-list::-webkit-scrollbar-thumb {
+            background-color: var(--primary-color);
+            border-radius: 10px;
+        }
+
+        .activity-list::-webkit-scrollbar-thumb:hover {
+            background-color: #2980b9;
         }
         
         .nav-tabs .nav-link {
@@ -330,7 +339,7 @@
             border-color: #dee2e6 #dee2e6 #fff;
             font-weight: 600;
         }
-        
+
         .tab-content {
             border: 1px solid #dee2e6;
             border-top: none;
@@ -580,40 +589,107 @@
             font-size: 20px;
         }
 
+        /* Combined Search and Sort Controls */
+        .search-sort-controls-modern {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .search-sort-controls-modern:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
+        }
+
+        .search-section {
+            min-width: 0; /* Allow flex item to shrink */
+        }
+
+        .sort-section {
+            flex-shrink: 0; /* Prevent sort section from shrinking */
+        }
+
+        .sort-label {
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        /* Responsive design for combined controls */
+        @media (max-width: 768px) {
+            .search-sort-controls-modern .d-flex {
+                flex-direction: column;
+                gap: 16px !important;
+            }
+
+            .search-section {
+                width: 100% !important;
+                max-width: none !important;
+                flex-shrink: 1 !important;
+            }
+
+            .sort-section {
+                justify-content: center;
+                width: 100%;
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .search-section {
+                max-width: none !important;
+            }
+
+            .search-icon-wrapper {
+                width: 40px;
+                height: 40px;
+            }
+
+            .search-icon-wrapper i {
+                font-size: 18px;
+            }
+        }
+
+        /* Modern Search Input */
         .activity-search-input {
-            border: 1px solid #ced4da;
-            border-radius: 8px 0 0 8px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
             padding: 12px 16px;
             font-size: 14px;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
+            background: #f9fafb;
         }
 
         .activity-search-input:focus {
-            border-color: #17a2b8;
-            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.25);
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #ffffff;
+            outline: none;
         }
 
         .search-btn {
-            border-radius: 0;
-            border-left: none;
-            border-right: none;
+            border-radius: 12px;
             padding: 12px 16px;
-            transition: all 0.3s ease;
-            background-color: #17a2b8;
-            border-color: #17a2b8;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
             color: white;
+            transition: all 0.2s ease;
         }
 
         .search-btn:hover {
-            background-color: #138496;
-            border-color: #117a8b;
-            color: white;
+            background: linear-gradient(135deg, #2563eb, #1e40af);
             transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+            color: white;
         }
 
         .search-btn:focus {
-            box-shadow: 0 0 0 0.2rem rgba(23, 162, 184, 0.5);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            color: white;
         }
 
         .search-clear-btn {
@@ -986,32 +1062,46 @@
 
                     <!-- Statistics Cards -->
                     <div class="row g-4">
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="text-center">
                                 <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-danger">{{ bugs_found }}</span>
-                                <span class="stat-label">Bugs Found</span>
+                                <span class="stat-label">Total Bugs</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="text-center">
-                                <i class="bi bi-pie-chart text-warning" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-warning">{{ "%.2f"|format(coverage_percent) }}%</span>
-                                <span class="stat-label">Activity Coverage</span>
+                                <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-danger">{{ total_crash_count|default(0) }}</span>
+                                <span class="stat-label">Crashes</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="text-center">
-                                <i class="bi bi-list-check text-info" style="font-size: 2rem;"></i>
+                                <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-warning">{{ total_anr_count|default(0) }}</span>
+                                <span class="stat-label">ANRs</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-pie-chart text-info" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ "%.2f"|format(coverage_percent) }}%</span>
+                                <span class="stat-label">Coverage</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-list-check text-primary" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-highlight">{{ all_properties_count }}</span>
                                 <span class="stat-label">All Properties</span>
                             </div>
                         </div>
-                        <div class="col-md-3 col-sm-6">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
                             <div class="text-center">
-                                <i class="bi bi-check-square text-secondary" style="font-size: 2rem;"></i>
+                                <i class="bi bi-check-square text-success" style="font-size: 2rem;"></i>
                                 <span class="stat-value value-success">{{ executed_properties_count }}</span>
-                                <span class="stat-label">Executed Properties</span>
+                                <span class="stat-label">Executed</span>
                             </div>
                         </div>
                     </div>
@@ -1069,18 +1159,42 @@
                                 <span class="badge bg-success" style="font-size: 1.0em; font-weight: 500;">{{ tested_activities|length }} / {{ total_activities_count }}</span>
                             </div>
 
-                            <!-- Sorting Controls for Tested Activities -->
-                            <div class="sorting-controls-modern mb-4">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="sort-label-section">
-                                        <div class="sort-icon-wrapper">
-                                            <i class="bi bi-funnel-fill"></i>
+                            <!-- Combined Search and Sort Controls for Tested Activities -->
+                            <div class="search-sort-controls-modern mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <!-- Search Section -->
+                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
+                                        <div class="search-icon-wrapper me-3">
+                                            <i class="bi bi-search"></i>
                                         </div>
-                                        <div class="sort-text">
-                                            <span class="sort-title">Sort Activities</span>
+                                        <div class="flex-grow-1">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control activity-search-input"
+                                                       id="tested-activity-search"
+                                                       placeholder="Search activities..."
+                                                       data-target="tested-activities-container"
+                                                       data-item-class="tested-activity"
+                                                       data-pagination="tested-pagination"
+                                                       data-page-size="tested-page-size">
+                                                <button class="btn search-btn" type="button"
+                                                        data-target="tested-activity-search">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
+                                                        data-target="tested-activity-search">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted search-results-count" id="tested-search-results"></small>
                                         </div>
                                     </div>
-                                    <div class="sort-button-section">
+
+                                    <!-- Sort Section -->
+                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
+                                        <div class="sort-label d-flex align-items-center gap-2">
+                                            <i class="bi bi-funnel-fill text-muted"></i>
+                                            <span class="text-muted fw-medium">Sort:</span>
+                                        </div>
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
@@ -1088,35 +1202,6 @@
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Search Controls for Tested Activities -->
-                            <div class="search-controls-modern mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="search-icon-wrapper me-3">
-                                        <i class="bi bi-search"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control activity-search-input"
-                                                   id="tested-activity-search"
-                                                   placeholder="Search tested activities..."
-                                                   data-target="tested-activities-container"
-                                                   data-item-class="tested-activity"
-                                                   data-pagination="tested-pagination"
-                                                   data-page-size="tested-page-size">
-                                            <button class="btn btn-primary search-btn" type="button"
-                                                    data-target="tested-activity-search">
-                                                <i class="bi bi-search"></i>
-                                            </button>
-                                            <button class="btn btn-outline-secondary search-clear-btn" type="button"
-                                                    data-target="tested-activity-search">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <small class="text-muted search-results-count" id="tested-search-results"></small>
                                     </div>
                                 </div>
                             </div>
@@ -1176,18 +1261,42 @@
                                 <span class="badge bg-primary" style="font-size: 1.0em; font-weight: 500;">Total: {{ total_activities|length }}</span>
                             </div>
 
-                            <!-- Sorting Controls for All Activities -->
-                            <div class="sorting-controls-modern mb-4">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="sort-label-section">
-                                        <div class="sort-icon-wrapper">
-                                            <i class="bi bi-funnel-fill"></i>
+                            <!-- Combined Search and Sort Controls for All Activities -->
+                            <div class="search-sort-controls-modern mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <!-- Search Section -->
+                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
+                                        <div class="search-icon-wrapper me-3">
+                                            <i class="bi bi-search"></i>
                                         </div>
-                                        <div class="sort-text">
-                                            <span class="sort-title">Sort Activities</span>
+                                        <div class="flex-grow-1">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control activity-search-input"
+                                                       id="all-activity-search"
+                                                       placeholder="Search activities..."
+                                                       data-target="all-activities-container"
+                                                       data-item-class="all-activity"
+                                                       data-pagination="all-pagination"
+                                                       data-page-size="all-page-size">
+                                                <button class="btn search-btn" type="button"
+                                                        data-target="all-activity-search">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
+                                                        data-target="all-activity-search">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted search-results-count" id="all-search-results"></small>
                                         </div>
                                     </div>
-                                    <div class="sort-button-section">
+
+                                    <!-- Sort Section -->
+                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
+                                        <div class="sort-label d-flex align-items-center gap-2">
+                                            <i class="bi bi-funnel-fill text-muted"></i>
+                                            <span class="text-muted fw-medium">Sort:</span>
+                                        </div>
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
@@ -1195,35 +1304,6 @@
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Search Controls for All Activities -->
-                            <div class="search-controls-modern mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="search-icon-wrapper me-3">
-                                        <i class="bi bi-search"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control activity-search-input"
-                                                   id="all-activity-search"
-                                                   placeholder="Search all activities..."
-                                                   data-target="all-activities-container"
-                                                   data-item-class="all-activity"
-                                                   data-pagination="all-pagination"
-                                                   data-page-size="all-page-size">
-                                            <button class="btn btn-primary search-btn" type="button"
-                                                    data-target="all-activity-search">
-                                                <i class="bi bi-search"></i>
-                                            </button>
-                                            <button class="btn btn-outline-secondary search-clear-btn" type="button"
-                                                    data-target="all-activity-search">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <small class="text-muted search-results-count" id="all-search-results"></small>
                                     </div>
                                 </div>
                             </div>
@@ -1280,6 +1360,142 @@
                 </div>
             </div>
         </div>
+
+        <!-- Crash Analysis Section -->
+        {% if crash_events or anr_events %}
+        <div class="section-block">
+            <h2 class="section-title">
+                <i class="bi bi-exclamation-triangle text-danger"></i> Crash Analysis
+            </h2>
+
+            <!-- Detailed Crash Information -->
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span><i class="bi bi-bug"></i> Crash & ANR Events</span>
+                        <span class="badge bg-light text-dark" style="font-size: 1.1em; font-weight: 600;">{{ (crash_events|length) + (anr_events|length) }} events</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Event Filter -->
+                    <div class="mb-3">
+                        <div class="btn-group" role="group" aria-label="Event filter">
+                            <input type="radio" class="btn-check" name="event-filter" id="all-events" autocomplete="off" checked>
+                            <label class="btn btn-outline-primary" for="all-events">All Events ({{ (crash_events|length) + (anr_events|length) }})</label>
+
+                            <input type="radio" class="btn-check" name="event-filter" id="crashes-only" autocomplete="off">
+                            <label class="btn btn-outline-danger" for="crashes-only">Crashes Only ({{ crash_events|length }})</label>
+
+                            <input type="radio" class="btn-check" name="event-filter" id="anr-only" autocomplete="off">
+                            <label class="btn btn-outline-warning" for="anr-only">ANR Only ({{ anr_events|length }})</label>
+                        </div>
+                    </div>
+
+
+                    <!-- Events Table -->
+                    <div class="table-responsive">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th>Type</th>
+                                    <th>Time</th>
+                                    <th>Exception</th>
+                                    <th>Process</th>
+                                    <th>Details</th>
+                                </tr>
+                            </thead>
+                            <tbody id="crash-events-container">
+                                {% for crash in crash_events %}
+                                <tr class="event-row" data-type="crash" data-page="1">
+                                    <td><span class="badge bg-danger">CRASH</span></td>
+                                    <td>{{ crash.time }}</td>
+                                    <td>{{ crash.exception_type }}</td>
+                                    <td>{{ crash.process }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#crash-detail-{{ loop.index }}"
+                                                aria-expanded="false" aria-controls="crash-detail-{{ loop.index }}">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary copy-stack-btn"
+                                                data-stack-index="{{ loop.index }}">
+                                            <i class="bi bi-clipboard"></i> Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="collapse" id="crash-detail-{{ loop.index }}">
+                                    <td colspan="5">
+                                        <div class="bg-light p-3 rounded">
+                                            <h6 class="text-danger">Stack Trace:</h6>
+                                            <pre class="text-danger mb-0 text-start" id="stack-trace-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ crash.stack_trace }}</pre>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+
+
+                                {% for anr in anr_events %}
+                                <tr class="event-row" data-type="anr" data-page="1">
+                                    <td><span class="badge bg-warning text-dark">ANR</span></td>
+                                    <td>{{ anr.time }}</td>
+                                    <td>{{ anr.reason }}</td>
+                                    <td>{{ anr.process }}</td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#anr-detail-{{ loop.index }}"
+                                                aria-expanded="false" aria-controls="anr-detail-{{ loop.index }}">
+                                            <i class="bi bi-eye"></i> Details
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-secondary copy-stack-btn"
+                                                data-stack-index="anr-{{ loop.index }}">
+                                            <i class="bi bi-clipboard"></i> Copy
+                                        </button>
+                                    </td>
+                                </tr>
+                                <tr class="collapse" id="anr-detail-{{ loop.index }}">
+                                    <td colspan="5">
+                                        <div class="bg-light p-3 rounded">
+                                            <h6 class="text-warning">ANR Details:</h6>
+                                            <pre class="text-warning mb-0 text-start" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ anr.trace }}</pre>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination for Crash Events -->
+                    <div class="pagination-container d-flex justify-content-between align-items-center mt-3">
+                        <div class="d-flex align-items-center">
+                            <label for="events-page-size" class="form-label me-2 mb-0">Show:</label>
+                            <select class="form-select form-select-sm" id="events-page-size" style="width: auto;">
+                                <option value="5">5</option>
+                                <option value="10" selected>10</option>
+                                <option value="20">20</option>
+                                <option value="50">50</option>
+                                <option value="100">100</option>
+                            </select>
+                        </div>
+                        <nav aria-label="Crash Events Pagination">
+                            <ul class="pagination pagination-sm mb-0" id="events-pagination">
+                                <!-- Pagination will be generated by JavaScript -->
+                            </ul>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% else %}
+        <div class="section-block">
+            <h2 class="section-title">
+                <i class="bi bi-exclamation-triangle text-danger"></i> Crash Analysis
+            </h2>
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No crash or ANR events detected in this test session.
+            </div>
+        </div>
+        {% endif %}
 
         <!-- Property Checking Statistics -->
         <div class="section-block">
@@ -1401,6 +1617,191 @@
             // Initialize sorting for Property Checking Statistics
             initSorting();
 
+            // Initialize crash events functionality (only if crash analysis section exists)
+            setTimeout(function() {
+                const crashContainer = document.getElementById('crash-events-container');
+                if (crashContainer) {
+                    initCrashAnalysis();
+                    // Pagination will be set up automatically by initEventFiltering
+                }
+            }, 100);
+
+            function setupCrashEventsPagination() {
+                const container = document.getElementById('crash-events-container');
+                const paginationElement = document.getElementById('events-pagination');
+                const pageSizeSelect = document.getElementById('events-page-size');
+
+                if (!container || !paginationElement || !pageSizeSelect) {
+                    return;
+                }
+
+                const allEventRows = Array.from(container.querySelectorAll('.event-row'));
+
+                // Get currently filtered visible rows (those not hidden by filter)
+                const filteredRows = allEventRows.filter(row => {
+                    // Check if row should be visible based on current filter
+                    const eventType = row.dataset.type;
+                    const currentFilter = getCurrentFilter();
+
+                    switch(currentFilter) {
+                        case 'all-events':
+                            return true;
+                        case 'crashes-only':
+                            return eventType === 'crash';
+                        case 'anr-only':
+                            return eventType === 'anr';
+                        default:
+                            return true;
+                    }
+                });
+
+                const pageSize = parseInt(pageSizeSelect.value) || 10;
+                const totalPages = Math.ceil(filteredRows.length / pageSize);
+
+                // Clear pagination first
+                paginationElement.innerHTML = '';
+
+                // Show/hide pagination container based on whether pagination is needed
+                const paginationContainer = paginationElement.closest('.pagination-container');
+                if (paginationContainer) {
+                    if (totalPages > 1) {
+                        paginationContainer.style.display = '';
+                    } else {
+                        paginationContainer.style.display = 'none';
+                    }
+                }
+
+                // Hide all rows first
+                allEventRows.forEach(row => {
+                    row.style.display = 'none';
+                    const detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = 'none';
+                    }
+                });
+
+                // Show only the first page of filtered rows
+                for (let i = 0; i < Math.min(pageSize, filteredRows.length); i++) {
+                    const row = filteredRows[i];
+                    row.style.display = '';
+                    const detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = '';
+                    }
+                }
+
+                // Create pagination if needed
+                if (totalPages > 1) {
+                    createPaginationControls(totalPages, 1);
+                }
+
+                function getCurrentFilter() {
+                    const filterButtons = document.querySelectorAll('input[name="event-filter"]');
+                    for (let button of filterButtons) {
+                        if (button.checked) {
+                            return button.id;
+                        }
+                    }
+                    return 'all-events'; // default
+                }
+
+                function createPaginationControls(totalPages, currentPage) {
+                    paginationElement.innerHTML = '';
+
+                    // Previous button
+                    const prevLi = document.createElement('li');
+                    prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+                    prevLi.innerHTML = '<a class="page-link" href="#" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a>';
+                    prevLi.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (currentPage > 1) {
+                            showCrashEventsPage(currentPage - 1, totalPages);
+                        }
+                    });
+                    paginationElement.appendChild(prevLi);
+
+                    // Page numbers
+                    for (let i = 1; i <= totalPages; i++) {
+                        const pageLi = document.createElement('li');
+                        pageLi.className = i === currentPage ? 'page-item active' : 'page-item';
+                        pageLi.innerHTML = `<a class="page-link" href="#">${i}</a>`;
+                        pageLi.addEventListener('click', function(e) {
+                            e.preventDefault();
+                            showCrashEventsPage(i, totalPages);
+                        });
+                        paginationElement.appendChild(pageLi);
+                    }
+
+                    // Next button
+                    const nextLi = document.createElement('li');
+                    nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+                    nextLi.innerHTML = '<a class="page-link" href="#" aria-label="Next"><span aria-hidden="true">&raquo;</span></a>';
+                    nextLi.addEventListener('click', function(e) {
+                        e.preventDefault();
+                        if (currentPage < totalPages) {
+                            showCrashEventsPage(currentPage + 1, totalPages);
+                        }
+                    });
+                    paginationElement.appendChild(nextLi);
+                }
+
+                function showCrashEventsPage(pageNum, totalPages) {
+                    // Get current page size
+                    const currentPageSize = parseInt(pageSizeSelect.value) || 10;
+
+                    // Recalculate filtered rows based on current filter
+                    const currentFilteredRows = allEventRows.filter(row => {
+                        const eventType = row.dataset.type;
+                        const currentFilter = getCurrentFilter();
+
+                        switch(currentFilter) {
+                            case 'all-events':
+                                return true;
+                            case 'crashes-only':
+                                return eventType === 'crash';
+                            case 'anr-only':
+                                return eventType === 'anr';
+                            default:
+                                return true;
+                        }
+                    });
+
+                    const startIndex = (pageNum - 1) * currentPageSize;
+                    const endIndex = startIndex + currentPageSize;
+
+                    // Hide all rows first
+                    allEventRows.forEach(row => {
+                        row.style.display = 'none';
+                        const detailRow = row.nextElementSibling;
+                        if (detailRow && detailRow.classList.contains('collapse')) {
+                            detailRow.style.display = 'none';
+                        }
+                    });
+
+                    // Show only the rows for current page
+                    for (let i = startIndex; i < endIndex && i < currentFilteredRows.length; i++) {
+                        const row = currentFilteredRows[i];
+                        row.style.display = '';
+                        const detailRow = row.nextElementSibling;
+                        if (detailRow && detailRow.classList.contains('collapse')) {
+                            detailRow.style.display = '';
+                        }
+                    }
+
+                    // Update pagination controls and container visibility
+                    const paginationContainer = paginationElement.closest('.pagination-container');
+                    if (paginationContainer) {
+                        if (totalPages > 1) {
+                            paginationContainer.style.display = '';
+                            createPaginationControls(totalPages, pageNum);
+                        } else {
+                            paginationContainer.style.display = 'none';
+                            paginationElement.innerHTML = '';
+                        }
+                    }
+                }
+            }
+
             // Activity sorting function
             function initActivitySorting() {
                 const sortButtons = document.querySelectorAll('.activity-sort-btn');
@@ -1438,6 +1839,22 @@
                     const container = document.getElementById(containerId);
                     const items = Array.from(container.getElementsByClassName(itemClass));
 
+                    // Check if there's an active search
+                    const searchInputId = isTestedTab ? 'tested-activity-search' : 'all-activity-search';
+                    const searchInput = document.getElementById(searchInputId);
+                    const hasActiveSearch = searchInput && searchInput.value.trim() !== '';
+                    const searchTerm = hasActiveSearch ? searchInput.value.toLowerCase().trim() : '';
+
+                    // Store current search visibility state before sorting
+                    const searchStates = new Map();
+                    if (hasActiveSearch) {
+                        items.forEach(function(item) {
+                            const searchVisible = item.getAttribute('data-search-visible');
+                            searchStates.set(item, searchVisible);
+                        });
+                    }
+
+                    // Sort all items
                     items.sort(function(a, b) {
                         const badgeA = a.querySelector('.traversal-badge');
                         const badgeB = b.querySelector('.traversal-badge');
@@ -1459,12 +1876,31 @@
                         container.appendChild(item);
                     });
 
-                    // Check if there's an active search and reapply it
-                    const searchInputId = isTestedTab ? 'tested-activity-search' : 'all-activity-search';
-                    const searchInput = document.getElementById(searchInputId);
-                    if (searchInput && searchInput.value.trim() !== '') {
-                        // Reapply search filter after sorting
-                        performActivitySearch(searchInput);
+                    // Restore search state and apply filtering
+                    if (hasActiveSearch) {
+                        let visibleCount = 0;
+                        items.forEach(function(item) {
+                            const activityNameElement = item.querySelector('.activity-name');
+                            if (activityNameElement) {
+                                const activityName = activityNameElement.textContent.toLowerCase();
+
+                                if (activityName.includes(searchTerm)) {
+                                    item.setAttribute('data-search-visible', 'true');
+                                    visibleCount++;
+                                } else {
+                                    item.setAttribute('data-search-visible', 'false');
+                                }
+                            }
+                        });
+
+                        // Update search results count
+                        const resultsElement = document.getElementById(searchInput.id.replace('-search', '-search-results'));
+                        if (resultsElement) {
+                            resultsElement.textContent = `Found ${visibleCount} of ${items.length} activities`;
+                        }
+
+                        // Re-initialize pagination with filtered results
+                        initPagination(containerId, itemClass, paginationId, pageSizeSelectId);
                     } else {
                         // No active search, just re-initialize pagination
                         initPagination(containerId, itemClass, paginationId, pageSizeSelectId);
@@ -1853,6 +2289,257 @@
                     searchInput.value = '';
                     performPropertySearch(searchInput);
                 }
+            }
+
+            function updatePaginationControls(paginationId, currentPage, totalPages, onPageClick) {
+                var pagination = document.getElementById(paginationId);
+                if (!pagination) return;
+
+                pagination.innerHTML = '';
+
+                if (totalPages <= 1) {
+                    // Hide the entire pagination container when not needed
+                    var paginationContainer = pagination.closest('.pagination-container');
+                    if (paginationContainer) {
+                        paginationContainer.style.display = 'none';
+                    }
+                    return;
+                }
+
+                // Show the pagination container when needed
+                var paginationContainer = pagination.closest('.pagination-container');
+                if (paginationContainer) {
+                    paginationContainer.style.display = '';
+                }
+
+                // Previous button
+                var prevLi = document.createElement('li');
+                prevLi.className = 'page-item' + (currentPage === 1 ? ' disabled' : '');
+                var prevLink = document.createElement('a');
+                prevLink.className = 'page-link';
+                prevLink.href = '#';
+                prevLink.setAttribute('aria-label', 'Previous');
+                prevLink.innerHTML = '<span aria-hidden="true">&laquo;</span>';
+
+                prevLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Get current page dynamically to avoid stale closure values
+                    var currentActivePage = getCurrentPageNumber(paginationId);
+                    if (currentActivePage > 1 && !prevLi.classList.contains('disabled')) {
+                        onPageClick(currentActivePage - 1);
+                    }
+                });
+
+                prevLi.appendChild(prevLink);
+                pagination.appendChild(prevLi);
+
+                // Page numbers
+                for (var i = 1; i <= totalPages; i++) {
+                    var li = document.createElement('li');
+                    li.className = 'page-item' + (i === currentPage ? ' active' : '');
+                    var link = document.createElement('a');
+                    link.className = 'page-link';
+                    link.href = '#';
+                    link.textContent = i;
+                    link.addEventListener('click', (function(page) {
+                        return function(e) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            onPageClick(page);
+                        };
+                    })(i));
+                    li.appendChild(link);
+                    pagination.appendChild(li);
+                }
+
+                // Next button
+                var nextLi = document.createElement('li');
+                nextLi.className = 'page-item' + (currentPage === totalPages ? ' disabled' : '');
+                var nextLink = document.createElement('a');
+                nextLink.className = 'page-link';
+                nextLink.href = '#';
+                nextLink.setAttribute('aria-label', 'Next');
+                nextLink.innerHTML = '<span aria-hidden="true">&raquo;</span>';
+
+                nextLink.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    // Get current page dynamically to avoid stale closure values
+                    var currentActivePage = getCurrentPageNumber(paginationId);
+                    if (currentActivePage < totalPages && !nextLi.classList.contains('disabled')) {
+                        onPageClick(currentActivePage + 1);
+                    }
+                });
+
+                nextLi.appendChild(nextLink);
+                pagination.appendChild(nextLi);
+            }
+
+            function getCurrentPageNumber(paginationId) {
+                var pagination = document.getElementById(paginationId);
+                if (!pagination) return 1;
+
+                var activeItem = pagination.querySelector('.page-item.active');
+                if (activeItem) {
+                    var pageText = activeItem.textContent.trim();
+                    var pageNum = parseInt(pageText);
+                    return isNaN(pageNum) ? 1 : pageNum;
+                }
+                return 1;
+            }
+
+            function initMergeInfoCollapse() {
+                // Initialize merge info collapse functionality if needed
+                // This function can be expanded based on specific merge info requirements
+                console.log('Merge info collapse initialized');
+            }
+
+            // Crash Analysis Functions
+            function initCrashAnalysis() {
+                // Initialize event filtering first (this will set initial visibility)
+                initEventFiltering();
+
+                // Initialize pagination for crash events (using specialized function)
+                initCrashEventsPagination();
+
+                // Initialize copy stack trace functionality
+                initCopyStackTrace();
+            }
+
+            function initEventFiltering() {
+                const filterButtons = document.querySelectorAll('input[name="event-filter"]');
+
+                filterButtons.forEach(button => {
+                    button.addEventListener('change', function() {
+                        const filterType = this.id;
+                        filterEvents(filterType);
+                    });
+                });
+
+                // Initialize with default filter (all-events)
+                filterEvents('all-events');
+            }
+
+            function filterEvents(filterType) {
+                const eventRows = document.querySelectorAll('.event-row');
+
+                eventRows.forEach(row => {
+                    const eventType = row.dataset.type;
+                    let shouldShow = false;
+
+                    switch(filterType) {
+                        case 'all-events':
+                            shouldShow = true;
+                            break;
+                        case 'crashes-only':
+                            shouldShow = eventType === 'crash';
+                            break;
+                        case 'anr-only':
+                            shouldShow = eventType === 'anr';
+                            break;
+                    }
+
+                    // Set the display style to control visibility
+                    row.style.display = shouldShow ? '' : 'none';
+
+                    // Also control the corresponding detail row
+                    const detailRow = row.nextElementSibling;
+                    if (detailRow && detailRow.classList.contains('collapse')) {
+                        detailRow.style.display = shouldShow ? '' : 'none';
+                    }
+                });
+
+                // Re-setup pagination after filtering
+                setTimeout(function() {
+                    setupCrashEventsPagination();
+                }, 10);
+            }
+
+
+
+            function initCrashEventsPagination() {
+                const pageSizeSelect = document.getElementById('events-page-size');
+
+                if (pageSizeSelect) {
+                    // Add event listener for page size change
+                    pageSizeSelect.addEventListener('change', function() {
+                        setupCrashEventsPagination();
+                    });
+                }
+            }
+
+
+
+
+
+
+            function initCopyStackTrace() {
+                const copyButtons = document.querySelectorAll('.copy-stack-btn');
+
+                copyButtons.forEach(button => {
+                    button.addEventListener('click', function() {
+                        const stackIndex = this.dataset.stackIndex;
+                        copyStackTrace(stackIndex);
+                    });
+                });
+            }
+
+            function copyStackTrace(stackIndex) {
+                const stackElement = document.getElementById(`stack-trace-${stackIndex}`);
+                if (!stackElement) return;
+
+                const stackText = stackElement.textContent;
+
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    navigator.clipboard.writeText(stackText).then(() => {
+                        showCopyNotification('Stack trace copied to clipboard!');
+                    }).catch(err => {
+                        console.error('Failed to copy stack trace: ', err);
+                        showCopyNotification('Failed to copy stack trace', 'error');
+                    });
+                } else {
+                    // Fallback for older browsers
+                    const textArea = document.createElement('textarea');
+                    textArea.value = stackText;
+                    document.body.appendChild(textArea);
+                    textArea.select();
+                    try {
+                        document.execCommand('copy');
+                        showCopyNotification('Stack trace copied to clipboard!');
+                    } catch (err) {
+                        console.error('Fallback copy failed: ', err);
+                        showCopyNotification('Failed to copy stack trace', 'error');
+                    }
+                    document.body.removeChild(textArea);
+                }
+            }
+
+            function showCopyNotification(message, type) {
+                type = type || 'success';
+
+                // Create notification element
+                const notification = document.createElement('div');
+                notification.className = 'alert alert-' + (type === 'error' ? 'danger' : 'success') + ' position-fixed';
+                notification.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px; opacity: 0; transition: opacity 0.3s ease-in-out;';
+                notification.innerHTML = '<i class="bi bi-' + (type === 'error' ? 'exclamation-triangle' : 'check-circle') + '"></i> ' + message;
+
+                document.body.appendChild(notification);
+
+                // Fade in animation
+                setTimeout(function() {
+                    notification.style.opacity = '1';
+                }, 10);
+
+                // Auto remove after 3 seconds with fade out
+                setTimeout(function() {
+                    notification.style.opacity = '0';
+                    setTimeout(function() {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
             }
         });
     </script>

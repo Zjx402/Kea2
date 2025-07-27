@@ -618,31 +618,19 @@
         
         /* Modern Sorting Controls Styling */
         .sorting-controls-modern {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border: 1px solid #e3e6ea;
-            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
             padding: 20px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
         }
-        
-        .sorting-controls-modern::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
-            border-radius: 12px 12px 0 0;
-        }
-        
+
         .sorting-controls-modern:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            transform: translateY(-1px);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
         }
         
         .sort-label-section {
@@ -706,7 +694,7 @@
             position: relative;
             overflow: hidden;
         }
-        
+
         .btn-sort-modern::before {
             content: '';
             position: absolute;
@@ -717,16 +705,16 @@
             background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
             transition: left 0.5s ease;
         }
-        
+
         .btn-sort-modern:hover {
             transform: translateY(-2px);
             box-shadow: 0 4px 16px rgba(46, 204, 113, 0.4);
         }
-        
+
         .btn-sort-modern:hover::before {
             left: 100%;
         }
-        
+
         .btn-sort-modern:active {
             transform: translateY(0px);
             box-shadow: 0 2px 8px rgba(46, 204, 113, 0.3);
@@ -817,31 +805,155 @@
         
         /* Search Controls Styling */
         .search-controls-modern {
-            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
-            border: 1px solid #e3e6ea;
-            border-radius: 12px;
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
             padding: 20px 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-            transition: all 0.3s ease;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
             position: relative;
-            overflow: hidden;
         }
-        
-        .search-controls-modern::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, #17a2b8, #20c997);
-            border-radius: 12px 12px 0 0;
-        }
-        
+
         .search-controls-modern:hover {
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
+        }
+
+        /* Modern Activity Item Styling */
+        .activity-item {
+            background: #ffffff;
+            border: 1px solid #f3f4f6;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .activity-item:hover {
+            border-color: #e5e7eb;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
             transform: translateY(-1px);
+        }
+
+        .activity-content {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .activity-name {
+            font-weight: 500;
+            color: #374151;
+            font-size: 14px;
+        }
+
+        .traversal-badge {
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8) !important;
+            border: none;
+            border-radius: 20px;
+            padding: 6px 12px;
+            font-size: 12px;
+            font-weight: 500;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        /* Modern Search Input */
+        .activity-search-input {
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            padding: 12px 16px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            background: #f9fafb;
+        }
+
+        .activity-search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            background: #ffffff;
+        }
+
+        .search-btn {
+            border-radius: 12px;
+            padding: 12px 16px;
+            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .search-btn:hover {
+            background: linear-gradient(135deg, #2563eb, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+
+        /* Combined Search and Sort Controls */
+        .search-sort-controls-modern {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 20px 24px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .search-sort-controls-modern:hover {
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07), 0 2px 4px rgba(0, 0, 0, 0.06);
+            border-color: #d1d5db;
+        }
+
+        .search-section {
+            min-width: 0; /* Allow flex item to shrink */
+        }
+
+        .sort-section {
+            flex-shrink: 0; /* Prevent sort section from shrinking */
+        }
+
+        .sort-label {
+            white-space: nowrap;
+            font-size: 14px;
+        }
+
+        /* Responsive design for combined controls */
+        @media (max-width: 768px) {
+            .search-sort-controls-modern .d-flex {
+                flex-direction: column;
+                gap: 16px !important;
+            }
+
+            .search-section {
+                width: 100% !important;
+                max-width: none !important;
+                flex-shrink: 1 !important;
+            }
+
+            .sort-section {
+                justify-content: center;
+                width: 100%;
+                margin-left: 0 !important;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .search-section {
+                max-width: none !important;
+            }
+
+            .search-icon-wrapper {
+                width: 40px;
+                height: 40px;
+            }
+
+            .search-icon-wrapper i {
+                font-size: 18px;
+            }
         }
         
         .search-icon-wrapper {
@@ -1047,18 +1159,42 @@
                                 <span class="badge bg-success" style="font-size: 1.0em; font-weight: 500;">{{ tested_activities|length }} / {{ total_activities_count }}</span>
                             </div>
                             
-                            <!-- Sorting Controls for Tested Activities -->
-                            <div class="sorting-controls-modern mb-4">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="sort-label-section">
-                                        <div class="sort-icon-wrapper">
-                                            <i class="bi bi-funnel-fill"></i>
+                            <!-- Combined Search and Sort Controls for Tested Activities -->
+                            <div class="search-sort-controls-modern mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <!-- Search Section -->
+                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
+                                        <div class="search-icon-wrapper me-3">
+                                            <i class="bi bi-search"></i>
                                         </div>
-                                        <div class="sort-text">
-                                            <span class="sort-title">Sort Activities</span>
+                                        <div class="flex-grow-1">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control activity-search-input"
+                                                       id="tested-activity-search"
+                                                       placeholder="Search activities..."
+                                                       data-target="tested-activities-container"
+                                                       data-item-class="tested-activity"
+                                                       data-pagination="tested-pagination"
+                                                       data-page-size="tested-page-size">
+                                                <button class="btn search-btn" type="button"
+                                                        data-target="tested-activity-search">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
+                                                        data-target="tested-activity-search">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted search-results-count" id="tested-search-results"></small>
                                         </div>
                                     </div>
-                                    <div class="sort-button-section">
+
+                                    <!-- Sort Section -->
+                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
+                                        <div class="sort-label d-flex align-items-center gap-2">
+                                            <i class="bi bi-funnel-fill text-muted"></i>
+                                            <span class="text-muted fw-medium">Sort:</span>
+                                        </div>
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
@@ -1066,35 +1202,6 @@
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Search Controls for Tested Activities -->
-                            <div class="search-controls-modern mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="search-icon-wrapper me-3">
-                                        <i class="bi bi-search"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control activity-search-input" 
-                                                   id="tested-activity-search" 
-                                                   placeholder="Search tested activities..." 
-                                                   data-target="tested-activities-container"
-                                                   data-item-class="tested-activity"
-                                                   data-pagination="tested-pagination"
-                                                   data-page-size="tested-page-size">
-                                            <button class="btn btn-primary search-btn" type="button" 
-                                                    data-target="tested-activity-search">
-                                                <i class="bi bi-search"></i>
-                                            </button>
-                                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
-                                                    data-target="tested-activity-search">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <small class="text-muted search-results-count" id="tested-search-results"></small>
                                     </div>
                                 </div>
                             </div>
@@ -1154,18 +1261,42 @@
                                 <span class="badge bg-primary" style="font-size: 1.0em; font-weight: 500;">Total: {{ total_activities|length }}</span>
                             </div>
                             
-                            <!-- Sorting Controls for All Activities -->
-                            <div class="sorting-controls-modern mb-4">
-                                <div class="d-flex align-items-center justify-content-between">
-                                    <div class="sort-label-section">
-                                        <div class="sort-icon-wrapper">
-                                            <i class="bi bi-funnel-fill"></i>
+                            <!-- Combined Search and Sort Controls for All Activities -->
+                            <div class="search-sort-controls-modern mb-4">
+                                <div class="d-flex align-items-center gap-4">
+                                    <!-- Search Section -->
+                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
+                                        <div class="search-icon-wrapper me-3">
+                                            <i class="bi bi-search"></i>
                                         </div>
-                                        <div class="sort-text">
-                                            <span class="sort-title">Sort Activities</span>
+                                        <div class="flex-grow-1">
+                                            <div class="input-group">
+                                                <input type="text" class="form-control activity-search-input"
+                                                       id="all-activity-search"
+                                                       placeholder="Search activities..."
+                                                       data-target="all-activities-container"
+                                                       data-item-class="all-activity"
+                                                       data-pagination="all-pagination"
+                                                       data-page-size="all-page-size">
+                                                <button class="btn search-btn" type="button"
+                                                        data-target="all-activity-search">
+                                                    <i class="bi bi-search"></i>
+                                                </button>
+                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
+                                                        data-target="all-activity-search">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                            </div>
+                                            <small class="text-muted search-results-count" id="all-search-results"></small>
                                         </div>
                                     </div>
-                                    <div class="sort-button-section">
+
+                                    <!-- Sort Section -->
+                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
+                                        <div class="sort-label d-flex align-items-center gap-2">
+                                            <i class="bi bi-funnel-fill text-muted"></i>
+                                            <span class="text-muted fw-medium">Sort:</span>
+                                        </div>
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
@@ -1173,35 +1304,6 @@
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Search Controls for All Activities -->
-                            <div class="search-controls-modern mb-4">
-                                <div class="d-flex align-items-center">
-                                    <div class="search-icon-wrapper me-3">
-                                        <i class="bi bi-search"></i>
-                                    </div>
-                                    <div class="flex-grow-1">
-                                        <div class="input-group">
-                                            <input type="text" class="form-control activity-search-input" 
-                                                   id="all-activity-search" 
-                                                   placeholder="Search all activities..." 
-                                                   data-target="all-activities-container"
-                                                   data-item-class="all-activity"
-                                                   data-pagination="all-pagination"
-                                                   data-page-size="all-page-size">
-                                            <button class="btn btn-primary search-btn" type="button" 
-                                                    data-target="all-activity-search">
-                                                <i class="bi bi-search"></i>
-                                            </button>
-                                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
-                                                    data-target="all-activity-search">
-                                                <i class="bi bi-x-lg"></i>
-                                            </button>
-                                        </div>
-                                        <small class="text-muted search-results-count" id="all-search-results"></small>
                                     </div>
                                 </div>
                             </div>
@@ -2027,16 +2129,15 @@
                         const isTestedTab = parentTab.id === 'tested-activities';
                         
                         // Toggle sort order
-                        this.className = 'btn btn-success btn-sm activity-sort-btn';
                         const newOrder = currentOrder === 'asc' ? 'desc' : 'asc';
                         
                         this.dataset.order = newOrder;
                         const icon = this.querySelector('.sort-icon');
                         
                         if (newOrder === 'asc') {
-                            icon.className = 'bi bi-arrow-up sort-icon';
+                            icon.className = 'bi bi-arrow-up sort-icon btn-arrow';
                         } else {
-                            icon.className = 'bi bi-arrow-down sort-icon';
+                            icon.className = 'bi bi-arrow-down sort-icon btn-arrow';
                         }
                         
                         // Sort activities

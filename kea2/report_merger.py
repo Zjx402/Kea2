@@ -1,5 +1,6 @@
 import json
 import os
+import re
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -37,11 +38,11 @@ class TestReportMerger:
             self._validate_result_dirs()
             
             # Setup output directory
+            timestamp = datetime.now().strftime("%Y%m%d%H_%M%S")
             if output_dir is None:
-                timestamp = datetime.now().strftime("%Y%m%d%H_%M%S")
                 output_dir = Path.cwd() / f"merged_report_{timestamp}"
             else:
-                output_dir = Path(output_dir).resolve()
+                output_dir = Path(output_dir).resolve() / f"merged_report_{timestamp}"
             
             output_dir.mkdir(parents=True, exist_ok=True)
             
@@ -50,9 +51,10 @@ class TestReportMerger:
             # Merge different types of data
             merged_property_stats = self._merge_property_results()
             merged_coverage_data = self._merge_coverage_data()
-            
+            merged_crash_anr_data = self._merge_crash_dump_data()
+
             # Calculate final statistics
-            final_data = self._calculate_final_statistics(merged_property_stats, merged_coverage_data)
+            final_data = self._calculate_final_statistics(merged_property_stats, merged_coverage_data, merged_crash_anr_data)
             
             # Add merge information to final data
             final_data['merge_info'] = {
@@ -184,37 +186,403 @@ class TestReportMerger:
             "activity_count_history": dict(activity_counts),
             "total_steps": total_steps
         }
+
+    def _merge_crash_dump_data(self) -> Dict:
+        """
+        Merge crash and ANR data from all directories
+
+        Returns:
+            Dict containing merged crash and ANR events
+        """
+        all_crash_events = []
+        all_anr_events = []
+
+        for result_dir in self.result_dirs:
+            # Find crash dump log file
+            output_dirs = list(result_dir.glob("output_*"))
+            if not output_dirs:
+                logger.warning(f"No output directory found in {result_dir}")
+                continue
+
+            crash_dump_file = output_dirs[0] / "crash-dump.log"
+            if not crash_dump_file.exists():
+                logger.debug(f"No crash-dump.log found in {output_dirs[0]}")
+                continue
+
+            try:
+                # Parse crash and ANR events from this file
+                crash_events, anr_events = self._parse_crash_dump_file(crash_dump_file)
+                all_crash_events.extend(crash_events)
+                all_anr_events.extend(anr_events)
+
+                logger.debug(f"Merged {len(crash_events)} crash events and {len(anr_events)} ANR events from: {crash_dump_file}")
+
+            except Exception as e:
+                logger.error(f"Error reading crash dump file {crash_dump_file}: {e}")
+                continue
+
+        # Deduplicate events based on content and timestamp
+        unique_crash_events = self._deduplicate_crash_events(all_crash_events)
+        unique_anr_events = self._deduplicate_anr_events(all_anr_events)
+
+        logger.debug(f"Total unique crash events: {len(unique_crash_events)}, ANR events: {len(unique_anr_events)}")
+
+        return {
+            "crash_events": unique_crash_events,
+            "anr_events": unique_anr_events,
+            "total_crash_count": len(unique_crash_events),
+            "total_anr_count": len(unique_anr_events)
+        }
     
-    def _calculate_final_statistics(self, property_stats: Dict, coverage_data: Dict) -> Dict:
+    def _parse_crash_dump_file(self, crash_dump_file: Path) -> tuple[List[Dict], List[Dict]]:
+        """
+        Parse crash and ANR events from crash-dump.log file
+
+        Args:
+            crash_dump_file: Path to crash-dump.log file
+
+        Returns:
+            tuple: (crash_events, anr_events) - Lists of crash and ANR event dictionaries
+        """
+        crash_events = []
+        anr_events = []
+
+        try:
+            with open(crash_dump_file, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Parse crash events
+            crash_events = self._parse_crash_events(content)
+
+            # Parse ANR events
+            anr_events = self._parse_anr_events(content)
+
+        except Exception as e:
+            logger.error(f"Error parsing crash dump file {crash_dump_file}: {e}")
+
+        return crash_events, anr_events
+
+    def _parse_crash_events(self, content: str) -> List[Dict]:
+        """
+        Parse crash events from crash-dump.log content
+
+        Args:
+            content: Content of crash-dump.log file
+
+        Returns:
+            List[Dict]: List of crash event dictionaries
+        """
+        crash_events = []
+
+        # Pattern to match crash blocks
+        crash_pattern = r'(\d{14})\ncrash:\n(.*?)\n// crash end'
+
+        for match in re.finditer(crash_pattern, content, re.DOTALL):
+            timestamp_str = match.group(1)
+            crash_content = match.group(2)
+
+            # Parse timestamp (format: YYYYMMDDHHMMSS)
+            try:
+                timestamp = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
+                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                formatted_time = timestamp_str
+
+            # Extract crash information
+            crash_info = self._extract_crash_info(crash_content)
+
+            crash_event = {
+                "time": formatted_time,
+                "exception_type": crash_info.get("exception_type", "Unknown"),
+                "process": crash_info.get("process", "Unknown"),
+                "stack_trace": crash_info.get("stack_trace", "")
+            }
+
+            crash_events.append(crash_event)
+
+        return crash_events
+
+    def _parse_anr_events(self, content: str) -> List[Dict]:
+        """
+        Parse ANR events from crash-dump.log content
+
+        Args:
+            content: Content of crash-dump.log file
+
+        Returns:
+            List[Dict]: List of ANR event dictionaries
+        """
+        anr_events = []
+
+        # Pattern to match ANR blocks
+        anr_pattern = r'(\d{14})\nanr:\n(.*?)\nanr end'
+
+        for match in re.finditer(anr_pattern, content, re.DOTALL):
+            timestamp_str = match.group(1)
+            anr_content = match.group(2)
+
+            # Parse timestamp (format: YYYYMMDDHHMMSS)
+            try:
+                timestamp = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
+                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                formatted_time = timestamp_str
+
+            # Extract ANR information
+            anr_info = self._extract_anr_info(anr_content)
+
+            anr_event = {
+                "time": formatted_time,
+                "reason": anr_info.get("reason", "Unknown"),
+                "process": anr_info.get("process", "Unknown"),
+                "trace": anr_info.get("trace", "")
+            }
+
+            anr_events.append(anr_event)
+
+        return anr_events
+
+    def _extract_crash_info(self, crash_content: str) -> Dict:
+        """
+        Extract crash information from crash content
+
+        Args:
+            crash_content: Content of a single crash block
+
+        Returns:
+            Dict: Extracted crash information
+        """
+        crash_info = {
+            "exception_type": "Unknown",
+            "process": "Unknown",
+            "stack_trace": ""
+        }
+
+        lines = crash_content.strip().split('\n')
+
+        for line in lines:
+            line = line.strip()
+
+            # Extract PID from CRASH line
+            if line.startswith("// CRASH:"):
+                # Pattern: // CRASH: process_name (pid xxxx) (dump time: ...)
+                pid_match = re.search(r'\(pid\s+(\d+)\)', line)
+                if pid_match:
+                    crash_info["process"] = pid_match.group(1)
+
+            # Extract exception type from Long Msg line
+            elif line.startswith("// Long Msg:"):
+                # Pattern: // Long Msg: ExceptionType: message
+                exception_match = re.search(r'// Long Msg:\s+([^:]+)', line)
+                if exception_match:
+                    crash_info["exception_type"] = exception_match.group(1).strip()
+
+        # Extract full stack trace (all lines starting with //)
+        stack_lines = []
+        for line in lines:
+            if line.startswith("//"):
+                # Remove the "// " prefix for cleaner display
+                clean_line = line[3:] if line.startswith("// ") else line[2:]
+                stack_lines.append(clean_line)
+
+        crash_info["stack_trace"] = '\n'.join(stack_lines)
+
+        return crash_info
+
+    def _extract_anr_info(self, anr_content: str) -> Dict:
+        """
+        Extract ANR information from ANR content
+
+        Args:
+            anr_content: Content of a single ANR block
+
+        Returns:
+            Dict: Extracted ANR information
+        """
+        anr_info = {
+            "reason": "Unknown",
+            "process": "Unknown",
+            "trace": ""
+        }
+
+        lines = anr_content.strip().split('\n')
+
+        for line in lines:
+            line = line.strip()
+
+            # Extract PID from ANR line
+            if line.startswith("// ANR:"):
+                # Pattern: // ANR: process_name (pid xxxx) (dump time: ...)
+                pid_match = re.search(r'\(pid\s+(\d+)\)', line)
+                if pid_match:
+                    anr_info["process"] = pid_match.group(1)
+
+            # Extract reason from Reason line
+            elif line.startswith("Reason:"):
+                # Pattern: Reason: Input dispatching timed out (...)
+                reason_match = re.search(r'Reason:\s+(.+)', line)
+                if reason_match:
+                    full_reason = reason_match.group(1).strip()
+                    # Simplify the reason by extracting the main part before parentheses
+                    simplified_reason = self._simplify_anr_reason(full_reason)
+                    anr_info["reason"] = simplified_reason
+
+        # Store the full ANR trace content
+        anr_info["trace"] = anr_content
+
+        return anr_info
+
+    def _simplify_anr_reason(self, full_reason: str) -> str:
+        """
+        Simplify ANR reason by extracting the main part
+
+        Args:
+            full_reason: Full ANR reason string
+
+        Returns:
+            str: Simplified ANR reason
+        """
+        # Common ANR reason patterns to simplify
+        simplification_patterns = [
+            # Input dispatching timed out (details...) -> Input dispatching timed out
+            (r'^(Input dispatching timed out)\s*\(.*\).*$', r'\1'),
+            # Broadcast of Intent (details...) -> Broadcast timeout
+            (r'^Broadcast of Intent.*$', 'Broadcast timeout'),
+            # Service timeout -> Service timeout
+            (r'^Service.*timeout.*$', 'Service timeout'),
+            # ContentProvider timeout -> ContentProvider timeout
+            (r'^ContentProvider.*timeout.*$', 'ContentProvider timeout'),
+        ]
+
+        # Apply simplification patterns
+        for pattern, replacement in simplification_patterns:
+            match = re.match(pattern, full_reason, re.IGNORECASE)
+            if match:
+                if callable(replacement):
+                    return replacement(match)
+                elif '\\1' in replacement:
+                    return re.sub(pattern, replacement, full_reason, flags=re.IGNORECASE)
+                else:
+                    return replacement
+
+        # If no pattern matches, try to extract the part before the first parenthesis
+        paren_match = re.match(r'^([^(]+)', full_reason)
+        if paren_match:
+            simplified = paren_match.group(1).strip()
+            # Remove trailing punctuation
+            simplified = re.sub(r'[.,;:]+$', '', simplified)
+            return simplified
+
+        # If all else fails, return the original but truncated
+        return full_reason[:50] + "..." if len(full_reason) > 50 else full_reason
+
+    def _deduplicate_crash_events(self, crash_events: List[Dict]) -> List[Dict]:
+        """
+        Deduplicate crash events based on exception type and stack trace
+
+        Args:
+            crash_events: List of crash events
+
+        Returns:
+            List[Dict]: Deduplicated crash events
+        """
+        seen_crashes = set()
+        unique_crashes = []
+
+        for crash in crash_events:
+            # Create a hash key based on exception type and first few lines of stack trace
+            exception_type = crash.get("exception_type", "")
+            stack_trace = crash.get("stack_trace", "")
+
+            # Use first 3 lines of stack trace for deduplication
+            stack_lines = stack_trace.split('\n')[:3]
+            crash_key = (exception_type, '\n'.join(stack_lines))
+
+            if crash_key not in seen_crashes:
+                seen_crashes.add(crash_key)
+                unique_crashes.append(crash)
+
+        return unique_crashes
+
+    def _deduplicate_anr_events(self, anr_events: List[Dict]) -> List[Dict]:
+        """
+        Deduplicate ANR events based on reason and process
+
+        Args:
+            anr_events: List of ANR events
+
+        Returns:
+            List[Dict]: Deduplicated ANR events
+        """
+        seen_anrs = set()
+        unique_anrs = []
+
+        for anr in anr_events:
+            # Create a hash key based on reason and process
+            reason = anr.get("reason", "")
+            process = anr.get("process", "")
+            anr_key = (reason, process)
+
+            if anr_key not in seen_anrs:
+                seen_anrs.add(anr_key)
+                unique_anrs.append(anr)
+
+        return unique_anrs
+
+    def _calculate_final_statistics(self, property_stats: Dict, coverage_data: Dict, crash_anr_data: Dict = None) -> Dict:
         """
         Calculate final statistics for template rendering
-        
+
+        Note: Total bugs count only includes property test failures/errors,
+        not crashes or ANRs (which are tracked separately)
+
         Args:
             property_stats: Merged property statistics
             coverage_data: Merged coverage data
-            
+            crash_anr_data: Merged crash and ANR data (optional)
+
         Returns:
             Complete data for template rendering
         """
-        # Calculate bug count
-        bugs_found = sum(1 for result in property_stats.values() 
-                        if result.get('fail', 0) > 0 or result.get('error', 0) > 0)
-        
+        # Calculate bug count from property failures
+        property_bugs_found = sum(1 for result in property_stats.values()
+                                if result.get('fail', 0) > 0 or result.get('error', 0) > 0)
+
         # Calculate property counts
         all_properties_count = len(property_stats)
-        executed_properties_count = sum(1 for result in property_stats.values() 
+        executed_properties_count = sum(1 for result in property_stats.values()
                                       if result.get('executed', 0) > 0)
-        
+
+        # Initialize crash/ANR data
+        crash_events = []
+        anr_events = []
+        total_crash_count = 0
+        total_anr_count = 0
+
+        if crash_anr_data:
+            crash_events = crash_anr_data.get('crash_events', [])
+            anr_events = crash_anr_data.get('anr_events', [])
+            total_crash_count = crash_anr_data.get('total_crash_count', 0)
+            total_anr_count = crash_anr_data.get('total_anr_count', 0)
+
+        # Calculate total bugs found (only property bugs, not including crashes/ANRs)
+        total_bugs_found = property_bugs_found
+
         # Prepare final data
         final_data = {
             'timestamp': datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
-            'bugs_found': bugs_found,
+            'bugs_found': total_bugs_found,
+            'property_bugs_found': property_bugs_found,
             'all_properties_count': all_properties_count,
             'executed_properties_count': executed_properties_count,
             'property_stats': property_stats,
+            'crash_events': crash_events,
+            'anr_events': anr_events,
+            'total_crash_count': total_crash_count,
+            'total_anr_count': total_anr_count,
             **coverage_data  # Include all coverage data
         }
-        
+
         return final_data
     
     def get_merge_summary(self) -> Dict:
