@@ -3,7 +3,7 @@ import re
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, List, Deque, NewType, Union, Optional
+from typing import Dict, Tuple, TypedDict, List, Deque, NewType, Union, Optional
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
@@ -444,7 +444,7 @@ class BugReportGenerator:
             logger.error(f"Error when marking screenshots: {e}")
 
 
-    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
+    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, Tuple]) -> bool:
         """
         Mark interaction on screenshot with colored rectangle
 
@@ -630,7 +630,7 @@ class BugReportGenerator:
         })
 
     def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str,
-                             current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
+                             current_property: str, current_test: Dict, property_violations: Dict) -> Tuple:
         """
         Process ScriptInfo step for property violations tracking
 
@@ -831,7 +831,7 @@ class BugReportGenerator:
         
         return property_execution_trend
 
-    def _load_crash_dump_data(self) -> tuple[List[Dict], List[Dict]]:
+    def _load_crash_dump_data(self) -> Tuple[List[Dict], List[Dict]]:
         """
         Load crash and ANR events from crash-dump.log file
 
