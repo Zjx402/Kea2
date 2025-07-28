@@ -115,7 +115,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | 参数 | 意义 | 默认值 |
 | --- | --- | --- |
 | -s | 设备序列号，可通过 `adb devices` 查看 |  |
-| -t | 设备传输 ID，可通过 `adb devices -l` 查看 |  |
+| -t | 设备的 transport id，可通过 `adb devices -l` 查看 |  |
 | -p | 被测试应用的包名（例如 com.example.app） |  |
 | -o | 日志和结果输出目录 | `output` |
 | --agent | {native, u2}。默认使用 `u2`，支持 Kea2 三个重要功能。如果想运行原生 Fastbot，请使用 `native`。 | `u2` |
@@ -129,9 +129,92 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 | --device-output-root | 设备输出目录根路径，Kea2 将暂存截图和结果日志到 `"<device-output-root>/output_*********/"`。确保该目录可访问。 | `/sdcard` |
 | unittest | 指定加载的脚本。该子命令 `unittest` 完全兼容 unittest。更多选项请参阅 `python3 -m unittest -h`。此选项仅在 `--agent u2` 下有效。 |  |
 
+### `kea2 report` 参数说明
+
+`kea2 report` 命令用于根据已有测试结果生成 HTML 测试报告。该命令会分析测试数据，生成包含测试执行统计、覆盖率信息、性质违规和崩溃详情的综合可视化报告。
+
+| 参数 | 意义 | 是否必需 | 默认值 |
+| --- | --- | --- | --- |
+| -p, --path | 测试结果目录路径（res_* 目录） | 是 |  |
+
+**使用示例：**
+
+```bash
+# 从测试结果目录生成报告
+kea2 report -p res_20240101_120000
+
+# 启用调试模式生成报告
+kea2 -d report -p res_20240101_120000
+
+# 使用相对路径生成报告
+kea2 report -p ./output/res_20240101_120000
+```
+
+**报告内容包括：**
+- **测试摘要**：发现的总缺陷数、执行时间、覆盖率百分比
+- **性质测试结果**：每个测试性质的执行统计（前置条件满足次数、执行次数、失败次数、错误次数）
+- **代码覆盖率**：Activity 覆盖趋势及详细覆盖信息
+- **性质违规**：失败测试性质的详细信息及错误堆栈
+- **崩溃事件**：测试过程中检测到的应用崩溃
+- **ANR 事件**：应用无响应事件
+- **截图**：测试过程中采集的 UI 截图（如果启用）
+- **Activity 遍历**：测试期间访问的 Activity 历史
+
+**输出内容：**
+该命令会生成：
+- 指定测试结果目录下的 HTML 报告文件（`bug_report.html`）
+- 覆盖率和执行趋势的交互式图表和可视化
+- 详细错误信息和堆栈跟踪，便于调试
+
+**输入目录结构示例：**
+```
+res_<timestamp>/
+├── result_<timestamp>.json          # 性质测试结果
+├── output_<timestamp>/
+│   ├── steps.log                    # 测试执行步骤
+│   ├── coverage.log                 # 覆盖率数据
+│   ├── crash-dump.log               # 崩溃和 ANR 事件
+│   └── screenshots/                 # UI 截图（如果启用）
+└── property_exec_info_<timestamp>.json  # 性质执行详情
+```
+
+### `kea2 merge` 参数说明
+
+`kea2 merge` 命令允许合并多个测试报告目录，生成合并后的综合报告。适用于多次测试会话结果的汇总。
+
+| 参数 | 意义 | 是否必需 | 默认值 |
+| --- | --- | --- | --- |
+| -p, --paths | 需要合并的测试报告目录路径（res_* 目录），至少两个路径 | 是 |  |
+| -o, --output | 合并后报告的输出目录 | 否 | `merged_report_<timestamp>` |
+
+**使用示例：**
+
+```bash
+# 合并两个测试报告目录
+kea2 merge -p res_20240101_120000 res_20240102_130000
+
+# 合并多个测试报告目录并指定输出目录
+kea2 merge -p res_20240101_120000 res_20240102_130000 res_20240103_140000 -o my_merged_report
+
+# 合并时启用调试模式
+kea2 -d merge -p res_20240101_120000 res_20240102_130000
+```
+
+**合并内容包括：**
+- 性质测试执行统计（前置条件满足、执行、失败、错误）
+- 代码覆盖率数据（覆盖的 Activity、覆盖率百分比）
+- 崩溃和 ANR 事件
+- 测试执行步骤和时间信息
+
+**输出内容：**
+该命令会生成：
+- 包含合并数据的报告目录
+- 带有可视化摘要的 HTML 报告（`merged_report.html`）
+- 合并元数据，包括源目录和时间戳
+
 ### `kea` 参数
 
-| 参数 | 意义 | 默认值 | 
+| 参数 | 意义 | 默认值 |
 | --- | --- | --- |
 | -d | 启用调试模式 |  |
 
