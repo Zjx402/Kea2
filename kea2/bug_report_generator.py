@@ -842,7 +842,7 @@ class BugReportGenerator:
         anr_events = []
 
         if not self.data_path.crash_dump_log.exists():
-            logger.warning(f"Crash dump file {self.data_path.crash_dump_log} not found")
+            logger.info(f"No crash was found in this run.")
             return crash_events, anr_events
 
         try:
@@ -855,12 +855,13 @@ class BugReportGenerator:
             # Parse ANR events
             anr_events = self._parse_anr_events(content)
 
-            logger.debug(f"Loaded {len(crash_events)} crash events and {len(anr_events)} ANR events")
+            logger.debug(f"Found {len(crash_events)} crash events and {len(anr_events)} ANR events")
+
+            return crash_events, anr_events
 
         except Exception as e:
             logger.error(f"Error reading crash dump file: {e}")
 
-        return crash_events, anr_events
 
     def _parse_crash_events(self, content: str) -> List[Dict]:
         """
