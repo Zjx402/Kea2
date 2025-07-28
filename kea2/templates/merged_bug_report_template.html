@@ -1124,7 +1124,7 @@
                     <div class="alert alert-info mb-3" style="border-left: 4px solid #17a2b8; background-color: #f8f9fa;">
                         <small class="text-muted">
                             <i class="bi bi-info-circle me-1"></i>
-                            <strong>Traversal Count Explanation:</strong>
+                            <strong>Visit Count Explanation:</strong>
                             The number after the <i class="bi bi-eye"></i> icon indicates how many times each Activity was visited during testing.
                         </small>
                     </div>
@@ -1198,7 +1198,7 @@
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
-                                                <span class="btn-text">Traversal Count</span>
+                                                <span class="btn-text">Visit Count</span>
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
@@ -1300,7 +1300,7 @@
                                         <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
                                             <div class="btn-content">
                                                 <i class="bi bi-eye btn-icon"></i>
-                                                <span class="btn-text">Traversal Count</span>
+                                                <span class="btn-text">Visit Count</span>
                                                 <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
                                             </div>
                                         </button>
@@ -1455,8 +1455,8 @@
                                 <tr class="collapse" id="anr-detail-{{ loop.index }}">
                                     <td colspan="5">
                                         <div class="bg-light p-3 rounded">
-                                            <h6 class="text-warning">ANR Details:</h6>
-                                            <pre class="text-warning mb-0 text-start" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ anr.trace }}</pre>
+                                            <h6 class="text-dark">ANR Details:</h6>
+                                            <pre class="text-dark mb-0 text-start" id="stack-trace-anr-{{ loop.index }}" style="font-size: 0.9em; white-space: pre-wrap; text-align: left;">{{ anr.trace }}</pre>
                                         </div>
                                     </td>
                                 </tr>
