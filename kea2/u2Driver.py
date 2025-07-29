@@ -236,6 +236,34 @@ class StaticXpathUiObject(u2.xpath.XPathSelector):
         self.selector = s
         return self
 
+    def selector_to_xpath(self, selector: u2.xpath.XPathSelector) -> str:
+        """
+            Convert an XPathSelector to a standard XPath expression.
+
+            Args:
+                selector: The XPathSelector object to convert.
+
+            Returns:
+                A standard XPath expression as a string.
+            """
+
+        def _handle_path(path):
+            if isinstance(path, u2.xpath.XPathSelector):
+                return self.selector_to_xpath(path)
+            elif isinstance(path, u2.xpath.XPath):
+                return str(path)
+            else:
+                return path
+
+        base_xpath = _handle_path(selector._base_xpath)
+        base_xpath = base_xpath.replace('//*', './/node')
+
+        if selector._operator is None:
+            return base_xpath
+        else:
+            print("Unsupported operator: {}".format(selector._operator))
+            return "//error"
+
     def xpath(self, _xpath: Union[list, tuple, str]) -> 'StaticXpathUiObject':
         """
         add xpath to condition list
