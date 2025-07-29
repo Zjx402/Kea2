@@ -49,12 +49,12 @@ class TestReportMerger:
             logger.debug(f"Merging {len(self.result_dirs)} test result directories...")
             
             # Merge different types of data
-            merged_property_stats = self._merge_property_results()
+            merged_property_stats, property_source_mapping = self._merge_property_results()
             merged_coverage_data = self._merge_coverage_data()
             merged_crash_anr_data = self._merge_crash_dump_data()
 
             # Calculate final statistics
-            final_data = self._calculate_final_statistics(merged_property_stats, merged_coverage_data, merged_crash_anr_data)
+            final_data = self._calculate_final_statistics(merged_property_stats, merged_coverage_data, merged_crash_anr_data, property_source_mapping)
             
             # Add merge information to final data
             final_data['merge_info'] = {
@@ -86,12 +86,14 @@ class TestReportMerger:
             
             logger.debug(f"Validated result directory: {result_dir}")
     
-    def _merge_property_results(self) -> Dict[str, Dict]:
+    def _merge_property_results(self) -> tuple[Dict[str, Dict], Dict[str, List[str]]]:
         """
         Merge property test results from all directories
-        
+
         Returns:
-            Merged property execution results
+            Tuple of (merged_property_results, property_source_mapping)
+            - merged_property_results: Merged property execution results
+            - property_source_mapping: Maps property names to list of source directories with fail/error
         """
         merged_results = defaultdict(lambda: {
             "precond_satisfied": 0,
@@ -99,31 +101,40 @@ class TestReportMerger:
             "fail": 0,
             "error": 0
         })
-        
+
+        # Track which directories have fail/error for each property
+        property_source_mapping = defaultdict(list)
+
         for result_dir in self.result_dirs:
             result_files = list(result_dir.glob("result_*.json"))
             if not result_files:
                 logger.warning(f"No result file found in {result_dir}")
                 continue
-                
+
             result_file = result_files[0]  # Take the first (should be only one)
-            
+            dir_name = result_dir.name  # Get the directory name (e.g., res_2025072011_5048015228)
+
             try:
                 with open(result_file, 'r', encoding='utf-8') as f:
                     test_results = json.load(f)
-                
+
                 # Merge results for each property
                 for prop_name, prop_result in test_results.items():
                     for key in ["precond_satisfied", "executed", "fail", "error"]:
                         merged_results[prop_name][key] += prop_result.get(key, 0)
-                
+
+                    # Track source directories for properties with fail/error
+                    if prop_result.get('fail', 0) > 0 or prop_result.get('error', 0) > 0:
+                        if dir_name not in property_source_mapping[prop_name]:
+                            property_source_mapping[prop_name].append(dir_name)
+
                 logger.debug(f"Merged results from: {result_file}")
-                
+
             except Exception as e:
                 logger.error(f"Error reading result file {result_file}: {e}")
                 continue
-        
-        return dict(merged_results)
+
+        return dict(merged_results), dict(property_source_mapping)
     
     def _merge_coverage_data(self) -> Dict:
         """
@@ -529,7 +540,7 @@ class TestReportMerger:
 
         return unique_anrs
 
-    def _calculate_final_statistics(self, property_stats: Dict, coverage_data: Dict, crash_anr_data: Dict = None) -> Dict:
+    def _calculate_final_statistics(self, property_stats: Dict, coverage_data: Dict, crash_anr_data: Dict = None, property_source_mapping: Dict = None) -> Dict:
         """
         Calculate final statistics for template rendering
 
@@ -540,6 +551,7 @@ class TestReportMerger:
             property_stats: Merged property statistics
             coverage_data: Merged coverage data
             crash_anr_data: Merged crash and ANR data (optional)
+            property_source_mapping: Maps property names to source directories with fail/error (optional)
 
         Returns:
             Complete data for template rendering
@@ -576,6 +588,7 @@ class TestReportMerger:
             'all_properties_count': all_properties_count,
             'executed_properties_count': executed_properties_count,
             'property_stats': property_stats,
+            'property_source_mapping': property_source_mapping or {},
             'crash_events': crash_events,
             'anr_events': anr_events,
             'total_crash_count': total_crash_count,
