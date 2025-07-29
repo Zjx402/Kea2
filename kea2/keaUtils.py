@@ -685,11 +685,12 @@ class KeaTestRunner(TextTestRunner):
             logger.info("Generating bug report")
             report_generator = BugReportGenerator(self.options.output_dir)
             report_generator.generate_report()
-
+            
             end_time = time.time()
             generation_time = end_time - start_time
 
             logger.info(f"Bug report generation completed in {generation_time:.2f} seconds")
             
         except Exception as e:
-            logger.error(f"Error generating bug report: {e}", flush=True)
+            logger.error(f"Error generating bug report: {e}")
+            traceback.print_exc()
