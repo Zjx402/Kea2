@@ -1,8 +1,9 @@
 import json
+import re
 from datetime import datetime
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, TypedDict, List, Deque, NewType, Union, Optional
+from typing import Dict, Tuple, TypedDict, List, Deque, NewType, Union, Optional
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor
 
@@ -56,6 +57,8 @@ class ReportData(TypedDict):
     coverage_trend: List
     property_execution_trend: List  # Track executed properties count over steps
     activity_count_history: Dict[str, int]  # Activity traversal count from final coverage data
+    crash_events: List[Dict]  # Crash events from crash-dump.log
+    anr_events: List[Dict]  # ANR events from crash-dump.log
 
 
 class PropertyExecResult(TypedDict):
@@ -119,6 +122,7 @@ class DataPath:
     coverage_log: Path
     screenshots_dir: Path
     property_exec_info: Path
+    crash_dump_log: Path
 
 
 class BugReportGenerator:
@@ -223,7 +227,8 @@ class BugReportGenerator:
             result_json=self.result_dir / f"result_{self.log_timestamp}.json",
             coverage_log=self.result_dir / f"output_{self.log_timestamp}" / "coverage.log",
             screenshots_dir=self.result_dir / f"output_{self.log_timestamp}" / "screenshots",
-            property_exec_info=self.result_dir / f"property_exec_info_{self.log_timestamp}.json"
+            property_exec_info=self.result_dir / f"property_exec_info_{self.log_timestamp}.json",
+            crash_dump_log=self.result_dir / f"output_{self.log_timestamp}" / "crash-dump.log"
         )
 
         self.screenshots = deque()
@@ -287,7 +292,9 @@ class BugReportGenerator:
             "screenshot_info": {},
             "coverage_trend": [],
             "property_execution_trend": [],
-            "activity_count_history": {}
+            "activity_count_history": {},
+            "crash_events": [],
+            "anr_events": []
         }
 
         # Parse steps.log file to get test step numbers and screenshot mappings
@@ -402,6 +409,11 @@ class BugReportGenerator:
         # Load error details for properties with fail/error state
         data["property_error_details"] = self._load_property_error_details()
 
+        # Load crash and ANR events from crash-dump.log
+        crash_events, anr_events = self._load_crash_dump_data()
+        data["crash_events"] = crash_events
+        data["anr_events"] = anr_events
+
         return data
 
     def _parse_step_data(self, raw_step_info: str) -> StepData:
@@ -432,7 +444,7 @@ class BugReportGenerator:
             logger.error(f"Error when marking screenshots: {e}")
 
 
-    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, tuple]) -> bool:
+    def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, Tuple]) -> bool:
         """
         Mark interaction on screenshot with colored rectangle
 
@@ -556,7 +568,9 @@ class BugReportGenerator:
                 'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
                 'property_execution_trend': data["property_execution_trend"],
                 'property_execution_data': json.dumps(data["property_execution_trend"]),
-                'activity_count_history': data["activity_count_history"]
+                'activity_count_history': data["activity_count_history"],
+                'crash_events': data["crash_events"],
+                'anr_events': data["anr_events"]
             }
 
             # Check if template exists, if not create it
@@ -616,7 +630,7 @@ class BugReportGenerator:
         })
 
     def _process_script_info(self, property_name: str, state: str, step_index: int, screenshot: str,
-                             current_property: str, current_test: Dict, property_violations: Dict) -> tuple:
+                             current_property: str, current_test: Dict, property_violations: Dict) -> Tuple:
         """
         Process ScriptInfo step for property violations tracking
 
@@ -817,11 +831,257 @@ class BugReportGenerator:
         
         return property_execution_trend
 
+    def _load_crash_dump_data(self) -> Tuple[List[Dict], List[Dict]]:
+        """
+        Load crash and ANR events from crash-dump.log file
+
+        Returns:
+            tuple: (crash_events, anr_events) - Lists of crash and ANR event dictionaries
+        """
+        crash_events = []
+        anr_events = []
+
+        if not self.data_path.crash_dump_log.exists():
+            logger.info(f"No crash was found in this run.")
+            return crash_events, anr_events
+
+        try:
+            with open(self.data_path.crash_dump_log, "r", encoding="utf-8") as f:
+                content = f.read()
+
+            # Parse crash events
+            crash_events = self._parse_crash_events(content)
+
+            # Parse ANR events
+            anr_events = self._parse_anr_events(content)
+
+            logger.debug(f"Found {len(crash_events)} crash events and {len(anr_events)} ANR events")
+
+            return crash_events, anr_events
+
+        except Exception as e:
+            logger.error(f"Error reading crash dump file: {e}")
+
+
+    def _parse_crash_events(self, content: str) -> List[Dict]:
+        """
+        Parse crash events from crash-dump.log content
+
+        Args:
+            content: Content of crash-dump.log file
+
+        Returns:
+            List[Dict]: List of crash event dictionaries
+        """
+        crash_events = []
+
+        # Pattern to match crash blocks
+        crash_pattern = r'(\d{14})\ncrash:\n(.*?)\n// crash end'
+
+        for match in re.finditer(crash_pattern, content, re.DOTALL):
+            timestamp_str = match.group(1)
+            crash_content = match.group(2)
+
+            # Parse timestamp (format: YYYYMMDDHHMMSS)
+            try:
+                timestamp = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
+                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                formatted_time = timestamp_str
+
+            # Extract crash information
+            crash_info = self._extract_crash_info(crash_content)
+
+            crash_event = {
+                "time": formatted_time,
+                "exception_type": crash_info.get("exception_type", "Unknown"),
+                "process": crash_info.get("process", "Unknown"),
+                "stack_trace": crash_info.get("stack_trace", "")
+            }
+
+            crash_events.append(crash_event)
+
+        return crash_events
+
+    def _parse_anr_events(self, content: str) -> List[Dict]:
+        """
+        Parse ANR events from crash-dump.log content
+
+        Args:
+            content: Content of crash-dump.log file
+
+        Returns:
+            List[Dict]: List of ANR event dictionaries
+        """
+        anr_events = []
+
+        # Pattern to match ANR blocks
+        anr_pattern = r'(\d{14})\nanr:\n(.*?)\nanr end'
+
+        for match in re.finditer(anr_pattern, content, re.DOTALL):
+            timestamp_str = match.group(1)
+            anr_content = match.group(2)
+
+            # Parse timestamp (format: YYYYMMDDHHMMSS)
+            try:
+                timestamp = datetime.strptime(timestamp_str, "%Y%m%d%H%M%S")
+                formatted_time = timestamp.strftime("%Y-%m-%d %H:%M:%S")
+            except ValueError:
+                formatted_time = timestamp_str
+
+            # Extract ANR information
+            anr_info = self._extract_anr_info(anr_content)
+
+            anr_event = {
+                "time": formatted_time,
+                "reason": anr_info.get("reason", "Unknown"),
+                "process": anr_info.get("process", "Unknown"),
+                "trace": anr_info.get("trace", "")
+            }
+
+            anr_events.append(anr_event)
+
+        return anr_events
+
+    def _extract_crash_info(self, crash_content: str) -> Dict:
+        """
+        Extract crash information from crash content
+
+        Args:
+            crash_content: Content of a single crash block
+
+        Returns:
+            Dict: Extracted crash information
+        """
+        crash_info = {
+            "exception_type": "Unknown",
+            "process": "Unknown",
+            "stack_trace": ""
+        }
+
+        lines = crash_content.strip().split('\n')
+
+        for line in lines:
+            line = line.strip()
+
+            # Extract PID from CRASH line
+            if line.startswith("// CRASH:"):
+                # Pattern: // CRASH: process_name (pid xxxx) (dump time: ...)
+                pid_match = re.search(r'\(pid\s+(\d+)\)', line)
+                if pid_match:
+                    crash_info["process"] = pid_match.group(1)
+
+            # Extract exception type from Long Msg line
+            elif line.startswith("// Long Msg:"):
+                # Pattern: // Long Msg: ExceptionType: message
+                exception_match = re.search(r'// Long Msg:\s+([^:]+)', line)
+                if exception_match:
+                    crash_info["exception_type"] = exception_match.group(1).strip()
+
+        # Extract full stack trace (all lines starting with //)
+        stack_lines = []
+        for line in lines:
+            if line.startswith("//"):
+                # Remove the "// " prefix for cleaner display
+                clean_line = line[3:] if line.startswith("// ") else line[2:]
+                stack_lines.append(clean_line)
+
+        crash_info["stack_trace"] = '\n'.join(stack_lines)
+
+        return crash_info
+
+    def _extract_anr_info(self, anr_content: str) -> Dict:
+        """
+        Extract ANR information from ANR content
+
+        Args:
+            anr_content: Content of a single ANR block
+
+        Returns:
+            Dict: Extracted ANR information
+        """
+        anr_info = {
+            "reason": "Unknown",
+            "process": "Unknown",
+            "trace": ""
+        }
+
+        lines = anr_content.strip().split('\n')
+
+        for line in lines:
+            line = line.strip()
+
+            # Extract PID from ANR line
+            if line.startswith("// ANR:"):
+                # Pattern: // ANR: process_name (pid xxxx) (dump time: ...)
+                pid_match = re.search(r'\(pid\s+(\d+)\)', line)
+                if pid_match:
+                    anr_info["process"] = pid_match.group(1)
+
+            # Extract reason from Reason line
+            elif line.startswith("Reason:"):
+                # Pattern: Reason: Input dispatching timed out (...)
+                reason_match = re.search(r'Reason:\s+(.+)', line)
+                if reason_match:
+                    full_reason = reason_match.group(1).strip()
+                    # Simplify the reason by extracting the main part before parentheses
+                    simplified_reason = self._simplify_anr_reason(full_reason)
+                    anr_info["reason"] = simplified_reason
+
+        # Store the full ANR trace content
+        anr_info["trace"] = anr_content
+
+        return anr_info
+
+    def _simplify_anr_reason(self, full_reason: str) -> str:
+        """
+        Simplify ANR reason by extracting the main part
+
+        Args:
+            full_reason: Full ANR reason string
+
+        Returns:
+            str: Simplified ANR reason
+        """
+        # Common ANR reason patterns to simplify
+        simplification_patterns = [
+            # Input dispatching timed out (details...) -> Input dispatching timed out
+            (r'^(Input dispatching timed out)\s*\(.*\).*$', r'\1'),
+            # Broadcast of Intent (details...) -> Broadcast timeout
+            (r'^Broadcast of Intent.*$', 'Broadcast timeout'),
+            # Service timeout -> Service timeout
+            (r'^Service.*timeout.*$', 'Service timeout'),
+            # ContentProvider timeout -> ContentProvider timeout
+            (r'^ContentProvider.*timeout.*$', 'ContentProvider timeout'),
+        ]
+
+        # Apply simplification patterns
+        for pattern, replacement in simplification_patterns:
+            match = re.match(pattern, full_reason, re.IGNORECASE)
+            if match:
+                if callable(replacement):
+                    return replacement(match)
+                elif '\\1' in replacement:
+                    return re.sub(pattern, replacement, full_reason, flags=re.IGNORECASE)
+                else:
+                    return replacement
+
+        # If no pattern matches, try to extract the part before the first parenthesis
+        paren_match = re.match(r'^([^(]+)', full_reason)
+        if paren_match:
+            simplified = paren_match.group(1).strip()
+            # Remove trailing punctuation
+            simplified = re.sub(r'[.,;:]+$', '', simplified)
+            return simplified
+
+        # If all else fails, return the original but truncated
+        return full_reason[:50] + "..." if len(full_reason) > 50 else full_reason
+
 
 if __name__ == "__main__":
     print("Generating bug report")
     # OUTPUT_PATH = "<Your output path>"
-    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025070814_4842540549"
+    OUTPUT_PATH = "P:/Python/Kea2/output/res_2025072011_5048015228"
 
     report_generator = BugReportGenerator()
     report_path = report_generator.generate_report(OUTPUT_PATH)
