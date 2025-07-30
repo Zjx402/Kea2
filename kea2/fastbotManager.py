@@ -28,6 +28,7 @@ class FastbotManager:
         self._device_output_dir = None
         ADBDevice.setDevice(options.serial, options.transport_id)
         self.dev = ADBDevice()
+        self.android_release = eval(self.dev.getprop("ro.build.version.release"))
 
     def _activateFastbot(self) -> ADBStreamShell_V2:
         """
@@ -219,7 +220,7 @@ class FastbotManager:
         if self.thread.is_running():
             logger.info("Waiting for Fastbot to exit.")
             return self.thread.wait()
-        return self.thread.poll()
+        return self.thread.poll() if self.android_release > 6 else 0
 
     def start(self):
         # kill the fastbot process if runing.
