@@ -1,12 +1,14 @@
+import functools
 import random
 import socket
+import time
 from time import sleep
 import uiautomator2 as u2
 import adbutils
 import types
 import rtree
 import re
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Union, Optional
 from http.client import HTTPResponse
 from lxml import etree
 from .absDriver import AbstractScriptDriver, AbstractStaticChecker, AbstractDriver
@@ -205,6 +207,122 @@ class StaticU2UiObject(u2.UiObject):
     def __getattr__(self, attr):
         return getattr(super(), attr)
 
+"""
+The definition of XpathStaticChecker
+"""
+class StaticXpathUiObject(u2.xpath.XPathSelector):
+    def __init__(self, session, selector):
+        self.session: U2StaticDevice = session
+        self.selector = selector
+
+    @property
+    def exists(self):
+        source = self.session.get_page_source()
+        return len(self.selector.all(source)) > 0
+
+    def __and__(self, value) -> 'StaticXpathUiObjectr':
+        s = u2.xpath.XPathSelector(self.selector)
+        s._next_xpath = u2.xpath.XPathSelector.create(value.selector)
+        s._operator = u2.xpath.Operator.AND
+        s._parent = self.selector._parent
+        self.selector = s
+        return self
+
+    def __or__(self, value) -> 'StaticXpathUiObject':
+        s = u2.xpath.XPathSelector(self.selector)
+        s._next_xpath = u2.xpath.XPathSelector.create(value.selector)
+        s._operator = u2.xpath.Operator.OR
+        s._parent = self.selector._parent
+        self.selector = s
+        return self
+
+    def selector_to_xpath(self, selector: u2.xpath.XPathSelector) -> str:
+        """
+            Convert an XPathSelector to a standard XPath expression.
+
+            Args:
+                selector: The XPathSelector object to convert.
+
+            Returns:
+                A standard XPath expression as a string.
+            """
+
+        def _handle_path(path):
+            if isinstance(path, u2.xpath.XPathSelector):
+                return self.selector_to_xpath(path)
+            elif isinstance(path, u2.xpath.XPath):
+                return str(path)
+            else:
+                return path
+
+        base_xpath = _handle_path(selector._base_xpath)
+        base_xpath = base_xpath.replace('//*', './/node')
+
+        if selector._operator is None:
+            return base_xpath
+        else:
+            print("Unsupported operator: {}".format(selector._operator))
+            return "//error"
+
+    def xpath(self, _xpath: Union[list, tuple, str]) -> 'StaticXpathUiObject':
+        """
+        add xpath to condition list
+        the element should match all conditions
+
+        Deprecated, using a & b instead
+        """
+        if isinstance(_xpath, (list, tuple)):
+            self.selector = functools.reduce(lambda a, b: a & b, _xpath, self)
+        else:
+            self.selector = self.selector & _xpath
+        return self
+
+    def child(self, _xpath: str) -> "StaticXpathUiObject":
+        """
+        add child xpath
+        """
+        if self.selector._operator or not isinstance(self.selector._base_xpath, u2.xpath.XPath):
+            raise u2.xpath.XPathError("can't use child when base is not XPath or operator is set")
+        new = self.selector.copy()
+        new._base_xpath = self.selector._base_xpath.joinpath(_xpath)
+        self.selector = new
+        return self
+
+    def get(self, timeout=None) -> "XMLElement":
+        """
+        Get first matched element
+
+        Args:
+            timeout (float): max seconds to wait
+
+        Returns:
+            XMLElement
+
+        """
+        if not self.exists:
+            return None
+        return self.get_last_match()
+
+    def get_last_match(self) -> "u2.xpath.XMLElement":
+        return self.selector.all(self.selector._last_source)[0]
+
+    def parent_exists(self, xpath: Optional[str] = None):
+        el = self.get()
+        if el is None:
+            return False
+        element = el.parent(xpath) if hasattr(el, 'parent') else None
+        return True if element is not None else False
+
+    def __getattr__(self, key: str):
+        """
+              In IPython console, attr:_ipython_canary_method_should_not_exist_ will be called
+              So here ignore all attr startswith _
+              """
+        if key.startswith("_"):
+            raise AttributeError("Invalid attr", key)
+        if not hasattr(u2.xpath.XMLElement, key):
+            raise AttributeError("Invalid attr", key)
+        return getattr(super(), key)
 
 def _get_bounds(raw_bounds):
     pattern = re.compile(r"\[(-?\d+),(-?\d+)\]\[(-?\d+),(-?\d+)\]")
@@ -299,7 +417,8 @@ class U2StaticDevice(u2.Device):
     def xpath(self) -> u2.xpath.XPathEntry:
         def get_page_source(self):
             # print("[Debug] Using static get_page_source method")
-            return u2.xpath.PageSource.parse(self._d.xml_raw)
+            xml_raw = etree.tostring(self._d.xml, encoding='unicode')
+            return u2.xpath.PageSource.parse(xml_raw)
         xpathEntry = _XPathEntry(self)
         xpathEntry.get_page_source = types.MethodType(
             get_page_source, xpathEntry
@@ -316,10 +435,14 @@ class _XPathEntry(u2.xpath.XPathEntry):
         self.xpath = None
         super().__init__(d)
         
-    def __call__(self, xpath, source = None):
+    # def __call__(self, xpath, source = None):
         # TODO fully support xpath in widget.block.py
-        self.xpath = xpath
-        return super().__call__(xpath, source)
+        # self.xpath = xpath
+        # return super().__call__(xpath, source)
+    def __call__(self, xpath, source=None):
+        ui = StaticXpathUiObject(session=self, selector=u2.xpath.XPathSelector(xpath, source=source))
+        return ui
+
 
 
 class U2StaticChecker(AbstractStaticChecker):

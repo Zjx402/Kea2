@@ -139,6 +139,21 @@ Besides directly locating target elements, you can locate child or sibling eleme
   d(text="Settings").sibling(className="android.widget.ImageView")
   ```
 
+#### XPath Expressions:
+- Basic XPath Expressions:
+  ```python
+    d.xpath('//*[@text="Private FM"]')
+    ```
+
+- Starting with @:
+    ```python
+     d.xpath('@personal-fm') # Equivalent to d.xpath('//*[@resource-id="personal-fm"]').exists
+    ```
+  
+- Child Element Positioning:
+    ```python
+     d.xpath('@android:id/list').child('/android.widget.TextView')
+    ```
 ---
 
 ### Unsupported Methods
@@ -175,6 +190,32 @@ Besides directly locating target elements, you can locate child or sibling eleme
 
 - Regular expression matching parameters:  
   `textMatches`, `classNameMatches`, `descriptionMatches`, `packageNameMatches`, `resourceIdMatches`
+
+#### XPath Expressions:
+- Multiple Condition Positioning
+
+```python
+d.xpath('//android.widget.Button').xpath('//*[@text="Private FM"]')
+```
+
+- Parent Element Positioning
+
+```python
+d.xpath('//*[@text="Private FM"]').parent() # Position to the parent element
+d.xpath('//*[@text="Private FM"]').parent("@android:list") # Position to the parent element that meets the condition
+```
+
+- Logical AND Queries
+
+```python
+(d.xpath("NFC") & d.xpath("@android:id/item"))
+```
+
+- Logical OR Queries
+
+```python
+(d.xpath("NFC") | d.xpath("App") | d.xpath("Content"))
+```
 
 
 Please avoid using these unsupported methods to ensure your blacklist configurations are applied correctly.
