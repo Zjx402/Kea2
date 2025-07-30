@@ -15,7 +15,7 @@ from kea2.bug_report_generator import BugReportGenerator
 from kea2.resultSyncer import ResultSyncer
 from kea2.logWatcher import LogWatcher
 from kea2.utils import TimeStamp, catchException, getProjectRoot, getLogger, timer
-from kea2.u2Driver import StaticU2UiObject
+from kea2.u2Driver import StaticU2UiObject, StaticXpathUiObject
 from kea2.fastbotManager import FastbotManager
 from kea2.adbUtils import ADBDevice
 import uiautomator2 as u2
@@ -640,13 +640,10 @@ class KeaTestRunner(TextTestRunner):
                     _widgets = func(self.options.Driver.getStaticChecker())
                     _widgets = _widgets if isinstance(_widgets, list) else [_widgets]
                     for w in _widgets:
-                        if isinstance(w, StaticU2UiObject):
+                        if isinstance(w, (StaticU2UiObject, StaticXpathUiObject)):
                             xpath = w.selector_to_xpath(w.selector)
                             if xpath != '//error':
                                 blocked_set.add(xpath)
-                        elif isinstance(w, u2.xpath.XPathSelector):
-                            xpath = w._parent.xpath
-                            blocked_set.add(xpath)
                         else:
                             logger.error(f"block widget defined in {func.__name__} Not supported.")
                 except Exception as e:
