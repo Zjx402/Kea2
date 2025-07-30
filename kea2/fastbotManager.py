@@ -3,7 +3,7 @@ from retry.api import retry_call
 from dataclasses import asdict
 import requests
 from time import sleep
-
+from pkg_resources import parse_version
 
 from uiautomator2.core import HTTPResponse, _http_request
 from kea2.adbUtils import ADBDevice, ADBStreamShell_V2
@@ -28,6 +28,7 @@ class FastbotManager:
         self._device_output_dir = None
         ADBDevice.setDevice(options.serial, options.transport_id)
         self.dev = ADBDevice()
+        self.android_release = parse_version(self.dev.getprop("ro.build.version.release"))
 
     def _activateFastbot(self) -> ADBStreamShell_V2:
         """
@@ -219,7 +220,7 @@ class FastbotManager:
         if self.thread.is_running():
             logger.info("Waiting for Fastbot to exit.")
             return self.thread.wait()
-        return self.thread.poll()
+        return self.thread.poll() if self.android_release >= parse_version("7.0") else 0
 
     def start(self):
         # kill the fastbot process if runing.
