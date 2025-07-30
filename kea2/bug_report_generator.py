@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor
 
 from PIL import Image, ImageDraw, ImageFont
 from jinja2 import Environment, FileSystemLoader, select_autoescape, PackageLoader
-from kea2.utils import getLogger
+from kea2.utils import getLogger, catchException
 
 logger = getLogger(__name__)
 
@@ -421,27 +421,24 @@ class BugReportGenerator:
         step_data["Info"] = json.loads(step_data["Info"])
         return step_data
 
+    @catchException("Error when marking screenshot")
     def _mark_screenshot(self, step_data: StepData):
-        try:
-            step_type = step_data["Type"]
-            screenshot_name = step_data["Screenshot"]
-            if not screenshot_name:
-                return
+        step_type = step_data["Type"]
+        screenshot_name = step_data["Screenshot"]
+        if not screenshot_name:
+            return
 
-            if step_type == "Monkey":
-                act = step_data["Info"].get("act")
-                pos = step_data["Info"].get("pos")
-                if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
-                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
+        if step_type == "Monkey":
+            act = step_data["Info"].get("act")
+            pos = step_data["Info"].get("pos")
+            if act in ["CLICK", "LONG_CLICK"] or act.startswith("SCROLL"):
+                self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
 
-            elif step_type == "Script":
-                act = step_data["Info"].get("method")
-                pos = step_data["Info"].get("params")
-                if act in ["click", "setText", "swipe"]:
-                    self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
-
-        except Exception as e:
-            logger.error(f"Error when marking screenshots: {e}")
+        elif step_type == "Script":
+            act = step_data["Info"].get("method")
+            pos = step_data["Info"].get("params")
+            if act in ["click", "setText", "swipe"]:
+                self._mark_screenshot_interaction(step_type, screenshot_name, act, pos)
 
 
     def _mark_screenshot_interaction(self, step_type: str, screenshot_name: str, action_type: str, position: Union[List, Tuple]) -> bool:
@@ -528,65 +525,61 @@ class BugReportGenerator:
         img.save(screenshot_path)
         return True
 
+    @catchException("Error rendering template")
     def _generate_html_report(self, data: ReportData):
         """
         Generate HTML format bug report
         """
-        try:
-            # Format timestamp for display
-            timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Format timestamp for display
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-            # Ensure coverage_trend has data
-            if not data["coverage_trend"]:
-                logger.warning("No coverage trend data")
-                # Use the same field names as in coverage.log file
-                data["coverage_trend"] = [{"stepsCount": 0, "coverage": 0, "testedActivitiesCount": 0}]
+        # Ensure coverage_trend has data
+        if not data["coverage_trend"]:
+            logger.warning("No coverage trend data")
+            # Use the same field names as in coverage.log file
+            data["coverage_trend"] = [{"stepsCount": 0, "coverage": 0, "testedActivitiesCount": 0}]
 
-            # Convert coverage_trend to JSON string, ensuring all data points are included
-            coverage_trend_json = json.dumps(data["coverage_trend"])
-            logger.debug(f"Number of coverage trend data points: {len(data['coverage_trend'])}")
+        # Convert coverage_trend to JSON string, ensuring all data points are included
+        coverage_trend_json = json.dumps(data["coverage_trend"])
+        logger.debug(f"Number of coverage trend data points: {len(data['coverage_trend'])}")
 
-            # Prepare template data
-            template_data = {
-                'timestamp': timestamp,
-                'bugs_found': data["bugs_found"],
-                'total_testing_time': data["total_testing_time"],
-                'executed_events': data["executed_events"],
-                'coverage_percent': round(data["coverage"], 2),
-                'total_activities_count': data["total_activities_count"],
-                'tested_activities_count': data["tested_activities_count"],
-                'tested_activities': data["tested_activities"],
-                'total_activities': data["total_activities"],
-                'all_properties_count': data["all_properties_count"],
-                'executed_properties_count': data["executed_properties_count"],
-                'items_per_page': 10,  # Items to display per page
-                'screenshots': self.screenshots,
-                'property_violations': data["property_violations"],
-                'property_stats': data["property_stats"],
-                'property_error_details': data["property_error_details"],
-                'coverage_data': coverage_trend_json,
-                'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
-                'property_execution_trend': data["property_execution_trend"],
-                'property_execution_data': json.dumps(data["property_execution_trend"]),
-                'activity_count_history': data["activity_count_history"],
-                'crash_events': data["crash_events"],
-                'anr_events': data["anr_events"]
-            }
+        # Prepare template data
+        template_data = {
+            'timestamp': timestamp,
+            'bugs_found': data["bugs_found"],
+            'total_testing_time': data["total_testing_time"],
+            'executed_events': data["executed_events"],
+            'coverage_percent': round(data["coverage"], 2),
+            'total_activities_count': data["total_activities_count"],
+            'tested_activities_count': data["tested_activities_count"],
+            'tested_activities': data["tested_activities"],
+            'total_activities': data["total_activities"],
+            'all_properties_count': data["all_properties_count"],
+            'executed_properties_count': data["executed_properties_count"],
+            'items_per_page': 10,  # Items to display per page
+            'screenshots': self.screenshots,
+            'property_violations': data["property_violations"],
+            'property_stats': data["property_stats"],
+            'property_error_details': data["property_error_details"],
+            'coverage_data': coverage_trend_json,
+            'take_screenshots': self.take_screenshots,  # Pass screenshot setting to template
+            'property_execution_trend': data["property_execution_trend"],
+            'property_execution_data': json.dumps(data["property_execution_trend"]),
+            'activity_count_history': data["activity_count_history"],
+            'crash_events': data["crash_events"],
+            'anr_events': data["anr_events"]
+        }
 
-            # Check if template exists, if not create it
-            template_path = Path(__file__).parent / "templates" / "bug_report_template.html"
-            if not template_path.exists():
-                logger.warning("Template file does not exist, creating default template...")
+        # Check if template exists, if not create it
+        template_path = Path(__file__).parent / "templates" / "bug_report_template.html"
+        if not template_path.exists():
+            logger.warning("Template file does not exist, creating default template...")
 
-            # Use Jinja2 to render template
-            template = self.jinja_env.get_template("bug_report_template.html")
-            html_content = template.render(**template_data)
+        # Use Jinja2 to render template
+        template = self.jinja_env.get_template("bug_report_template.html")
+        html_content = template.render(**template_data)
 
-            return html_content
-
-        except Exception as e:
-            logger.error(f"Error rendering template: {e}")
-            raise
+        return html_content
 
     def _add_screenshot_info(self, step_data: StepData, step_index: int, data: Dict):
         """
