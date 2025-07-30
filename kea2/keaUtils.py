@@ -4,7 +4,7 @@ import os
 from pathlib import Path
 import traceback
 import time
-from typing import Callable, Any, Deque, Dict, List, Literal, NewType, TypedDict, Union
+from typing import Callable, Any, Deque, Dict, List, Literal, NewType, Union
 from unittest import TextTestRunner, registerResult, TestSuite, TestCase, TextTestResult
 import random
 import warnings
@@ -14,7 +14,7 @@ from functools import wraps
 from kea2.bug_report_generator import BugReportGenerator
 from kea2.resultSyncer import ResultSyncer
 from kea2.logWatcher import LogWatcher
-from kea2.utils import TimeStamp, getProjectRoot, getLogger
+from kea2.utils import TimeStamp, catchException, getProjectRoot, getLogger, timer
 from kea2.u2Driver import StaticU2UiObject, StaticXpathUiObject
 from kea2.fastbotManager import FastbotManager
 from kea2.adbUtils import ADBDevice
@@ -670,6 +670,12 @@ class KeaTestRunner(TextTestRunner):
 
         return result
 
+    @timer(r"Generating bug report cost %cost_time seconds.")
+    @catchException("Error when generating bug report")
+    def _generate_bug_report(self):
+        logger.info("Generating bug report")
+        report_generator = BugReportGenerator(self.options.output_dir)
+        report_generator.generate_report()
 
     def __del__(self):
         """tearDown method. Cleanup the env.
@@ -677,16 +683,4 @@ class KeaTestRunner(TextTestRunner):
         if self.options.Driver:
             self.options.Driver.tearDown()
 
-        try:
-            start_time = time.time()
-            logger.info("Generating bug report")
-            report_generator = BugReportGenerator(self.options.output_dir)
-            report_generator.generate_report()
-
-            end_time = time.time()
-            generation_time = end_time - start_time
-
-            logger.info(f"Bug report generation completed in {generation_time:.2f} seconds")
-            
-        except Exception as e:
-            logger.error(f"Error generating bug report: {e}", flush=True)
+        self._generate_bug_report()

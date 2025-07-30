@@ -1,6 +1,7 @@
 import logging
 import os
 from pathlib import Path
+import traceback
 from typing import TYPE_CHECKING
 
 import time
@@ -60,12 +61,49 @@ def getProjectRoot():
     return cur_dir
 
 
-def timer(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start_time = time.time()
-        result = func(*args, **kwargs)
-        end_time = time.time()
-        print(f"Function '{func.__name__}' executed in {(end_time - start_time):.4f} seconds.")
-        return result
-    return wrapper
+def timer(log_info: str=None):
+    """ ### Decorator to measure the execution time of a function.
+
+    This decorator can be used to wrap functions where you want to log the time taken for execution
+    
+    ### Usage:
+        - @timer("Function execution took %cost_time seconds.")
+        - @timer()  # If no log_info is provided, it will print the function name and execution time.
+    
+    `%cost_time` will be replaced with the actual time taken for execution.
+    """
+    def accept(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            start_time = time.time()
+            result = func(*args, **kwargs)
+            end_time = time.time()
+            if log_info:
+                print(log_info.replace(r"%cost_time", f"{end_time - start_time:.4f}"), flush=True)
+            else:
+                print(f"Function '{func.__name__}' executed in {(end_time - start_time):.4f} seconds.", flush=True)
+            return result
+        return wrapper
+    return accept
+
+
+def catchException(log_info: str):
+    """ ### Decorator to catch exceptions and print log info.
+
+    This decorator can be used to wrap functions that may raise exceptions,
+    allowing you to log a message when the exception is raised.
+
+    ### Usage:
+        - @catchException("An error occurred in the function ****.")
+    """
+    def accept(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            try:
+                return func(*args, **kwargs)
+            except Exception as e:
+                print(log_info, flush=True)
+                tb = traceback.format_exception(type(e), e, e.__traceback__.tb_next)
+                print(''.join(tb), end='', flush=True)
+        return wrapper
+    return accept
