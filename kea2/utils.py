@@ -27,6 +27,9 @@ def getLogger(name: str) -> logging.Logger:
     return logger
 
 
+logger = getLogger(__name__)
+
+
 def singleton(cls):
     _instance = {}
 
@@ -79,9 +82,9 @@ def timer(log_info: str=None):
             result = func(*args, **kwargs)
             end_time = time.time()
             if log_info:
-                print(log_info.replace(r"%cost_time", f"{end_time - start_time:.4f}"), flush=True)
+                logger.info(log_info.replace(r"%cost_time", f"{end_time - start_time:.4f}"))
             else:
-                print(f"Function '{func.__name__}' executed in {(end_time - start_time):.4f} seconds.", flush=True)
+                logger.info(f"Function '{func.__name__}' executed in {(end_time - start_time):.4f} seconds.")
             return result
         return wrapper
     return accept
@@ -102,7 +105,7 @@ def catchException(log_info: str):
             try:
                 return func(*args, **kwargs)
             except Exception as e:
-                print(log_info, flush=True)
+                logger.info(log_info)
                 tb = traceback.format_exception(type(e), e, e.__traceback__.tb_next)
                 print(''.join(tb), end='', flush=True)
         return wrapper
