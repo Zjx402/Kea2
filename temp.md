@@ -15,12 +15,12 @@ emulator -avd Android12 -port 5554 &
 
 <div align="center">
     <div>
-    <img src="docs/stage1.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    <img src="docs/images/stage1.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
 <div align="center">
-    <img src="docs/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    <img src="docs/images/stage2.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
 Kea2 can support you to test your app by customizing testing scenarios (e.g., testing specific app functionalities, executing specific event traces, entering specifc UI pages, reaching specific app, blacklisting specific UI widgets) with the full capability and flexibility powered by `python` language and [uiautomator2](https://github.com/openatx/uiautomator2);
@@ -28,7 +28,7 @@ Kea2 can support you to test your app by customizing testing scenarios (e.g., te
 
 
 <div align="center">
-    <img src="docs/stage3.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    <img src="docs/images/stage3.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
 </div>
 
 

@@ -26,7 +26,7 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
-    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    <img src="docs/images/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
@@ -179,7 +179,7 @@ In Feature 3, a script is composed of three elements:
 In a social media app, message sending is a common feature. On the message sending page, the `send` button should always appears when the input box is not empty (i.e., has some message).
 
 <div align="center">
-    <img src="docs/socialAppBug.png" style="border-radius: 14px; width:30%; height:40%;"/>
+    <img src="docs/images/socialAppBug.png" style="border-radius: 14px; width:30%; height:40%;"/>
 </div>
 
 <div align="center">
