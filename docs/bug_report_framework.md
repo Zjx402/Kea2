@@ -15,10 +15,10 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 
 ## 报告类型
 
-### 1. 单个测试报告 (bug_report_template.html)
+### 1. 单个测试报告
 用于展示单次测试运行的详细结果
 
-### 2. 合并测试报告 (merged_bug_report_template.html)
+### 2. 合并测试报告
 用于展示多个测试运行结果的合并分析
 
 ---
