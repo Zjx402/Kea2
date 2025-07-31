@@ -28,7 +28,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 1. 页面头部 (Header)
 **样式**：
 
-![img_2.png](report_header.png)
+![img_2.png](images/report_header.png)
 
 **功能**：
 - 显示报告标题和测试时间
@@ -37,7 +37,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 2. 测试摘要 (Test Summary)
 **样式**：
 
-![img.png](report_summary.png)
+![img.png](images/report_summary.png)
 
 **位置**：页面顶部的统计卡片区域
 
@@ -52,7 +52,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 3. 覆盖率趋势图 (Coverage Trend)
 **样式**：
 
-![img.png](report_coverage_trend.png)
+![img.png](images/report_coverage_trend.png)
 
 **功能**：
 - 显示测试过程中活动覆盖率的变化趋势
@@ -62,7 +62,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 4. 性质执行趋势图 (Property Execution Trend)
 **样式**：
 
-![img.png](report_property_trend.png)
+![img.png](images/report_property_trend.png)
 
 **功能**：
 - 展示性质执行数量随时间的变化
@@ -72,7 +72,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 5. 活动覆盖率 (Activities Coverage)
 **样式**：
 
-![img.png](report_coverage.png)
+![img.png](images/report_coverage.png)
 
 **子模块**：
 
@@ -92,7 +92,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 
 **样式**：
 
-![img.png](report_screenshots.png)
+![img.png](images/report_screenshots.png)
 
 **功能**：
 - 📸 展示测试过程中的关键截图
@@ -102,7 +102,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 7. 崩溃分析 (Crash Analysis)
 **样式**：
 
-![img.png](report_crash.png)
+![img.png](images/report_crash.png)
 
 **包含内容**：
 
@@ -119,7 +119,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 8. 性质违反情况 (Property Violations)
 **样式**：
 
-![img.png](report_violations.png)
+![img.png](images/report_violations.png)
 
 **条件显示**：仅当有截图时显示
 
@@ -131,7 +131,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 9. 性质检查统计 (Property Checking Statistics)
 **样式**：
 
-![img.png](report_statistics.png)
+![img.png](images/report_statistics.png)
 
 **核心功能**：
 
@@ -175,7 +175,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 
 **样式**：
 
-![img.png](merged_summary.png)
+![img.png](images/merged_summary.png)
 
 #### 1.1 合并报告信息 (Merged Report Info)
 
@@ -198,7 +198,7 @@ Kea2 Test Report 是一个功能强大的Android应用测试报告生成系统�
 ### 2. 性质源映射 (Property Source Mapping) ⭐
 **样式**：
 
-![img.png](merged_mapping.png)
+![img.png](images/merged_mapping.png)
 
 **核心功能**：
 - 🗺️ **源目录映射**: 显示哪些测试目录包含出现fail/error的性质
