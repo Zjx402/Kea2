@@ -690,9 +690,7 @@ class BugReportGenerator:
                     data["property_violations"].append({
                         "index": index,
                         "property_name": property_name,
-                        "precondition_page": start_step,
-                        "interaction_pages": [start_step, end_step],
-                        "postcondition_page": end_step
+                        "interaction_pages": [start_step, end_step]
                     })
                     index += 1
 

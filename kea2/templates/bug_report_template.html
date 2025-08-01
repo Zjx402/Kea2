@@ -553,6 +553,25 @@
             transform: scale(1.2);
             text-shadow: 0 0 5px rgba(0,0,0,0.6);
         }
+
+        /* Specific column widths for property violations table */
+        .table-violations th:nth-child(1), .table-violations td:nth-child(1) { /* Index */
+            width: 10%;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .table-violations th:nth-child(2), .table-violations td:nth-child(2) { /* Property Name */
+            width: 40%;
+            min-width: 200px;
+            text-align: left;
+        }
+
+        .table-violations th:nth-child(3), .table-violations td:nth-child(3) { /* Interaction Scenario Pages */
+            width: 50%;
+            min-width: 150px;
+            text-align: center;
+        }
         
         @media (max-width: 768px) {
             .container {
@@ -1518,6 +1537,7 @@
 
         <!-- Property Violations List -->
         {% if take_screenshots %}
+        {% if property_violations %}
         <div class="section-block">
             <h2 class="section-title">Property Violations</h2>
             <div class="table-responsive">
@@ -1526,9 +1546,7 @@
                         <tr>
                             <th>Index</th>
                             <th>Property Name</th>
-                            <th>Precondition Page</th>
                             <th>Interaction Scenario Pages</th>
-                            <th>Postcondition Page</th>
                         </tr>
                     </thead>
                     <tbody id="property-violations-container">
@@ -1536,14 +1554,12 @@
                         <tr class="property-violation-row" data-page="1">
                             <td>{{ violation.index }}</td>
                             <td><span class="badge bg-light text-dark badge-custom">{{ violation.property_name }}</span></td>
-                            <td><a href="#{{ violation.precondition_page }}" class="link-button">{{ violation.precondition_page }}</a></td>
                             <td><a href="#{{ violation.interaction_pages[0] }}" class="link-button">{{ violation.interaction_pages[0] }} ~ {{ violation.interaction_pages[1] }}</a></td>
-                            <td><a href="#{{ violation.postcondition_page }}" class="link-button">{{ violation.postcondition_page }}</a></td>
                         </tr>
                         {% endfor %}
                     </tbody>
                 </table>
-                
+
                 <!-- Pagination for Property Violations -->
                 <div class="d-flex justify-content-between align-items-center mt-3">
                     <div class="d-flex align-items-center">
@@ -1564,6 +1580,14 @@
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="section-block">
+            <h2 class="section-title">Property Violations</h2>
+            <div class="alert alert-info text-center">
+                <i class="bi bi-info-circle"></i> No property violations detected in this test session.
+            </div>
+        </div>
+        {% endif %}
         {% endif %}
 
         <!-- Property Checking Statistics -->
