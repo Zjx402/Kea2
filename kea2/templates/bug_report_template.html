@@ -839,6 +839,75 @@
             border-color: #d1d5db;
         }
 
+        /* Property search container with outline */
+        .property-search-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #f8f9fa;
+            transition: all 0.2s ease;
+            overflow: hidden;
+        }
+
+        .property-search-container:hover {
+            border-color: #9ca3af;
+        }
+
+        .property-search-container:focus-within {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.1);
+            background-color: #ffffff;
+        }
+
+        /* Simple search input styling for Property Statistics */
+        .property-stats-search-simple {
+            border: none !important;
+            box-shadow: none !important;
+            background-color: transparent !important;
+            border-radius: 0 !important;
+            padding: 8px 12px !important;
+            font-size: 14px;
+            flex: 1;
+            outline: none;
+        }
+
+        .property-stats-search-simple:focus {
+            background-color: transparent !important;
+            box-shadow: none !important;
+            border: none !important;
+            outline: none;
+        }
+
+        .property-stats-search-simple::placeholder {
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* Search icon button */
+        .property-search-icon-btn {
+            background: none;
+            border: none;
+            padding: 8px 12px;
+            color: #6b7280;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: color 0.2s ease;
+            border-left: 1px solid #e5e7eb;
+        }
+
+        .property-search-icon-btn:hover {
+            color: #3b82f6;
+            background-color: rgba(59, 130, 246, 0.05);
+        }
+
+        .property-search-icon-btn:active {
+            color: #1d4ed8;
+        }
+
         /* Modern Activity Item Styling */
         .activity-item {
             background: #ffffff;
@@ -1595,29 +1664,23 @@
             <h2 class="section-title">Property Checking Statistics</h2>
             
             <!-- Search Controls for Property Statistics -->
-            <div class="search-controls-modern mb-4">
+            <div class="mb-4">
                 <div class="d-flex align-items-center">
-                    <div class="search-icon-wrapper me-3">
-                        <i class="bi bi-search"></i>
-                    </div>
-                    <div class="flex-grow-1">
-                        <div class="input-group">
-                            <input type="text" class="form-control property-search-input" 
-                                   id="property-stats-search" 
-                                   placeholder="Search properties by name..." 
+                    <div style="width: 33%;">
+                        <div class="property-search-container">
+                            <input type="text" class="form-control property-search-input property-stats-search-simple"
+                                   id="property-stats-search"
+                                   placeholder="Search properties by name..."
                                    data-target="property-stats-container"
                                    data-item-class="property-stat-row"
                                    data-pagination="stats-pagination"
                                    data-page-size="stats-page-size">
-                            <button class="btn btn-primary search-btn" type="button" 
-                                    data-target="property-stats-search">
+                            <button class="property-search-icon-btn" type="button" id="property-search-btn">
                                 <i class="bi bi-search"></i>
                             </button>
-                            <button class="btn btn-outline-secondary search-clear-btn" type="button" 
-                                    data-target="property-stats-search">
-                                <i class="bi bi-x-lg"></i>
-                            </button>
                         </div>
+                    </div>
+                    <div class="ms-3">
                         <small class="text-muted search-results-count" id="property-search-results"></small>
                     </div>
                 </div>
@@ -2946,12 +3009,11 @@
         // Property statistics searching function
         function initPropertySearching() {
             const searchInput = document.getElementById('property-stats-search');
-            const searchButton = document.querySelector('.search-btn[data-target="property-stats-search"]');
-            const clearButton = document.querySelector('[data-target="property-stats-search"].search-clear-btn');
-            
+            const searchButton = document.getElementById('property-search-btn');
+
             if (!searchInput) return;
-            
-            // Search on Enter key
+
+            // Search on Enter key and clear on Escape
             searchInput.addEventListener('keydown', function(e) {
                 if (e.key === 'Enter') {
                     e.preventDefault();
@@ -2960,18 +3022,11 @@
                     clearPropertySearch(this);
                 }
             });
-            
+
             // Search button functionality
             if (searchButton) {
                 searchButton.addEventListener('click', function() {
                     performPropertySearch(searchInput);
-                });
-            }
-            
-            // Clear button functionality
-            if (clearButton) {
-                clearButton.addEventListener('click', function() {
-                    clearPropertySearch(searchInput);
                 });
             }
             
