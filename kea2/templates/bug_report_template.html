@@ -908,6 +908,48 @@
             color: #1d4ed8;
         }
 
+        /* Activities Coverage table styling */
+        .table-activities thead {
+            background-color: #007bff !important;
+            color: white;
+        }
+
+        .table-activities .sort-icon {
+            color: #ffffff !important;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+
+        .table-activities .sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.6);
+        }
+
+        .table-activities .activities-sort-icon {
+            color: #ffffff !important;
+            text-shadow: 0 0 3px rgba(0,0,0,0.4);
+        }
+
+        .table-activities .activities-sort-icon:hover {
+            opacity: 1;
+            transform: scale(1.2);
+            text-shadow: 0 0 5px rgba(0,0,0,0.6);
+        }
+
+        /* Column widths for activities table */
+        .table-activities th:nth-child(1), .table-activities td:nth-child(1) { /* Activity Name */
+            width: 70%;
+            min-width: 300px;
+            text-align: left;
+            padding-left: 180px;
+        }
+
+        .table-activities th:nth-child(2), .table-activities td:nth-child(2) { /* Visit Count */
+            width: 30%;
+            min-width: 150px;
+            text-align: center;
+        }
+
         /* Modern Activity Item Styling */
         .activity-item {
             background: #ffffff;
@@ -1197,254 +1239,97 @@
             </div>
         </div>
 
-        <!-- Tested Activities List -->
+        <!-- Activities Coverage -->
         <div class="section-block">
             <h2 class="section-title">Activities Coverage</h2>
-            
-            <div class="card">
-                <div class="card-header bg-primary text-white">
-                    <div class="d-flex justify-content-between align-items-center">
-                        <span><i class="bi bi-app"></i> Activities Coverage Overview</span>
-                        <span class="badge bg-light text-dark" style="font-size: 1.1em; font-weight: 600;">Coverage: {{ coverage_percent }}%</span>
+
+            <!-- Search Controls for Activities -->
+            <div class="mb-4">
+                <div class="d-flex align-items-center">
+                    <div style="width: 33%;">
+                        <div class="property-search-container">
+                            <input type="text" class="form-control property-search-input property-stats-search-simple"
+                                   id="activities-search"
+                                   placeholder="Search activities by name..."
+                                   data-target="activities-container"
+                                   data-item-class="activity-row"
+                                   data-pagination="activities-pagination"
+                                   data-page-size="activities-page-size">
+                            <button class="property-search-icon-btn" type="button" id="activities-search-btn">
+                                <i class="bi bi-search"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="ms-3">
+                        <small class="text-muted search-results-count" id="activities-search-results"></small>
                     </div>
                 </div>
-                <div class="card-body">
-                    <div class="alert alert-info mb-3" style="border-left: 4px solid #17a2b8; background-color: #f8f9fa;">
-                        <small class="text-muted">
-                            <i class="bi bi-info-circle me-1"></i>
-                            <strong>Visit Count Explanation:</strong>
-                            The number after the <i class="bi bi-eye"></i> icon indicates how many times each Activity was visited during testing.
-                        </small>
-                    </div>
-                    
-                    <!-- Navigation Tabs -->
-                    <ul class="nav nav-tabs mb-3" id="activitiesTabs" role="tablist">
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link active" id="tested-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#tested-activities" type="button" role="tab" 
-                                    aria-controls="tested-activities" aria-selected="true">
-                                <i class="bi bi-check-circle"></i> Tested Activities ({{ tested_activities|length }})
-                            </button>
-                        </li>
-                        <li class="nav-item" role="presentation">
-                            <button class="nav-link" id="all-tab" data-bs-toggle="tab" 
-                                    data-bs-target="#all-activities" type="button" role="tab" 
-                                    aria-controls="all-activities" aria-selected="false">
-                                <i class="bi bi-app"></i> All Activities ({{ total_activities|length }})
-                            </button>
-                        </li>
-                    </ul>
-                    
-                    <!-- Tab Content -->
-                    <div class="tab-content" id="activitiesTabContent">
-                        <!-- Tested Activities Tab -->
-                        <div class="tab-pane fade show active" id="tested-activities" role="tabpanel" 
-                             aria-labelledby="tested-tab">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0 text-success">
-                                    <i class="bi bi-check-circle-fill"></i> Tested Activities
-                                </h5>
-                                <span class="badge bg-success" style="font-size: 1.0em; font-weight: 500;">{{ tested_activities|length }} / {{ total_activities_count }}</span>
-                            </div>
-                            
-                            <!-- Combined Search and Sort Controls for Tested Activities -->
-                            <div class="search-sort-controls-modern mb-4">
-                                <div class="d-flex align-items-center gap-4">
-                                    <!-- Search Section -->
-                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
-                                        <div class="search-icon-wrapper me-3">
-                                            <i class="bi bi-search"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control activity-search-input"
-                                                       id="tested-activity-search"
-                                                       placeholder="Search activities..."
-                                                       data-target="tested-activities-container"
-                                                       data-item-class="tested-activity"
-                                                       data-pagination="tested-pagination"
-                                                       data-page-size="tested-page-size">
-                                                <button class="btn search-btn" type="button"
-                                                        data-target="tested-activity-search">
-                                                    <i class="bi bi-search"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
-                                                        data-target="tested-activity-search">
-                                                    <i class="bi bi-x-lg"></i>
-                                                </button>
-                                            </div>
-                                            <small class="text-muted search-results-count" id="tested-search-results"></small>
-                                        </div>
-                                    </div>
+            </div>
 
-                                    <!-- Sort Section -->
-                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
-                                        <div class="sort-label d-flex align-items-center gap-2">
-                                            <i class="bi bi-funnel-fill text-muted"></i>
-                                            <span class="text-muted fw-medium">Sort:</span>
-                                        </div>
-                                        <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
-                                            <div class="btn-content">
-                                                <i class="bi bi-eye btn-icon"></i>
-                                                <span class="btn-text">Visit Count</span>
-                                                <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="activities-container">
-                                <div class="activity-list">
-                                    {% if tested_activities|length > 0 %}
-                                        <div id="tested-activities-container">
-                                            {% for activity in tested_activities %}
-                                                <div class="activity-item tested-activity" data-page="1">
-                                                    <div class="activity-content">
-                                                    <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                        <span class="activity-name">{{ activity }}</span>
-                                                    </div>
-                                                    {% if activity in activity_count_history %}
-                                                        <span class="badge bg-info text-white traversal-badge">
-                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
-                                                        </span>
-                                                    {% endif %}
-                                                </div>
-                                            {% endfor %}
-                                        </div>
+            <div class="table-responsive">
+                <table class="table table-custom table-activities">
+                    <thead>
+                        <tr>
+                            <th>Activity Name</th>
+                            <th>Visit Count <i class="bi bi-arrow-down-up text-muted sort-icon activities-sort-icon" id="visit-count-sort" data-column="visit-count" data-order="none" style="cursor: pointer;"></i></th>
+                        </tr>
+                    </thead>
+                    <tbody id="activities-container">
+                        {% if total_activities|length > 0 %}
+                            {% for activity in total_activities %}
+                            <tr class="activity-row" data-page="1"
+                                data-activity-name="{{ activity }}"
+                                data-visit-count="{{ activity_count_history[activity] if activity in activity_count_history else 0 }}">
+                                <td>
+                                    {% if activity in tested_activities %}
+                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
                                     {% else %}
-                                        <div class="alert alert-warning">
-                                            No tested activities detected
-                                        </div>
+                                        <i class="bi bi-dash-circle text-secondary me-2"></i>
                                     {% endif %}
-                                </div>
-                                <!-- Pagination for Tested Activities -->
-                                <div class="pagination-container d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <label for="tested-page-size" class="form-label me-2 mb-0">Show:</label>
-                                        <select class="form-select form-select-sm" id="tested-page-size" style="width: auto;">
-                                            <option value="5">5</option>
-                                            <option value="10" selected>10</option>
-                                            <option value="20">20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                        </select>
+                                    <span class="activity-name">{{ activity }}</span>
+                                </td>
+                                <td>
+                                    {% if activity in activity_count_history %}
+                                        <span class="badge bg-info text-white">
+                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-secondary text-white">
+                                            <i class="bi bi-dash"></i> 0 times
+                                        </span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        {% else %}
+                            <tr>
+                                <td colspan="2" class="text-center">
+                                    <div class="alert alert-warning mb-0">
+                                        No activities information available
                                     </div>
-                                    <nav aria-label="Tested Activities Pagination">
-                                        <ul class="pagination pagination-sm mb-0" id="tested-pagination">
-                                            <!-- Pagination will be generated by JavaScript -->
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- All Activities Tab -->
-                        <div class="tab-pane fade" id="all-activities" role="tabpanel" 
-                             aria-labelledby="all-tab">
-                            <div class="d-flex justify-content-between align-items-center mb-3">
-                                <h5 class="mb-0 text-primary">
-                                    <i class="bi bi-app"></i> All Activities Overview
-                                </h5>
-                                <span class="badge bg-primary" style="font-size: 1.0em; font-weight: 500;">Total: {{ total_activities|length }}</span>
-                            </div>
-                            
-                            <!-- Combined Search and Sort Controls for All Activities -->
-                            <div class="search-sort-controls-modern mb-4">
-                                <div class="d-flex align-items-center gap-4">
-                                    <!-- Search Section -->
-                                    <div class="search-section d-flex align-items-center" style="width: 600px; flex-shrink: 0;">
-                                        <div class="search-icon-wrapper me-3">
-                                            <i class="bi bi-search"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <div class="input-group">
-                                                <input type="text" class="form-control activity-search-input"
-                                                       id="all-activity-search"
-                                                       placeholder="Search activities..."
-                                                       data-target="all-activities-container"
-                                                       data-item-class="all-activity"
-                                                       data-pagination="all-pagination"
-                                                       data-page-size="all-page-size">
-                                                <button class="btn search-btn" type="button"
-                                                        data-target="all-activity-search">
-                                                    <i class="bi bi-search"></i>
-                                                </button>
-                                                <button class="btn btn-outline-secondary search-clear-btn" type="button"
-                                                        data-target="all-activity-search">
-                                                    <i class="bi bi-x-lg"></i>
-                                                </button>
-                                            </div>
-                                            <small class="text-muted search-results-count" id="all-search-results"></small>
-                                        </div>
-                                    </div>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </tbody>
+                </table>
 
-                                    <!-- Sort Section -->
-                                    <div class="sort-section d-flex align-items-center gap-3" style="margin-left: auto;">
-                                        <div class="sort-label d-flex align-items-center gap-2">
-                                            <i class="bi bi-funnel-fill text-muted"></i>
-                                            <span class="text-muted fw-medium">Sort:</span>
-                                        </div>
-                                        <button type="button" class="btn-sort-modern activity-sort-btn" data-sort="traversal" data-order="desc">
-                                            <div class="btn-content">
-                                                <i class="bi bi-eye btn-icon"></i>
-                                                <span class="btn-text">Visit Count</span>
-                                                <i class="bi bi-arrow-down sort-icon btn-arrow"></i>
-                                            </div>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="activities-container">
-                                <div class="activity-list">
-                                    {% if total_activities|length > 0 %}
-                                        <div id="all-activities-container">
-                                            {% for activity in total_activities %}
-                                                <div class="activity-item all-activity" data-page="1">
-                                                    <div class="activity-content">
-                                                    {% if activity in tested_activities %}
-                                                        <i class="bi bi-check-circle-fill text-success me-2"></i>
-                                                    {% else %}
-                                                        <i class="bi bi-dash-circle text-secondary me-2"></i>
-                                                    {% endif %}
-                                                        <span class="activity-name">{{ activity }}</span>
-                                                    </div>
-                                                    {% if activity in activity_count_history %}
-                                                        <span class="badge bg-info text-white traversal-badge">
-                                                            <i class="bi bi-eye"></i> {{ activity_count_history[activity] }} times
-                                                        </span>
-                                                    {% endif %}
-                                                </div>
-                                            {% endfor %}
-                                        </div>
-                                    {% else %}
-                                        <div class="alert alert-warning">
-                                            No activities information available
-                                        </div>
-                                    {% endif %}
-                                </div>
-                                <!-- Pagination for All Activities -->
-                                <div class="pagination-container d-flex justify-content-between align-items-center">
-                                    <div class="d-flex align-items-center">
-                                        <label for="all-page-size" class="form-label me-2 mb-0">Show:</label>
-                                        <select class="form-select form-select-sm" id="all-page-size" style="width: auto;">
-                                            <option value="5">5</option>
-                                            <option value="10" selected>10</option>
-                                            <option value="20">20</option>
-                                            <option value="50">50</option>
-                                            <option value="100">100</option>
-                                        </select>
-                                    </div>
-                                    <nav aria-label="All Activities Pagination">
-                                        <ul class="pagination pagination-sm mb-0" id="all-pagination">
-                                            <!-- Pagination will be generated by JavaScript -->
-                                        </ul>
-                                    </nav>
-                                </div>
-                            </div>
-                        </div>
+                <!-- Pagination for Activities -->
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                    <div class="d-flex align-items-center">
+                        <label for="activities-page-size" class="form-label me-2 mb-0">Show:</label>
+                        <select class="form-select form-select-sm" id="activities-page-size" style="width: auto;">
+                            <option value="5">5</option>
+                            <option value="10" selected>10</option>
+                            <option value="20">20</option>
+                            <option value="50">50</option>
+                            <option value="100">100</option>
+                        </select>
                     </div>
+                    <nav aria-label="Activities Pagination">
+                        <ul class="pagination pagination-sm mb-0" id="activities-pagination">
+                            <!-- Pagination will be generated by JavaScript -->
+                        </ul>
+                    </nav>
                 </div>
             </div>
         </div>
@@ -2184,16 +2069,18 @@
             // Initialize crash events functionality
             initCrashAnalysis();
             
-            // Initialize pagination for Activities lists
-            initPagination('tested-activities-container', 'tested-activity', 'tested-pagination', 'tested-page-size');
-            initPagination('all-activities-container', 'all-activity', 'all-pagination', 'all-page-size');
-            
+            // Initialize pagination for Activities table
+            initPagination('activities-container', 'activity-row', 'activities-pagination', 'activities-page-size');
+
             // Initialize activity sorting
-            initActivitySorting();
-            
+            initActivitiesSorting();
+
             // Initialize activity searching
-            initActivitySearching();
-            
+            initActivitiesSearching();
+
+            // Initialize activities page size selector
+            initActivitiesPageSize();
+
             // Initialize property statistics searching
             initPropertySearching();
             
@@ -2275,16 +2162,17 @@
                 }
             }
             
-            // Simplified sorting function for Fails and Errors columns
+            // Simplified sorting function for Fails and Errors columns (Property Checking Statistics only)
             function initSorting() {
-                const sortIcons = document.querySelectorAll('.sort-icon');
-                
+                // Only select sort icons that are NOT activities sort icons
+                const sortIcons = document.querySelectorAll('.sort-icon:not(.activities-sort-icon)');
+
                 sortIcons.forEach(function(icon) {
                     icon.addEventListener('click', function() {
                         const column = this.dataset.column;
                         const currentOrder = this.dataset.order;
-                        
-                        // Reset all other sort icons
+
+                        // Reset all other property sort icons (not activities)
                         sortIcons.forEach(function(otherIcon) {
                             if (otherIcon !== icon) {
                                 otherIcon.dataset.order = 'none';
@@ -2292,7 +2180,7 @@
                                 otherIcon.style.color = '#6c757d';
                             }
                         });
-                        
+
                         // Toggle current sort order
                         let newOrder;
                         if (currentOrder === 'none' || currentOrder === 'desc') {
@@ -2304,7 +2192,7 @@
                             this.className = 'bi bi-arrow-down sort-icon active desc';
                             this.style.color = '#dc3545';
                         }
-                        
+
                         this.dataset.order = newOrder;
                         sortTable(column, newOrder);
                     });
@@ -3242,6 +3130,360 @@
             // Always call goToPage to ensure items are displayed correctly, even if no pagination is shown
             const currentItemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
             goToPage(1, containerId, itemClass, currentItemsPerPage, paginationId);
+        }
+
+        // Activities table searching function
+        function initActivitiesSearching() {
+            const searchInput = document.getElementById('activities-search');
+            const searchButton = document.getElementById('activities-search-btn');
+
+            if (!searchInput) return;
+
+            // Search on Enter key and clear on Escape
+            searchInput.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    performActivitiesSearch(this);
+                } else if (e.key === 'Escape') {
+                    clearActivitiesSearch(this);
+                }
+            });
+
+            // Search button functionality
+            if (searchButton) {
+                searchButton.addEventListener('click', function() {
+                    performActivitiesSearch(searchInput);
+                });
+            }
+
+            function performActivitiesSearch(searchInput) {
+                const searchTerm = searchInput.value.toLowerCase().trim();
+                const container = document.getElementById('activities-container');
+                const rows = container.querySelectorAll('.activity-row');
+                const resultsCount = document.getElementById('activities-search-results');
+
+                let visibleCount = 0;
+
+                rows.forEach(function(row) {
+                    const activityName = row.querySelector('.activity-name').textContent.toLowerCase();
+
+                    // If no search term, show all rows
+                    if (!searchTerm) {
+                        row.removeAttribute('data-search-visible');
+                        visibleCount++;
+                    } else {
+                        const matches = activityName.includes(searchTerm);
+                        if (matches) {
+                            row.setAttribute('data-search-visible', 'true');
+                            visibleCount++;
+                        } else {
+                            row.setAttribute('data-search-visible', 'false');
+                        }
+                    }
+                });
+
+                console.log('Search performed:', {searchTerm, visibleCount, totalRows: rows.length});
+
+                // Update results count
+                if (resultsCount) {
+                    if (searchTerm) {
+                        resultsCount.textContent = `Found ${visibleCount} of ${rows.length} activities`;
+                    } else {
+                        resultsCount.textContent = '';
+                    }
+                }
+
+                // Immediately show/hide rows based on search before pagination update
+                rows.forEach(function(row) {
+                    const searchVisible = row.getAttribute('data-search-visible');
+                    if (searchVisible === null || searchVisible === 'true') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                console.log('Rows visibility updated, calling pagination update...');
+
+                // Update pagination after search
+                updateActivitiesPagination();
+            }
+
+            function clearActivitiesSearch(searchInput) {
+                searchInput.value = '';
+                performActivitiesSearch(searchInput);
+                searchInput.focus();
+            }
+        }
+
+        // Initialize Activities page size selector
+        function initActivitiesPageSize() {
+            const pageSizeSelect = document.getElementById('activities-page-size');
+
+            if (!pageSizeSelect) return;
+
+            // Remove existing event listener to prevent duplicate bindings
+            if (!pageSizeSelect.hasAttribute('data-activities-listener-bound')) {
+                pageSizeSelect.addEventListener('change', function() {
+                    console.log('Activities page size changed to:', this.value);
+                    updateActivitiesPagination();
+                });
+                // Mark as having listener bound
+                pageSizeSelect.setAttribute('data-activities-listener-bound', 'true');
+            }
+        }
+
+        // Activities table sorting function
+        function initActivitiesSorting() {
+            const sortIcon = document.getElementById('visit-count-sort');
+
+            if (!sortIcon) return;
+
+            sortIcon.addEventListener('click', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+
+                console.log('Sort icon clicked, current order:', this.dataset.order);
+
+                const currentOrder = this.dataset.order || 'none';
+                const container = document.getElementById('activities-container');
+                const rows = Array.from(container.querySelectorAll('.activity-row'));
+
+                console.log('Found rows:', rows.length);
+
+                // Reset only activities sort icons (not property stats sort icons)
+                document.querySelectorAll('.activities-sort-icon').forEach(icon => {
+                    if (icon !== this) {
+                        icon.className = 'bi bi-arrow-down-up text-muted sort-icon activities-sort-icon';
+                        icon.dataset.order = 'none';
+                    }
+                });
+
+                let newOrder;
+                if (currentOrder === 'none' || currentOrder === 'desc') {
+                    newOrder = 'asc';
+                    this.className = 'bi bi-arrow-up text-primary sort-icon activities-sort-icon';
+                } else {
+                    newOrder = 'desc';
+                    this.className = 'bi bi-arrow-down text-primary sort-icon activities-sort-icon';
+                }
+
+                this.dataset.order = newOrder;
+                console.log('New order set to:', newOrder);
+
+                // Sort rows
+                rows.sort((a, b) => {
+                    const aCount = parseInt(a.dataset.visitCount) || 0;
+                    const bCount = parseInt(b.dataset.visitCount) || 0;
+
+                    if (newOrder === 'asc') {
+                        return aCount - bCount;
+                    } else {
+                        return bCount - aCount;
+                    }
+                });
+
+                // Clear container and re-append sorted rows
+                container.innerHTML = '';
+                rows.forEach(row => container.appendChild(row));
+
+                console.log('Sorting completed');
+
+                // Properly update pagination after sorting
+                updateActivitiesPagination();
+            });
+        }
+
+        // Function to update Activities pagination after sorting
+        function updateActivitiesPagination() {
+            const container = document.getElementById('activities-container');
+            const pageSizeSelect = document.getElementById('activities-page-size');
+            const paginationElement = document.getElementById('activities-pagination');
+
+            if (!container || !paginationElement) return;
+
+            const allRows = Array.from(container.querySelectorAll('.activity-row'));
+            const itemsPerPage = pageSizeSelect ? parseInt(pageSizeSelect.value) : 10;
+
+            // Filter visible rows (considering search)
+            const visibleRows = allRows.filter(row => {
+                const searchVisible = row.getAttribute('data-search-visible');
+                return searchVisible === null || searchVisible === 'true';
+            });
+
+            const totalItems = visibleRows.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / itemsPerPage));
+
+            console.log('Updating pagination:', {totalItems, itemsPerPage, totalPages});
+
+            // Clear pagination
+            paginationElement.innerHTML = '';
+
+            // Find pagination container
+            const paginationContainer = paginationElement.closest('.d-flex');
+
+            // Don't show pagination if there's only one page or no items
+            if (totalPages <= 1) {
+                if (paginationContainer) {
+                    paginationContainer.style.display = 'none';
+                }
+                // Show visible rows and hide invisible rows
+                allRows.forEach(row => {
+                    const searchVisible = row.getAttribute('data-search-visible');
+                    if (searchVisible === null || searchVisible === 'true') {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+                return;
+            }
+
+            // Show the pagination container when needed
+            if (paginationContainer) {
+                paginationContainer.style.display = '';
+            }
+
+            // Create Previous button
+            const prevLi = document.createElement('li');
+            prevLi.className = 'page-item';
+            prevLi.id = 'activities-prev-page';
+
+            const prevA = document.createElement('a');
+            prevA.className = 'page-link';
+            prevA.href = '#';
+            prevA.innerHTML = '&laquo;';
+            prevA.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentPage = getCurrentActivitiesPage();
+                if (currentPage > 1) {
+                    goToActivitiesPage(currentPage - 1, totalPages, itemsPerPage);
+                }
+            });
+
+            prevLi.appendChild(prevA);
+            paginationElement.appendChild(prevLi);
+
+            // Create page number buttons
+            for (let i = 1; i <= totalPages; i++) {
+                const li = document.createElement('li');
+                li.className = `page-item ${i === 1 ? 'active' : ''}`;
+                li.setAttribute('data-page', i);
+
+                const a = document.createElement('a');
+                a.className = 'page-link';
+                a.href = '#';
+                a.textContent = i;
+                a.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goToActivitiesPage(i, totalPages, itemsPerPage);
+                });
+
+                li.appendChild(a);
+                paginationElement.appendChild(li);
+            }
+
+            // Create Next button
+            const nextLi = document.createElement('li');
+            nextLi.className = 'page-item';
+            nextLi.id = 'activities-next-page';
+
+            const nextA = document.createElement('a');
+            nextA.className = 'page-link';
+            nextA.href = '#';
+            nextA.innerHTML = '&raquo;';
+            nextA.addEventListener('click', function(e) {
+                e.preventDefault();
+                const currentPage = getCurrentActivitiesPage();
+                if (currentPage < totalPages) {
+                    goToActivitiesPage(currentPage + 1, totalPages, itemsPerPage);
+                }
+            });
+
+            nextLi.appendChild(nextA);
+            paginationElement.appendChild(nextLi);
+
+            // Show first page and update navigation buttons
+            goToActivitiesPage(1, totalPages, itemsPerPage);
+        }
+
+        // Function to navigate to specific page in Activities table
+        function goToActivitiesPage(pageNumber, totalPages, itemsPerPage) {
+            const container = document.getElementById('activities-container');
+            const paginationElement = document.getElementById('activities-pagination');
+
+            if (!container) return;
+
+            const allRows = Array.from(container.querySelectorAll('.activity-row'));
+
+            // Filter visible rows (considering search)
+            const visibleRows = allRows.filter(row => {
+                const searchVisible = row.getAttribute('data-search-visible');
+                return searchVisible === null || searchVisible === 'true';
+            });
+
+            const startIndex = (pageNumber - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+
+            console.log('Going to page:', {pageNumber, startIndex, endIndex, totalVisible: visibleRows.length});
+
+            // Hide all rows first
+            allRows.forEach(row => {
+                row.style.display = 'none';
+            });
+
+            // Show rows for current page
+            visibleRows.forEach((row, index) => {
+                if (index >= startIndex && index < endIndex) {
+                    row.style.display = '';
+                }
+            });
+
+            // Update pagination active state
+            if (paginationElement) {
+                // Update page number buttons
+                const pageItems = paginationElement.querySelectorAll('.page-item[data-page]');
+                pageItems.forEach((item) => {
+                    const page = parseInt(item.getAttribute('data-page'));
+                    if (page === pageNumber) {
+                        item.classList.add('active');
+                    } else {
+                        item.classList.remove('active');
+                    }
+                });
+
+                // Update Previous button state
+                const prevButton = paginationElement.querySelector('#activities-prev-page');
+                if (prevButton) {
+                    if (pageNumber <= 1) {
+                        prevButton.classList.add('disabled');
+                    } else {
+                        prevButton.classList.remove('disabled');
+                    }
+                }
+
+                // Update Next button state
+                const nextButton = paginationElement.querySelector('#activities-next-page');
+                if (nextButton) {
+                    if (pageNumber >= totalPages) {
+                        nextButton.classList.add('disabled');
+                    } else {
+                        nextButton.classList.remove('disabled');
+                    }
+                }
+            }
+        }
+
+        // Function to get current active page in Activities pagination
+        function getCurrentActivitiesPage() {
+            const paginationElement = document.getElementById('activities-pagination');
+            if (!paginationElement) return 1;
+
+            const activeItem = paginationElement.querySelector('.page-item.active[data-page]');
+            if (activeItem) {
+                return parseInt(activeItem.getAttribute('data-page'));
+            }
+            return 1;
         }
     </script>
 </body>
