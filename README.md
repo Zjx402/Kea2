@@ -46,11 +46,17 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 | **Finding crashes in deep states** |  | :+1: | :+1: |
 | **Finding non-crashing functional (logic) bugs** |  |  | :+1: |
 
-## Kea2's Known Users
+## Kea2's Users
 
-[OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- a financial & payment app
+Kea2 has been used and adopted by
 
-We are glad to hear if you are using Kea2 for your app.
+- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- a financial & payment app
+
+- [WeChat's iExplorer]() --- WeChat's in-house testing platform
+
+- [ByteDance's Fastbot](https://github.com/bytedance/Fastbot_Android)
+
+Please let us know and willing to hear your feedback/questions if you are also using Kea2.
 
 ## Design & Roadmap
 Kea2 currently works with:
@@ -217,6 +223,16 @@ You can find the [user manual](docs/manual_en.md), which includes:
 - How to find and understand Kea2's testing results
 - How to [whitelist or blacklist](docs/blacklisting.md) specific activities, UI widgets and UI regions during fuzzing
 - [Common Q&A for PBT and Kea2](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
+
+Some blogs on Kea/Kea2 (in Chinese):
+
+- [别再苦哈哈写测试脚本了，生成它们吧！(一)](https://mp.weixin.qq.com/s/R2kLCkXpDjpa8wCX4Eidtg)
+- [别再苦哈哈写测试脚本了，生成它们吧！(二)](https://mp.weixin.qq.com/s/s4WkdstNcKupu9OP8jeOXw)
+- [别再苦哈哈写测试脚本了，生成它们吧！(三)](https://mp.weixin.qq.com/s/BjXyo-xJRmPB_sCc4pmh8g)
+- [2025 Let’s GoSSIP 软件安全暑期学校预告第一弹——Kea2](https://mp.weixin.qq.com/s/8_0_GNNin8E5BqTbJU33wg)
+- [功能性质驱动的测试技术：下一代GUI自动化测试技术](https://appw8oh6ysg4044.xet.citv.cn/p/course/video/v_6882fa14e4b0694ca0ec0a1b) --- 视频回放&PPT@MTSC 2025
+
+
 
 ## Open-source projects used by Kea2
 
