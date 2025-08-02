@@ -231,6 +231,41 @@ Some blogs on Kea/Kea2 (in Chinese):
 - [2025 Let’s GoSSIP 软件安全暑期学校预告第一弹——Kea2](https://mp.weixin.qq.com/s/8_0_GNNin8E5BqTbJU33wg)
 - [功能性质驱动的测试技术：下一代GUI自动化测试技术](https://appw8oh6ysg4044.xet.citv.cn/p/course/video/v_6882fa14e4b0694ca0ec0a1b) --- 视频回放&PPT@MTSC 2025
 
+工业界对Kea2的评价（点击箭头查看详情）：
+
+<details>
+  <summary>Kea2的性质是什么含义？Kea2意义和价值是什么？</summary>
+
+    kea2 其实是一个工具，它是python+u2+fastbot的集合体。 它本身更像是一台装好了发动机和轮子的汽车底盘。
+
+    性质是苏老师他们团队提出的一个概念， 转换到测试领域的实际工作中，性质对应的是最小单位的功能（原子级功能），性质的依赖条件很少或没有，它可以自身运行。一个典型的性质就是登录，它仅仅具有输入用户名，输入密码，提交。再举个例子，给视频点个赞，也就是简单的两三步。就是一个性质。
+
+    性质与kea2结合的意义是在于解决过去使用appium过重的问题。用appium去测试一个性质通常要写很多行的代码，引导界面到达性质的位置。但使用kea2，就只需要编写性质，如何到其所在的位置是交给fastbot和它的学习算法来搞定的。 
+
+    kea2另个重大的价值是，它解决了上述思想所需要的技术支撑，比appium更轻量的UI编写方式，fastbot编写性质的能力不足，以及无法编写逻辑和断言。整体上是保留了fastbot以往的优秀品质，完善了其不足和短板。
+
+    简而言之，需要做传统的编排型的功能测试，仍然使用appium，使用kea2也行，但你感觉不到它的价值。本身有需要做混沌测试，模糊测试，兼容性测试。那么强烈，强烈推荐kea2。kea2更偏探索性测试而非编排型。
+</details>
+
+<details>
+  <summary>kea2组成是什么？kea2的核心作用？hea2做了什么？</summary>
+
+kea2 组成：
+    fastbot  --  fuzz测试引擎，负责跑路。
+    u2 -- 负责进行业务空间的操作。 与使用selenium， appium，没什么区别。
+    python --  u2 的操作，逻辑的编写，定制化的实现。
+kea2的核心作用：
+    提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert 。 执行完毕，继续切回FB跑路。
+hea2做了什么：
+    替换了 FB 的条件触发功能。
+    替换了FB 的黑名单，黑控件功能。
+    替换了FB剪枝功能。
+    增加了多元化的元素空间操作能力。
+    增加了fuzz测试中的 逻辑设定。
+    增加了断言能力。
+    增加了元素操作能力。
+</details>
+
 
 ## Open-source projects used by Kea2
 
@@ -265,46 +300,6 @@ Kea2 has been actively developed and maintained by the people in [ecnusse](https
 [Zhendong Su](https://people.inf.ethz.ch/suz/), [Yiheng Xiong](https://xyiheng.github.io/), [Xiangchen Shen](https://xiangchenshen.github.io/), [Mengqian Xu](https://mengqianx.github.io/), [Haiying Sun](https://faculty.ecnu.edu.cn/_s43/shy/main.psp), [Jingling Sun](https://jinglingsun.github.io/), [Jue Wang](https://cv.juewang.info/) have also been actively participated in this project and contributed a lot!
 
 Kea2 has also received many valuable insights, advices, feedbacks and lessons shared by several industrial people from Bytedance ([Zhao Zhang](https://github.com/zhangzhao4444), Yuhui Su from the Fastbot team), OPay (Tiesong Liu), WeChat (Haochuan Lu, Yuetang Deng), Huawei, Xiaomi and etc. Kudos!
-
-### Comments/Feedback from Industrial People
-
-<details>
-  <summary>Kea2的性质是什么含义？Kea2意义和价值是什么？</summary>
-
-    kea2 其实是一个工具，它是python+u2+fastbot的集合体。 它本身更像是一台装好了发动机和轮子的汽车底盘。
-
-    性质是苏老师他们团队提出的一个概念， 转换到测试领域的实际工作中，性质对应的是最小单位的功能（原子级功能），性质的依赖条件很少或没有，它可以自身运行。一个典型的性质就是登录，它仅仅具有输入用户名，输入密码，提交。再举个例子，给视频点个赞，也就是简单的两三步。就是一个性质。
-
-    性质与kea2结合的意义是在于解决过去使用appium过重的问题。用appium去测试一个性质通常要写很多行的代码，引导界面到达性质的位置。但使用kea2，就只需要编写性质，如何到其所在的位置是交给fastbot和它的学习算法来搞定的。 
-
-    kea2另个重大的价值是，它解决了上述思想所需要的技术支撑，比appium更轻量的UI编写方式，fastbot编写性质的能力不足，以及无法编写逻辑和断言。整体上是保留了fastbot以往的优秀品质，完善了其不足和短板。
-
-    简而言之，需要做传统的编排型的功能测试，仍然使用appium，使用kea2也行，但你感觉不到它的价值。本身有需要做混沌测试，模糊测试，兼容性测试。那么强烈，强烈推荐kea2。kea2更偏探索性测试而非编排型。
-</details>
-
-<details>
-  <summary>kea2组成是什么？kea2的核心作用？hea2做了什么？</summary>
-
-kea2 组成：
-
-    fastbot  --  fuzz测试引擎，负责跑路。
-    u2 -- 负责进行业务空间的操作。 与使用selenium， appium，没什么区别。
-    python --  u2 的操作，逻辑的编写，定制化的实现。
-
-kea2的核心作用：
-    提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert 。 执行完毕，继续切回FB跑路。
-
-hea2做了什么：
-    替换了 FB 的条件触发功能。
-    替换了FB 的黑名单，黑控件功能。
-    替换了FB剪枝功能。
-    增加了多元化的元素空间操作能力。
-    增加了fuzz测试中的 逻辑设定。
-    增加了断言能力。
-    增加了元素操作能力。
-</details>
-
-
 
 [^1]: 不少UI自动化测试工具提供了“自定义事件序列”能力（如[Fastbot](https://github.com/bytedance/Fastbot_Android/blob/main/handbook-cn.md#%E8%87%AA%E5%AE%9A%E4%B9%89%E4%BA%8B%E4%BB%B6%E5%BA%8F%E5%88%97) 和[AppCrawler](https://github.com/seveniruby/AppCrawler)），但在实际使用中存在不少问题，如自定义能力有限、使用不灵活等。此前不少Fastbot用户抱怨过其“自定义事件序列”在使用中的问题，如[#209](https://github.com/bytedance/Fastbot_Android/issues/209), [#225](https://github.com/bytedance/Fastbot_Android/issues/225), [#286](https://github.com/bytedance/Fastbot_Android/issues/286)等。
 
