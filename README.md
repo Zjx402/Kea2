@@ -48,7 +48,7 @@ Kea2 currently targets [Android](https://en.wikipedia.org/wiki/Android_(operatin
 
 ## Kea2's Users
 
-Kea2 has been used and adopted by
+Kea2 (and its idea) has been used/integrated by
 
 - [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- a financial & payment app. OPay uses Kea2 for regression testing on POS machines and mobile devices.
 
