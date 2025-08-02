@@ -231,7 +231,7 @@ Some blogs on Kea/Kea2 (in Chinese):
 - [2025 Let’s GoSSIP 软件安全暑期学校预告第一弹——Kea2](https://mp.weixin.qq.com/s/8_0_GNNin8E5BqTbJU33wg)
 - [功能性质驱动的测试技术：下一代GUI自动化测试技术](https://appw8oh6ysg4044.xet.citv.cn/p/course/video/v_6882fa14e4b0694ca0ec0a1b) --- 视频回放&PPT@MTSC 2025
 
-工业界对Kea2的评价（点击箭头查看详情）：
+工业界对Kea2的理解和评价（点击箭头查看详情）：
 
 <details>
   <summary>Kea2的性质是什么含义？Kea2意义和价值是什么？</summary>
@@ -251,12 +251,17 @@ Some blogs on Kea/Kea2 (in Chinese):
   <summary>kea2组成是什么？kea2的核心作用？hea2做了什么？</summary>
 
 kea2 组成：
+
     fastbot  --  fuzz测试引擎，负责跑路。
     u2 -- 负责进行业务空间的操作。 与使用selenium， appium，没什么区别。
     python --  u2 的操作，逻辑的编写，定制化的实现。
+
 kea2的核心作用：
+
     提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert 。 执行完毕，继续切回FB跑路。
+
 hea2做了什么：
+
     替换了 FB 的条件触发功能。
     替换了FB 的黑名单，黑控件功能。
     替换了FB剪枝功能。
