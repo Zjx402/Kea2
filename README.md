@@ -222,7 +222,7 @@ You can find the [user manual](docs/manual_en.md), which includes:
 - How to run Kea2 and Kea2's command line options
 - How to find and understand Kea2's testing results
 - How to [whitelist or blacklist](docs/blacklisting.md) specific activities, UI widgets and UI regions during fuzzing
-- [Common Q&A for PBT and Kea2](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
+- [Q&A for Kea2 and PBT (对Kea2和PBT技术的常见问题和回答)](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink) 
 
 Some blogs on Kea/Kea2 (in Chinese):
 - [别再苦哈哈写测试脚本了，生成它们吧！(一)](https://mp.weixin.qq.com/s/R2kLCkXpDjpa8wCX4Eidtg)
@@ -248,22 +248,22 @@ Some blogs on Kea/Kea2 (in Chinese):
 </details>
 
 <details>
-  <summary>kea2组成是什么？kea2的核心作用？hea2做了什么？</summary>
+  <summary>kea2组成是什么？kea2的核心作用？kea2做了什么？</summary>
 
 kea2 组成：
 
     fastbot  --  fuzz测试引擎，负责跑路。
-    u2 -- 负责进行业务空间的操作。 与使用selenium， appium，没什么区别。
-    python --  u2 的操作，逻辑的编写，定制化的实现。
+    u2 -- 负责进行业务空间的操作。与使用selenium，appium，没什么区别。
+    python --  u2的操作，逻辑的编写，定制化的实现。
 
 kea2的核心作用：
 
-    提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert 。 执行完毕，继续切回FB跑路。
+    提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert。执行完毕，继续切回FB跑路。
 
 hea2做了什么：
 
-    替换了 FB 的条件触发功能。
-    替换了FB 的黑名单，黑控件功能。
+    替换了FB的条件触发功能。
+    替换了FB的黑名单，黑控件功能。
     替换了FB剪枝功能。
     增加了多元化的元素空间操作能力。
     增加了fuzz测试中的 逻辑设定。
