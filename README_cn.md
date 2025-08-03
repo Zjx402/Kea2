@@ -4,7 +4,7 @@
 
 
 <div align="left">
-    <img src="docs/kea2_logo.png" alt="kea_logo" style="border-radius: 14px; width: 20%; height: 20%;"/>
+    <img src="docs/images/kea2_logo.png" alt="kea_logo" style="border-radius: 14px; width: 20%; height: 20%;"/>
 </div>
 
 <div>
