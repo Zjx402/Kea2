@@ -45,7 +45,7 @@ def test_login(self):
 ```
 
 ### 截图
-![wechat_login.png](wechat_login.png)
+![wechat_login.png](images/wechat_login.png)
 
 ### 解析
 
@@ -103,7 +103,7 @@ def test_jump(self):
 ```
 
 ### 截图
-![wechat_pay.png](wechat_pay.png)
+![wechat_pay.png](images/wechat_pay.png)
 ### 解析
 
 前置条件：
@@ -147,7 +147,7 @@ def test_jump(self):
 
 传统测试需手动模拟完整用户路径（如打开页面→滑动查找→触发操作），导致脚本冗长且易失效。Kea2 通过 前置条件（@precondition） 直接定位业务功能入口，跳过冗余路径。
 
-![example1.png](example1.png)
+![example1.png](images/example1.png)
 
 - 传统脚本问题：需编写代码启动应用进入视频号→转发视频给好友等多步操作→退出视频号，进入聊天界面等多步操作→点击进入分享的视频→点击点赞按钮，到这里才开始正式执行测试，路径固定且易因界面变动失效。
 
@@ -178,7 +178,7 @@ def test_finder_like(self):
 
 ### 截图
 
-![wechat_like.png](wechat_like.png)
+![wechat_like.png](images/wechat_like.png)
 
 ### 解析
 
@@ -198,7 +198,7 @@ def test_finder_like(self):
 
 传统测试需为每个功能入口单独开发脚本（如消息转发、图片转发、名片转发、位置转发、视频号转发等），重复开发且无法验证统一业务逻辑。Kea2 只需要写一个通用性质，即可实现“一脚本多场景”覆盖。
 
-![example2.png](example2.png)
+![example2.png](images/example2.png)
 
 - 传统脚本问题：需为消息转发、图片转发、名片转发、位置转发、视频号转发不同入口分别编写"转发"脚本，虽然都是测试转发功能，但是脚本并不通用，维护成本高。
 
@@ -227,7 +227,7 @@ def test_forward(self):
 
 ### 截图
 
-![wechat_forward.png](wechat_forward.png)
+![wechat_forward.png](images/wechat_forward.png)
 
 ### 解析
 
@@ -259,7 +259,7 @@ def test_forward(self):
   - 动态组合生成：遍历过程中将自动进行性质的组合（如 增→查→删、改→查→增→删 等），自动生成多样化测试路径。
   - 无限场景覆盖：理论上可覆盖所有可能的操作序列，彻底解决传统脚本的路径限制问题。
 
-![](example3.png)
+![](images/example3.png)
 
 ## 例1：新增标签
 
@@ -288,7 +288,7 @@ def test_add_tag(self):
 
 ### 截图
 
-![](wechat_add.png)
+![](images/wechat_add.png)
 
 ### 解析
 
@@ -341,7 +341,7 @@ def test_del_tag(self):
 
 ### 截图
 
-![](wechat_delete.png)
+![](images/wechat_delete.png)
 
 ### 解析
 
@@ -399,7 +399,7 @@ def test_rename_tag(self):
 
 ### 截图
 
-![](wechat_update.png)
+![](images/wechat_update.png)
 
 ### 解析
 
@@ -446,7 +446,7 @@ def test_search_tag(self):
 
 ### 截图
 
-![](wechat_search.png)
+![](images/wechat_search.png)
 
 ### 解析
 

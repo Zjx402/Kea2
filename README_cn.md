@@ -28,7 +28,7 @@ Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一�
 
 <div align="center">
     <div style="max-width:80%; max-height:80%">
-    <img src="docs/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
+    <img src="docs/images/intro.png" style="border-radius: 14px; width: 80%; height: 80%;"/> 
     </div>
 </div>
 
@@ -183,7 +183,7 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 在一个社交应用中，消息发送是常见功能。在消息发送页面，当输入框不为空（即有输入内容）时，`send`按钮应始终出现。
 
 <div align="center">
-    <img src="docs/socialAppBug.png" style="border-radius: 14px; width:30%; height:40%;"/>
+    <img src="docs/images/socialAppBug.png" style="border-radius: 14px; width:30%; height:40%;"/>
 </div>
 
 <div align="center">
