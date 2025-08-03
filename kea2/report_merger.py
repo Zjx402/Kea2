@@ -3,7 +3,7 @@ import os
 import re
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Optional, Tuple, Union
 from collections import defaultdict
 
 from kea2.utils import getLogger
@@ -86,7 +86,7 @@ class TestReportMerger:
             
             logger.debug(f"Validated result directory: {result_dir}")
     
-    def _merge_property_results(self) -> tuple[Dict[str, Dict], Dict[str, List[str]]]:
+    def _merge_property_results(self) -> Tuple[Dict[str, Dict], Dict[str, List[str]]]:
         """
         Merge property test results from all directories
 
@@ -245,7 +245,7 @@ class TestReportMerger:
             "total_anr_count": len(unique_anr_events)
         }
     
-    def _parse_crash_dump_file(self, crash_dump_file: Path) -> tuple[List[Dict], List[Dict]]:
+    def _parse_crash_dump_file(self, crash_dump_file: Path) -> Tuple[List[Dict], List[Dict]]:
         """
         Parse crash and ANR events from crash-dump.log file
 
