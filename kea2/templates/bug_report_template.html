@@ -1274,7 +1274,7 @@
                 <table class="table table-custom table-activities">
                     <thead>
                         <tr>
-                            <th>Activity Name</th>
+                            <th>Activity Name <span class="badge bg-primary ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ tested_activities_count }}/{{ total_activities_count }}</span></th>
                             <th>Visit Count <i class="bi bi-arrow-down-up text-muted sort-icon activities-sort-icon" id="visit-count-sort" data-column="visit-count" data-order="none" style="cursor: pointer;"></i></th>
                         </tr>
                     </thead>
@@ -1580,11 +1580,11 @@
                     <thead>
                         <tr>
                             <th>Index</th>
-                            <th>Property Name</th>
-                            <th>Precondition Satisfied</th>
-                            <th>Executed</th>
-                            <th>Fails <i class="bi bi-arrow-down-up text-muted sort-icon" id="fails-sort" data-column="fails" data-order="none" style="cursor: pointer;"></i></th>
-                            <th>Errors <i class="bi bi-arrow-down-up text-muted sort-icon" id="errors-sort" data-column="errors" data-order="none" style="cursor: pointer;"></i></th>
+                            <th>Property Name <span class="badge bg-primary ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ property_stats_summary.total_properties }}</span></th>
+                            <th>Precondition Satisfied <span class="badge bg-success ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ property_stats_summary.total_precond_satisfied }}</span></th>
+                            <th>Executed <span class="badge bg-info ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ property_stats_summary.total_executed }}</span></th>
+                            <th>Fails <span class="badge bg-danger ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ property_stats_summary.total_fails }}</span> <i class="bi bi-arrow-down-up text-muted sort-icon" id="fails-sort" data-column="fails" data-order="none" style="cursor: pointer;"></i></th>
+                            <th>Errors <span class="badge bg-warning ms-2" style="font-size: 0.9rem; font-weight: 600;">{{ property_stats_summary.total_errors }}</span> <i class="bi bi-arrow-down-up text-muted sort-icon" id="errors-sort" data-column="errors" data-order="none" style="cursor: pointer;"></i></th>
                             <th>Error Details</th>
                         </tr>
                     </thead>

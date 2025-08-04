@@ -1208,9 +1208,55 @@
                 <div class="summary-card">
                     <h2 class="section-title">Test Summary</h2>
 
+                    <!-- Statistics Cards -->
+                    <div class="row g-4">
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-danger">{{ bugs_found }}</span>
+                                <span class="stat-label">Bugs Found</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-danger">{{ total_crash_count|default(0) }}</span>
+                                <span class="stat-label">Crashes</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-warning">{{ total_anr_count|default(0) }}</span>
+                                <span class="stat-label">ANRs</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-pie-chart text-info" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ "%.2f"|format(coverage_percent) }}%</span>
+                                <span class="stat-label">Activity Coverage</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-list-check text-primary" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-highlight">{{ all_properties_count }}</span>
+                                <span class="stat-label">All Properties</span>
+                            </div>
+                        </div>
+                        <div class="col-lg-2 col-md-4 col-sm-6">
+                            <div class="text-center">
+                                <i class="bi bi-check-square text-success" style="font-size: 2rem;"></i>
+                                <span class="stat-value value-success">{{ executed_properties_count }}</span>
+                                <span class="stat-label">Executed Properties</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Merge Information Section -->
                     {% if merge_info %}
-                    <div class="merge-info-section mb-4">
+                    <div class="merge-info-section mt-4">
                         <div class="merge-info-card">
                             <!-- Collapsible Header -->
                             <div class="merge-info-header" data-bs-toggle="collapse" data-bs-target="#mergeInfoCollapse" aria-expanded="false" aria-controls="mergeInfoCollapse">
@@ -1261,52 +1307,6 @@
                         </div>
                     </div>
                     {% endif %}
-
-                    <!-- Statistics Cards -->
-                    <div class="row g-4">
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-bug text-danger" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-danger">{{ bugs_found }}</span>
-                                <span class="stat-label">Bugs Found</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-x-circle text-danger" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-danger">{{ total_crash_count|default(0) }}</span>
-                                <span class="stat-label">Crashes</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-clock text-warning" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-warning">{{ total_anr_count|default(0) }}</span>
-                                <span class="stat-label">ANRs</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-pie-chart text-info" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ "%.2f"|format(coverage_percent) }}%</span>
-                                <span class="stat-label">Activity Coverage</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-list-check text-primary" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-highlight">{{ all_properties_count }}</span>
-                                <span class="stat-label">All Properties</span>
-                            </div>
-                        </div>
-                        <div class="col-lg-2 col-md-4 col-sm-6">
-                            <div class="text-center">
-                                <i class="bi bi-check-square text-success" style="font-size: 2rem;"></i>
-                                <span class="stat-value value-success">{{ executed_properties_count }}</span>
-                                <span class="stat-label">Executed Properties</span>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>

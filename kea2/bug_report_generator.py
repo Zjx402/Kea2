@@ -388,6 +388,10 @@ class BugReportGenerator:
         data["all_properties_count"] = len(self.test_result)
         data["executed_properties_count"] = sum(1 for result in self.test_result.values() if result.get("executed", 0) > 0)
 
+        # Calculate detailed property statistics for table headers
+        property_stats_summary = self._calculate_property_stats_summary(self.test_result)
+        data["property_stats_summary"] = property_stats_summary
+
         # Process coverage data
         data["coverage_trend"] = self.cov_trend
 
@@ -567,7 +571,8 @@ class BugReportGenerator:
             'property_execution_data': json.dumps(data["property_execution_trend"]),
             'activity_count_history': data["activity_count_history"],
             'crash_events': data["crash_events"],
-            'anr_events': data["anr_events"]
+            'anr_events': data["anr_events"],
+            'property_stats_summary': data["property_stats_summary"]
         }
 
         # Check if template exists, if not create it
@@ -821,6 +826,38 @@ class BugReportGenerator:
             })
         
         return property_execution_trend
+
+    def _calculate_property_stats_summary(self, test_result: TestResult) -> Dict[str, int]:
+        """
+        Calculate summary statistics for property checking table headers
+
+        Args:
+            test_result: Test result data containing property statistics
+
+        Returns:
+            Dict: Summary statistics for each column
+        """
+        stats_summary = {
+            "total_properties": 0,
+            "total_precond_satisfied": 0,
+            "total_executed": 0,
+            "total_fails": 0,
+            "total_errors": 0,
+            "properties_with_errors": 0
+        }
+
+        for property_name, result in test_result.items():
+            stats_summary["total_properties"] += 1
+            stats_summary["total_precond_satisfied"] += result.get("precond_satisfied", 0)
+            stats_summary["total_executed"] += result.get("executed", 0)
+            stats_summary["total_fails"] += result.get("fail", 0)
+            stats_summary["total_errors"] += result.get("error", 0)
+
+            # Count properties that have errors or fails
+            if result.get("fail", 0) > 0 or result.get("error", 0) > 0:
+                stats_summary["properties_with_errors"] += 1
+
+        return stats_summary
 
     def _load_crash_dump_data(self) -> Tuple[List[Dict], List[Dict]]:
         """
