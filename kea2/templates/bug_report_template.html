@@ -211,35 +211,39 @@
             text-align: left !important;
         }
 
-        /* Enhanced Error Details styling */
-        .table-custom td:nth-child(7) .collapse {
+        /* Enhanced Error Details styling for Property Statistics */
+        .table-custom tr.collapse {
             position: relative;
             z-index: 10;
         }
 
-        .table-custom td:nth-child(7) .card {
+        .table-custom tr.collapse td {
+            border-top: none;
+            padding-top: 0;
+        }
+
+        .table-custom tr.collapse .bg-light {
             max-width: none;
             box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            border: 1px solid #e9ecef;
         }
 
-        .table-custom td:nth-child(7) .card-body {
-            padding: 1rem;
-            max-height: 400px;
+        .table-custom tr.collapse pre {
+            max-height: 300px;
             overflow-y: auto;
-        }
-
-        .table-custom td:nth-child(7) pre {
-            max-height: 200px;
-            overflow-y: auto;
-            font-size: 0.8rem;
+            font-size: 0.85rem;
             line-height: 1.4;
+            background-color: #f8f9fa;
+            border: 1px solid #e9ecef;
+            border-radius: 4px;
+            padding: 0.75rem;
         }
 
-        .table-custom td:nth-child(7) details {
+        .table-custom tr.collapse details {
             margin-top: 0.5rem;
         }
 
-        .table-custom td:nth-child(7) summary {
+        .table-custom tr.collapse summary {
             cursor: pointer;
             margin-bottom: 0.5rem;
         }
@@ -1605,127 +1609,140 @@
                                     {% set property_index = loop.index %}
                                     {% if error_list|length == 1 %}
                                         <!-- Single error - simple display -->
-                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" 
-                                                data-bs-target="#single-error-detail-{{ property_index }}" aria-expanded="false" 
+                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#single-error-detail-{{ property_index }}" aria-expanded="false"
                                                 aria-controls="single-error-detail-{{ property_index }}">
                                             <i class="bi bi-exclamation-triangle"></i> View Error
                                         </button>
-                                        <div class="collapse mt-2" id="single-error-detail-{{ property_index }}">
-                                            <div class="card card-body bg-light">
-                                                <div class="mb-2">
-                                                    <span class="badge bg-{{ 'danger' if error_list[0].state == 'fail' else 'warning' }}">
-                                                        {{ error_list[0].state|upper }}
-                                                    </span>
-                                                    {% if error_list[0].occurrence_count > 1 %}
-                                                        <span class="badge bg-info ms-2">
-                                                            Occurred {{ error_list[0].occurrence_count }} times
-                                                        </span>
-                                                    {% endif %}
-                                                    {% if error_list[0].startStepsCountList is defined and error_list[0].startStepsCountList|length > 0 %}
-                                                        <span class="badge bg-secondary ms-2">
-                                                            <i class="bi bi-step-forward"></i> Monkey Steps: {{ error_list[0].startStepsCountList|join(', ') }}
-                                                        </span>
-                                                    {% endif %}
-                                                </div>
-                                                {% if error_list[0].short_description %}
-                                                    <div class="mb-2">
-                                                        <strong>Error:</strong> <code>{{ error_list[0].short_description }}</code>
-                                                    </div>
-                                                {% endif %}
-                                                <details>
-                                                    <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
-                                                    <pre class="text-danger mb-0" style="font-size: 0.85rem; white-space: pre-wrap;">{{ error_list[0].traceback }}</pre>
-                                                </details>
-                                            </div>
-                                        </div>
                                     {% else %}
                                         <!-- Multiple errors - tabbed display -->
-                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse" 
-                                                data-bs-target="#multi-error-detail-{{ property_index }}" aria-expanded="false" 
+                                        <button class="btn btn-sm btn-outline-danger" type="button" data-bs-toggle="collapse"
+                                                data-bs-target="#multi-error-detail-{{ property_index }}" aria-expanded="false"
                                                 aria-controls="multi-error-detail-{{ property_index }}">
                                             <i class="bi bi-exclamation-triangle"></i> View {{ error_list|length }} Errors
                                         </button>
-                                        <div class="collapse mt-2" id="multi-error-detail-{{ property_index }}">
-                                            <div class="card card-body bg-light">
-                                                <!-- Error summary -->
-                                                <div class="mb-3">
-                                                    <h6 class="text-danger">Multiple Errors Detected</h6>
-                                                    <div class="d-flex flex-wrap gap-1">
-                                                        {% for error in error_list %}
-                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
-                                                                {{ error.state|upper }} #{{ loop.index }}
-                                                                {% if error.occurrence_count > 1 %} ({{ error.occurrence_count }}x){% endif %}
-                                                                {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
-                                                                    @{% if error.startStepsCountList|length == 1 %}{{ error.startStepsCountList[0] }}{% else %}{{ error.startStepsCountList[0] }}-{{ error.startStepsCountList[-1] }}{% endif %}
-                                                                {% endif %}
-                                                            </span>
-                                                        {% endfor %}
-                                                    </div>
-                                                </div>
-                                                
-                                                <!-- Error tabs -->
-                                                <ul class="nav nav-pills nav-fill mb-3" id="multi-error-tabs-{{ property_index }}" role="tablist">
-                                                    {% for error in error_list %}
-                                                    <li class="nav-item" role="presentation">
-                                                        <button class="nav-link {{ 'active' if loop.first else '' }} btn-sm" 
-                                                                id="multi-error-tab-{{ property_index }}-{{ loop.index }}" 
-                                                                data-bs-toggle="pill" 
-                                                                data-bs-target="#multi-error-content-{{ property_index }}-{{ loop.index }}" 
-                                                                type="button" role="tab" 
-                                                                aria-controls="multi-error-content-{{ property_index }}-{{ loop.index }}" 
-                                                                aria-selected="{{ 'true' if loop.first else 'false' }}">
-                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }} me-1">
-                                                                {{ error.state|upper }}
-                                                            </span>
-                                                            #{{ loop.index }}
-                                                        </button>
-                                                    </li>
-                                                    {% endfor %}
-                                                </ul>
-                                                
-                                                <!-- Error content -->
-                                                <div class="tab-content" id="multi-error-content-{{ property_index }}">
-                                                    {% for error in error_list %}
-                                                    <div class="tab-pane fade {{ 'show active' if loop.first else '' }}" 
-                                                         id="multi-error-content-{{ property_index }}-{{ loop.index }}" 
-                                                         role="tabpanel" 
-                                                         aria-labelledby="multi-error-tab-{{ property_index }}-{{ loop.index }}">
-                                                        <div class="mb-2">
-                                                            <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
-                                                                {{ error.state|upper }} #{{ loop.index }}
-                                                            </span>
-                                                            <small class="text-muted ms-2">Error {{ loop.index }} of {{ loop.length }}</small>
-                                                            {% if error.occurrence_count > 1 %}
-                                                                <span class="badge bg-info ms-2">
-                                                                    {{ error.occurrence_count }} occurrences
-                                                                </span>
-                                                            {% endif %}
-                                                            {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
-                                                                <span class="badge bg-secondary ms-2">
-                                                                    <i class="bi bi-step-forward"></i> Monkey Steps: {{ error.startStepsCountList|join(', ') }}
-                                                                </span>
-                                                            {% endif %}
-                                                        </div>
-                                                        {% if error.short_description %}
-                                                            <div class="mb-2">
-                                                                <strong>Error:</strong> <code>{{ error.short_description }}</code>
-                                                            </div>
-                                                        {% endif %}
-                                                        <details>
-                                                            <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
-                                                            <pre class="text-danger mb-0" style="font-size: 0.85rem; white-space: pre-wrap;">{{ error.traceback }}</pre>
-                                                        </details>
-                                                    </div>
-                                                    {% endfor %}
-                                                </div>
-                                            </div>
-                                        </div>
                                     {% endif %}
                                 {% else %}
                                     <span class="text-muted">-</span>
                                 {% endif %}
                             </td>
                         </tr>
+                        {% if (test_result.fail|default(0) > 0 or test_result.error|default(0) > 0) and property_name in property_error_details %}
+                            {% set error_list = property_error_details[property_name] %}
+                            {% set property_index = loop.index %}
+                            {% if error_list|length == 1 %}
+                                <!-- Single error detail row -->
+                                <tr class="collapse" id="single-error-detail-{{ property_index }}">
+                                    <td colspan="7">
+                                        <div class="bg-light p-3 rounded">
+                                            <div class="mb-2">
+                                                <span class="badge bg-{{ 'danger' if error_list[0].state == 'fail' else 'warning' }}">
+                                                    {{ error_list[0].state|upper }}
+                                                </span>
+                                                {% if error_list[0].occurrence_count > 1 %}
+                                                    <span class="badge bg-info ms-2">
+                                                        Occurred {{ error_list[0].occurrence_count }} times
+                                                    </span>
+                                                {% endif %}
+                                                {% if error_list[0].startStepsCountList is defined and error_list[0].startStepsCountList|length > 0 %}
+                                                    <span class="badge bg-secondary ms-2">
+                                                        <i class="bi bi-step-forward"></i> Monkey Steps: {{ error_list[0].startStepsCountList|join(', ') }}
+                                                    </span>
+                                                {% endif %}
+                                            </div>
+                                            {% if error_list[0].short_description %}
+                                                <div class="mb-2">
+                                                    <strong>Error:</strong> <code>{{ error_list[0].short_description }}</code>
+                                                </div>
+                                            {% endif %}
+                                            <details>
+                                                <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
+                                                <pre class="text-danger mb-0 text-start" style="font-size: 0.85rem; white-space: pre-wrap; text-align: left;">{{ error_list[0].traceback }}</pre>
+                                            </details>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <!-- Multiple errors detail row -->
+                                <tr class="collapse" id="multi-error-detail-{{ property_index }}">
+                                    <td colspan="7">
+                                        <div class="bg-light p-3 rounded">
+                                            <!-- Error summary -->
+                                            <div class="mb-3">
+                                                <h6 class="text-danger">Multiple Errors Detected</h6>
+                                                <div class="d-flex flex-wrap gap-1">
+                                                    {% for error in error_list %}
+                                                        <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
+                                                            {{ error.state|upper }} #{{ loop.index }}
+                                                            {% if error.occurrence_count > 1 %} ({{ error.occurrence_count }}x){% endif %}
+                                                            {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                                @{% if error.startStepsCountList|length == 1 %}{{ error.startStepsCountList[0] }}{% else %}{{ error.startStepsCountList[0] }}-{{ error.startStepsCountList[-1] }}{% endif %}
+                                                            {% endif %}
+                                                        </span>
+                                                    {% endfor %}
+                                                </div>
+                                            </div>
+
+                                            <!-- Error tabs -->
+                                            <ul class="nav nav-pills nav-fill mb-3" id="multi-error-tabs-{{ property_index }}" role="tablist">
+                                                {% for error in error_list %}
+                                                <li class="nav-item" role="presentation">
+                                                    <button class="nav-link {{ 'active' if loop.first else '' }} btn-sm"
+                                                            id="multi-error-tab-{{ property_index }}-{{ loop.index }}"
+                                                            data-bs-toggle="pill"
+                                                            data-bs-target="#multi-error-content-{{ property_index }}-{{ loop.index }}"
+                                                            type="button" role="tab"
+                                                            aria-controls="multi-error-content-{{ property_index }}-{{ loop.index }}"
+                                                            aria-selected="{{ 'true' if loop.first else 'false' }}">
+                                                        <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }} me-1">
+                                                            {{ error.state|upper }}
+                                                        </span>
+                                                        #{{ loop.index }}
+                                                    </button>
+                                                </li>
+                                                {% endfor %}
+                                            </ul>
+
+                                            <!-- Error content -->
+                                            <div class="tab-content" id="multi-error-content-{{ property_index }}">
+                                                {% for error in error_list %}
+                                                <div class="tab-pane fade {{ 'show active' if loop.first else '' }}"
+                                                     id="multi-error-content-{{ property_index }}-{{ loop.index }}"
+                                                     role="tabpanel"
+                                                     aria-labelledby="multi-error-tab-{{ property_index }}-{{ loop.index }}">
+                                                    <div class="mb-2">
+                                                        <span class="badge bg-{{ 'danger' if error.state == 'fail' else 'warning' }}">
+                                                            {{ error.state|upper }} #{{ loop.index }}
+                                                        </span>
+                                                        <small class="text-muted ms-2">Error {{ loop.index }} of {{ loop.length }}</small>
+                                                        {% if error.occurrence_count > 1 %}
+                                                            <span class="badge bg-info ms-2">
+                                                                {{ error.occurrence_count }} occurrences
+                                                            </span>
+                                                        {% endif %}
+                                                        {% if error.startStepsCountList is defined and error.startStepsCountList|length > 0 %}
+                                                            <span class="badge bg-secondary ms-2">
+                                                                <i class="bi bi-step-forward"></i> Monkey Steps: {{ error.startStepsCountList|join(', ') }}
+                                                            </span>
+                                                        {% endif %}
+                                                    </div>
+                                                    {% if error.short_description %}
+                                                        <div class="mb-2">
+                                                            <strong>Error:</strong> <code>{{ error.short_description }}</code>
+                                                        </div>
+                                                    {% endif %}
+                                                    <details>
+                                                        <summary class="btn btn-sm btn-outline-secondary mb-2">Show Full Traceback</summary>
+                                                        <pre class="text-danger mb-0 text-start" style="font-size: 0.85rem; white-space: pre-wrap; text-align: left;">{{ error.traceback }}</pre>
+                                                    </details>
+                                                </div>
+                                                {% endfor %}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        {% endif %}
                         {% endfor %}
                     </tbody>
                 </table>
