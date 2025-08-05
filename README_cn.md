@@ -1,12 +1,13 @@
 [![PyPI](https://img.shields.io/pypi/v/kea2-python.svg)](https://pypi.python.org/pypi/kea2-python)
 [![PyPI Downloads](https://static.pepy.tech/badge/kea2-python)](https://pepy.tech/projects/kea2-python)
 ![Python](https://img.shields.io/badge/python-3.8%2B-blue)
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/ecnusse/Kea2)
 
 <div>
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-该群已满。如需加入微信群，请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码。
+该微信群已满员。请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信号或二维码以便邀请入群。
 
 ### Github仓库链接
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
@@ -52,13 +53,13 @@ Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一�
 
 ## Kea2的用户
 
-Kea2（及其理念）已被以下用户/项目使用或集成：
+Kea2（及其理念）已被以下项目使用/集成：
 
-- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) — 一款金融及支付应用。OPay使用Kea2对POS机和移动设备进行回归测试。
+- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) — 一款金融支付应用。OPay使用Kea2对POS机和移动设备进行回归测试。
 
-- [微信iExplorer]() — 微信内部测试平台
+- [WeChat's iExplorer]() — 微信内部测试平台
 
-- [字节跳动Fastbot](https://github.com/bytedance/Fastbot_Android)
+- [ByteDance的Fastbot](https://github.com/bytedance/Fastbot_Android)
 
 如果你也在使用Kea2，欢迎联系我们并反馈你的意见和问题。
 
@@ -90,6 +91,10 @@ python3 -m pip install kea2-python
 ```bash
 kea2 -h
 ```
+
+> 通过 `pip` 升级Kea2：
+> 
+> `python3 -m pip install -U kea2-python`
 
 ## 快速测试
 
@@ -221,9 +226,9 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 - 如何运行Kea2及命令行选项；
 - 如何发现并理解Kea2的测试结果；
 - 如何在模糊测试过程中将特定Activity、UI控件和UI区域加入[白名单或黑名单](docs/blacklisting.md)；
-- [Kea2和基于性质测试技术的常见问题与解答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
+- [Kea2和基于性质的测试的常见问题与回答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
 
-部分Kea/Kea2相关博客（中文）：
+部分关于Kea/Kea2的博客（中文）：
 - [别再苦哈哈写测试脚本了，生成它们吧！(一)](https://mp.weixin.qq.com/s/R2kLCkXpDjpa8wCX4Eidtg)
 - [别再苦哈哈写测试脚本了，生成它们吧！(二)](https://mp.weixin.qq.com/s/s4WkdstNcKupu9OP8jeOXw)
 - [别再苦哈哈写测试脚本了，生成它们吧！(三)](https://mp.weixin.qq.com/s/BjXyo-xJRmPB_sCc4pmh8g)
@@ -292,7 +297,7 @@ Kea2由[ecnusse](https://github.com/ecnusse)团队积极开发与维护：
 
 - [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
 - [Bo Ma](https://github.com/majuzi123) ([@majuzi123][])
-- [Chen Peng](https://github.com/Drifterpc) ([@Drifterpc][])
+- [Cheng Peng](https://github.com/Drifterpc) ([@Drifterpc][])
 - [Ting Su](https://tingsu.github.io/) ([@tingsu][])
 
 [@XixianLiang]: https://github.com/XixianLiang
