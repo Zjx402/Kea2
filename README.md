@@ -95,6 +95,10 @@ Find Kea2's options by running
 kea2 -h
 ```
 
+> Upgrade Kea2 by `pip`:
+> 
+> `python3 -m pip install -U kea2-python`
+
 ## Quick Test
 
 Kea2 connects to and runs on Android devices. We recommend you to do a quick test to ensure that Kea2 is compatible with your devices.
