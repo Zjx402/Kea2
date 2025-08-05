@@ -198,6 +198,9 @@ class PropStatistic:
     executed: int = 0
     fail: int = 0
     error: int = 0
+    
+
+PBTTestResult = NewType("PBTTestResult", Dict[PropName, PropStatistic])
 
 
 PropertyExecutionInfoStore = NewType("PropertyExecutionInfoStore", Deque["PropertyExecutionInfo"])
@@ -207,11 +210,6 @@ class PropertyExecutionInfo:
     propName: PropName
     state: Literal["start", "pass", "fail", "error"]
     tb: str
-
-
-class PBTTestResult(dict):
-    def __getitem__(self, key) -> PropStatistic:
-        return super().__getitem__(key)
 
 
 def getFullPropName(testCase: TestCase):
@@ -277,10 +275,15 @@ class JsonResult(TextTestResult):
             self.lastExecutedInfo.state = "pass"
 
         self.executionInfoStore.append(self.lastExecutedInfo)
-        
 
     def getExcuted(self, test: TestCase):
         return self.res[getFullPropName(test)].executed
+    
+    def logSummary(self):
+        fails = sum(_.fail for _ in self.res.values())
+        errors = sum(_.error for _ in self.res.values())
+
+        logger.info(f"[Property Exectution Summary] Errors:{errors}, Fails:{fails}")
 
 
 class KeaTestRunner(TextTestRunner):
@@ -465,6 +468,8 @@ class KeaTestRunner(TextTestRunner):
         else:
             self.stream.write("\n")
         self.stream.flush()
+        
+        result.logSummary()
         return result
 
     @property
