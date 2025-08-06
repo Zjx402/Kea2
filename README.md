@@ -96,7 +96,7 @@ Find Kea2's options by running
 kea2 -h
 ```
 
-If you already installed Kea2 before and hope to upgrade Kea2 to its latest version:
+Upgrade Kea2 to its latest version if you already installed Kea2 before:
 ```bash
 python3 -m pip install -U kea2-python
 ```
