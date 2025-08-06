@@ -60,6 +60,7 @@ jobs:
 
           if [ -n "$(git status --porcelain)" ]; then
             git commit -m "Auto-translate updated documentation"
+            git pull --rebase
             git push origin main
           else
             echo "No changes to commit."
