@@ -24,6 +24,7 @@ The group has reached its capacity. Please contact Xixian Liang at [xixian@stu.e
 <div align="center">
     <a href="https://en.wikipedia.org/wiki/Kea">Kea2's logo: A large parrot skilled in finding "bugs"</a>
 </div>
+</br>
 
 Kea2 is an easy-to-use tool for fuzzing mobile apps. Its key *novelty* is able to fuse automated UI testing with scripts (usually written by human), thus empowering automated UI testing with human intelligence for effectively finding *crashing bugs* as well as *non-crashing functional (logic) bugs*. 
 
@@ -95,9 +96,10 @@ Find Kea2's options by running
 kea2 -h
 ```
 
-> Upgrade Kea2 by `pip`:
-> 
-> `python3 -m pip install -U kea2-python`
+If you already installed Kea2 before and hope to upgrade Kea2 to its latest version:
+```bash
+python3 -m pip install -U kea2-python
+```
 
 ## Quick Test
 
