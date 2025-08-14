@@ -226,7 +226,15 @@ For the preceding always-holding property, we can write the following script to 
 ```
 >  We use [hypothesis](https://github.com/HypothesisWorks/hypothesis) to generate random texts.
 
-You can run this example by using the similar command line in Feature 2. 
+You can run this example by using the similar command line in Feature 2.
+
+## Test Reports（测试报告）
+
+Kea2 automatically generates comprehensive HTML test reports after each testing session.
+
+The reports support both single test runs and merged analysis of multiple test sessions, making it easy to track testing progress and identify issues.
+
+- [View detailed test report documentation](docs/test_report_introduction.md)
 
 ## Documentations（更多文档）
 
