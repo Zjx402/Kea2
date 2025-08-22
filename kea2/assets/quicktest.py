@@ -52,7 +52,7 @@ class Omni_Notes_Sample(unittest.TestCase):
         assert self.d(resourceId="it.feio.android.omninotes.alpha:id/search_src_text").exists()
 
 
-URL = "https://raw.githubusercontent.com/ecnusse/Kea2/refs/heads/dev_test_hidden_algorithm/omninotes.apk"
+URL = "https://github.com/federicoiosue/Omni-Notes/releases/download/6.2.0_alpha/OmniNotes-alphaRelease-6.2.0.apk"
 PACKAGE_NAME = "it.feio.android.omninotes.alpha"
 FILE_NAME = "omninotes.apk"
 

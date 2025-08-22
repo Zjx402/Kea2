@@ -220,7 +220,7 @@ class StaticXpathUiObject(u2.xpath.XPathSelector):
         source = self.session.get_page_source()
         return len(self.selector.all(source)) > 0
 
-    def __and__(self, value) -> 'StaticXpathUiObjectr':
+    def __and__(self, value) -> 'StaticXpathUiObject':
         s = u2.xpath.XPathSelector(self.selector)
         s._next_xpath = u2.xpath.XPathSelector.create(value.selector)
         s._operator = u2.xpath.Operator.AND
@@ -288,7 +288,7 @@ class StaticXpathUiObject(u2.xpath.XPathSelector):
         self.selector = new
         return self
 
-    def get(self, timeout=None) -> "XMLElement":
+    def get(self, timeout=None) -> "u2.xpath.XMLElement":
         """
         Get first matched element
 
@@ -343,7 +343,15 @@ class _HindenWidgetFilter:
         self._nodes = []
 
         self.idx = rtree.index.Index()
-        self.set_covered_attr(root)
+        try:
+            self.set_covered_attr(root)
+        except Exception as e:
+            import traceback, uuid
+            traceback.print_exc()
+            logger.error(f"Error in setting covered widgets")
+            with open(f"kea2_error_tree_{uuid.uuid4().hex}.xml", "wb") as f:
+                xml_bytes = etree.tostring(root, pretty_print=True, encoding="utf-8", xml_declaration=True)
+                f.write(xml_bytes)
 
         # xml_bytes = etree.tostring(root, pretty_print=True, encoding="utf-8", xml_declaration=True)
         # with open("filtered_tree.xml", "wb") as f:
