@@ -2,8 +2,7 @@ from retry import retry
 from retry.api import retry_call
 from dataclasses import asdict
 import requests
-from time import sleep
-from pkg_resources import parse_version
+from packaging.version import parse as parse_version
 
 from uiautomator2.core import HTTPResponse, _http_request
 from kea2.adbUtils import ADBDevice, ADBStreamShell_V2
