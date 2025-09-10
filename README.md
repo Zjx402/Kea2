@@ -246,6 +246,7 @@ You can find the [user manual](docs/manual_en.md), which includes:
 - How to [whitelist or blacklist](docs/blacklisting.md) specific activities, UI widgets and UI regions during fuzzing
 - [Q&A for Kea2 and PBT (对Kea2和PBT技术的常见问题和回答)](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink) 
 - [Kea2 101 (Kea2 从0到1 的入门教程与最佳实践，建议新手阅读)](https://sy8pzmhmun.feishu.cn/wiki/EwaWwPCitiUJoBkIgALcHtglnDK?from=from_copylink)
+- [Kea2 分享交流会 (2025.09, bilibili 录播)](https://www.bilibili.com/video/BV1CZYNz9Ei5/?vd_source=ab7968b8d764666d85d24af49d9b8891)
 
 Some blogs on Kea/Kea2 (in Chinese):
 - [别再苦哈哈写测试脚本了，生成它们吧！(一)](https://mp.weixin.qq.com/s/R2kLCkXpDjpa8wCX4Eidtg)
