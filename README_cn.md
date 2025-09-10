@@ -7,14 +7,14 @@
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-该群已满员。请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并提供你的微信ID或二维码以便邀请加入微信群。
+该微信群已满。请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码，以便邀请加入微信群。
 
 ### Github仓库链接
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
 
 ### [点击此处：查看中文文档](README_cn.md) 
 
-## 简介
+## 关于
 
 <div align="center">
     <img src="docs/images/kea2_logo.png" alt="kea_logo" style="border-radius: 14px; width: 20%; height: 20%;"/>
@@ -24,7 +24,7 @@
 </div>
 </br>
 
-Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）融合，从而赋予自动化UI测试以人类智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
+Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）融合，从而赋予自动化UI测试以人工智能，能够有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
 
 Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一款工业级自动化UI测试工具*）及[uiautomator2](https://github.com/openatx/uiautomator2)（*一款易用且稳定的Android自动化库*）进行构建。Kea2目前支持[Android](https://en.wikipedia.org/wiki/Android_(operating_system))应用。
 
@@ -56,11 +56,11 @@ Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一�
 
 Kea2（及其理念）已被以下项目使用/集成：
 
-- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- 一款金融支付应用。OPay使用Kea2对POS机及移动设备进行回归测试。
+- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- 一款金融与支付应用。OPay使用Kea2对POS机和移动设备进行回归测试。
 
 - [微信iExplorer]() --- 微信内部测试平台
 
-- [字节跳动Fastbot](https://github.com/bytedance/Fastbot_Android)
+- [字节跳动的Fastbot](https://github.com/bytedance/Fastbot_Android)
 
 如果你也在使用Kea2，欢迎联系我们并反馈你的意见和问题。
 
@@ -93,7 +93,7 @@ python3 -m pip install kea2-python
 kea2 -h
 ```
 
-如果之前已安装Kea2，可通过以下命令升级到最新版本：
+如果之前已安装Kea2，升级到最新版本：
 ```bash
 python3 -m pip install -U kea2-python
 ```
@@ -222,7 +222,7 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 
 ## 测试报告
 
-Kea2会在每次测试结束后自动生成详尽的HTML测试报告。
+Kea2在每次测试结束后自动生成详尽的HTML测试报告。
 
 报告支持单次测试运行及多次测试会话的合并分析，方便跟踪测试进度及定位问题。
 
@@ -236,7 +236,9 @@ Kea2会在每次测试结束后自动生成详尽的HTML测试报告。
 - 如何运行Kea2及命令行选项；
 - 如何发现并理解Kea2的测试结果；
 - 如何在模糊测试过程中将特定Activity、UI控件和UI区域加入[白名单或黑名单](docs/blacklisting.md)；
-- [Kea2和基于性质测试技术的常见问题和回答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)
+- [Kea2和基于性质测试的常见问题解答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)；
+- [Kea2 101（Kea2从0到1的入门教程与最佳实践，建议新手阅读）](https://sy8pzmhmun.feishu.cn/wiki/EwaWwPCitiUJoBkIgALcHtglnDK?from=from_copylink)；
+- [Kea2分享交流会（2025.09，bilibili录播）](https://www.bilibili.com/video/BV1CZYNz9Ei5/?vd_source=ab7968b8d764666d85d24af49d9b8891)。
 
 部分Kea/Kea2相关博客（中文）：
 - [别再苦哈哈写测试脚本了，生成它们吧！(一)](https://mp.weixin.qq.com/s/R2kLCkXpDjpa8wCX4Eidtg)
