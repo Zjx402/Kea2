@@ -7,7 +7,7 @@ from packaging.version import parse as parse_version
 from uiautomator2.core import HTTPResponse, _http_request
 from kea2.adbUtils import ADBDevice, ADBStreamShell_V2
 from pathlib import Path
-from kea2.utils import getLogger
+from kea2.utils import getLogger, getProjectRoot
 
 
 from typing import IO, TYPE_CHECKING, Dict
@@ -70,14 +70,15 @@ class FastbotManager:
             "/data/local/tmp/x86_64/libfastbot_native.so",
         )
 
+        cwd = getProjectRoot()
         whitelist = self.options.act_whitelist_file
         blacklist = self.options.act_blacklist_file
         if bool(whitelist) ^ bool(blacklist):
             if whitelist:
-                file_to_push = cur_dir.parent / 'configs' / 'awl.strings'
+                file_to_push = cwd / 'configs' / 'awl.strings'
                 remote_path = whitelist
             else:
-                file_to_push = cur_dir.parent / 'configs' / 'abl.strings'
+                file_to_push = cwd / 'configs' / 'abl.strings'
                 remote_path = blacklist
 
             self.dev.sync.push(
