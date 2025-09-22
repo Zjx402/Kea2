@@ -148,8 +148,8 @@ def _set_runner_parser(subparsers: "argparse._SubParsersAction[argparse.Argument
 def unittest_info_logger(args):
     if args.agent == "native":
         print("[Warning] Property not availble in native agent.", flush=True)
-    if args.extra and args.extra[0] == "unittest":
-        print("Captured unittest args:", args.extra, flush=True)
+    if args.unittest_args:
+        print("Captured unittest args:", args.unittest_args, flush=True)
 
 
 def driver_info_logger(args):
@@ -189,7 +189,13 @@ def _sanitize_args(args):
             args.driver_name = "d"
         else:
             raise ValueError("--driver-name should be specified when customizing script in --agent u2")
-
+    if args.extra:
+        args.extra = args.extra[1:] if args.extra[0] == "--" else args.extra
+        unittest_index = args.extra.index("unittest") if "unittest" in args.extra else -1
+        if unittest_index != -1:
+            unittest_args = args.extra[unittest_index+1:]
+            setattr(args, "unittest_args", unittest_args)
+            args.extra = args.extra[:unittest_index]
 
 def run(args=None):
     if args is None:
@@ -197,6 +203,9 @@ def run(args=None):
     _sanitize_args(args)
     driver_info_logger(args)
     unittest_info_logger(args)
+    if args.extra:
+        print("[Warning] Captured extra args:", args.extra, flush=True)
+        print("The extra args will be passed into fastbot launcher.", flush=True)
 
     from kea2 import KeaTestRunner, Options
     from kea2.u2Driver import U2Driver
@@ -214,15 +223,13 @@ def run(args=None):
         profile_period=args.profile_period,
         take_screenshots=args.take_screenshots,
         device_output_root=args.device_output_root,
-        act_whitelist_file = args.act_whitelist_file,
-        act_blacklist_file=args.act_blacklist_file
+        act_whitelist_file=args.act_whitelist_file,
+        act_blacklist_file=args.act_blacklist_file,
+        extra_args=args.extra,
     )
 
     KeaTestRunner.setOptions(options)
-    unittest_args = []
-    if args.extra and args.extra[0] == "unittest":
-        unittest_args = args.extra[1:]
-    sys.argv = ["python3 -m unittest"] + unittest_args
+    sys.argv = ["python3 -m unittest"] + args.unittest_args
 
     unittest.main(module=None, testRunner=KeaTestRunner)
 

@@ -198,6 +198,9 @@ class FastbotManager:
 
         shell_command += ["-v", "-v", "-v"]
 
+        if self.options.extra_args:
+            shell_command += self.options.extra_args
+
         full_cmd = ["adb"] + (["-s", self.options.serial] if self.options.serial else []) + ["shell"] + shell_command
 
 
