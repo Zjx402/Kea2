@@ -538,7 +538,7 @@ class BugReportGenerator:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
         # Ensure coverage_trend has data
-        if not data["coverage_trend"]:
+        if not data.get("coverage_trend"):
             logger.warning("No coverage trend data")
             # Use the same field names as in coverage.log file
             data["coverage_trend"] = [{"stepsCount": 0, "coverage": 0, "testedActivitiesCount": 0}]
