@@ -110,12 +110,18 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d unittest discover -s mytests/omni_notes -p test*.py
 ```
 
+如果你需要向底层 Fastbot 传递额外参数，可以在常规参数后加 `--`，然后列出额外参数。例如，设置触摸事件比例为 30%：
+
+```bash
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --running-minutes 10 --throttle 200 --driver-name d -- --pct-touch 30 unittest discover -p quicktest.py
+```
+
 ### `kea2 run` 参数说明
 
 | 参数 | 意义 | 默认值 |
 | --- | --- | --- |
 | -s | 设备序列号，可通过 `adb devices` 查看 |  |
-| -t | 设备的 transport id，可通过 `adb devices -l` 查看 |  |
+| -t | 设备传输 ID，可通过 `adb devices -l` 查看 |  |
 | -p | 被测试应用的包名（例如 com.example.app） |  |
 | -o | 日志和结果输出目录 | `output` |
 | --agent | {native, u2}。默认使用 `u2`，支持 Kea2 三个重要功能。如果想运行原生 Fastbot，请使用 `native`。 | `u2` |
@@ -131,7 +137,7 @@ kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent u2 --runn
 
 ### `kea2 report` 参数说明
 
-`kea2 report` 命令用于根据已有测试结果生成 HTML 测试报告。该命令会分析测试数据，生成包含测试执行统计、覆盖率信息、性质违规和崩溃详情的综合可视化报告。
+`kea2 report` 命令用于从已有测试结果生成 HTML 测试报告。该命令会分析测试数据，生成包含测试执行统计、覆盖率信息、性质违例和崩溃详情的综合可视化报告。
 
 | 参数 | 意义 | 是否必需 | 默认值 |
 | --- | --- | --- | --- |
@@ -154,7 +160,7 @@ kea2 report -p ./output/res_20240101_120000
 - **测试摘要**：发现的总缺陷数、执行时间、覆盖率百分比
 - **性质测试结果**：每个测试性质的执行统计（前置条件满足次数、执行次数、失败次数、错误次数）
 - **代码覆盖率**：Activity 覆盖趋势及详细覆盖信息
-- **性质违规**：失败测试性质的详细信息及错误堆栈
+- **性质违例**：失败测试性质的详细信息及错误堆栈
 - **崩溃事件**：测试过程中检测到的应用崩溃
 - **ANR 事件**：应用无响应事件
 - **截图**：测试过程中采集的 UI 截图（如果启用）
@@ -162,9 +168,9 @@ kea2 report -p ./output/res_20240101_120000
 
 **输出内容：**
 该命令会生成：
-- 指定测试结果目录下的 HTML 报告文件（`bug_report.html`）
-- 覆盖率和执行趋势的交互式图表和可视化
-- 详细错误信息和堆栈跟踪，便于调试
+- 测试结果目录下的 HTML 报告文件（`bug_report.html`）
+- 覆盖率和执行趋势的交互式图表
+- 便于调试的详细错误堆栈信息
 
 **输入目录结构示例：**
 ```
@@ -184,7 +190,7 @@ res_<timestamp>/
 
 | 参数 | 意义 | 是否必需 | 默认值 |
 | --- | --- | --- | --- |
-| -p, --paths | 需要合并的测试报告目录路径（res_* 目录），至少两个路径 | 是 |  |
+| -p, --paths | 需要合并的测试报告目录路径（res_* 目录），至少需要两个路径 | 是 |  |
 | -o, --output | 合并后报告的输出目录 | 否 | `merged_report_<timestamp>` |
 
 **使用示例：**
@@ -201,10 +207,10 @@ kea2 -d merge -p res_20240101_120000 res_20240102_130000
 ```
 
 **合并内容包括：**
-- 性质测试执行统计（前置条件满足、执行、失败、错误）
+- 性质测试执行统计（前置条件满足、执行、失败、错误次数）
 - 代码覆盖率数据（覆盖的 Activity、覆盖率百分比）
 - 崩溃和 ANR 事件
-- 测试执行步骤和时间信息
+- 测试执行步骤及时间信息
 
 **输出内容：**
 该命令会生成：
@@ -319,7 +325,7 @@ debug: bool = False
 precond_satisfied | 在探索过程中，测试方法的前置条件满足次数 | 是否到达了该状态                                             
 executed | UI 测试过程中，测试方法被执行的次数 | 该测试方法是否执行过 
 fail | UI 测试中，测试方法断言失败次数 | 失败时，测试方法发现了可能的功能缺陷 
-error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 控件）中断的次数 | 出现错误时，意味着脚本需要更新或修复，因为脚本导致了意外错误 
+error | UI 测试中，测试方法因发生意外错误（如找不到某些 UI 组件）中断的次数 | 出现错误时，意味着脚本需要更新或修复，因为脚本导致了意外错误 
 
 ## 配置文件
 
