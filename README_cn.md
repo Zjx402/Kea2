@@ -126,7 +126,7 @@ python3 quicktest.py
 利用Fastbot的全部能力对你的App进行压力测试，查找*稳定性错误*（即*崩溃错误*）；
 
 ```bash
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200 --driver-name d
 ```
 
 如需了解各选项含义，请参见我们的[手册](docs/manual_en.md#launching-kea2)。

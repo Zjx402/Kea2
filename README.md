@@ -132,7 +132,7 @@ Test your app with the full capability of Fastbot for stress testing and finding
 
 
 ```bash
-kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200
+kea2 run -s "emulator-5554" -p it.feio.android.omninotes.alpha --agent native --running-minutes 10 --throttle 200 --driver-name d
 ```
 
 To understand the meanings of the options, you can see our [manual](docs/manual_en.md#launching-kea2).
