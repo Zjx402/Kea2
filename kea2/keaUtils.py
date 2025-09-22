@@ -136,6 +136,8 @@ class Options:
     act_whitelist_file: str = None
     # Activity BlackList File
     act_blacklist_file: str = None
+    # Extra args
+    extra_args: List[str] = None
 
     def __setattr__(self, name, value):
         if value is None:
