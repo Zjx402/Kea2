@@ -101,6 +101,11 @@ Upgrade Kea2 to its latest version if you already installed Kea2 before:
 python3 -m pip install -U kea2-python
 ```
 
+Upgrade Kea2 to some specifc version (e.g., 0.3.6) if you already installed Kea2 before:
+```bash
+python3 -m pip install -U kea2-python==0.3.6
+```
+
 ## Quick Test
 
 Kea2 connects to and runs on Android devices. We recommend you to do a quick test to ensure that Kea2 is compatible with your devices.
