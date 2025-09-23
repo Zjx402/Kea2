@@ -7,7 +7,7 @@
     <img src="https://github.com/user-attachments/assets/84e47b87-2dd2-4d7e-91d1-e8c1d1db0cf4" style="border-radius: 14px; width: 20%; height: 20%;"/> 
 </div>
 
-该微信群已满。请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并附上你的微信ID或二维码，以便邀请加入微信群。
+该微信群已满。如需加入，请联系Xixian Liang，邮箱 [xixian@stu.ecnu.edu.cn](xixian@stu.ecnu.edu.cn)，并提供你的微信ID或二维码以便邀请入群。
 
 ### Github仓库链接
 [https://github.com/ecnusse/Kea2](https://github.com/ecnusse/Kea2)
@@ -20,11 +20,11 @@
     <img src="docs/images/kea2_logo.png" alt="kea_logo" style="border-radius: 14px; width: 20%; height: 20%;"/>
 </div>
 <div align="center">
-    <a href="https://en.wikipedia.org/wiki/Kea">Kea2的Logo：一只擅长发现“bugs”的大型鹦鹉</a>
+    <a href="https://en.wikipedia.org/wiki/Kea">Kea2的logo：一只擅长发现“bugs”的大型鹦鹉</a>
 </div>
 </br>
 
-Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够将自动化UI测试与脚本（通常由人工编写）融合，从而赋予自动化UI测试以人工智能，能够有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
+Kea2是一个易用的移动应用模糊测试工具。其核心*创新点*是能够融合自动化UI测试与脚本（通常由人工编写），从而赋予自动化UI测试以人类智能，有效发现*崩溃错误*及*非崩溃功能（逻辑）错误*。
 
 Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一款工业级自动化UI测试工具*）及[uiautomator2](https://github.com/openatx/uiautomator2)（*一款易用且稳定的Android自动化库*）进行构建。Kea2目前支持[Android](https://en.wikipedia.org/wiki/Android_(operating_system))应用。
 
@@ -56,11 +56,11 @@ Kea2目前基于[Fastbot](https://github.com/bytedance/Fastbot_Android)（*一�
 
 Kea2（及其理念）已被以下项目使用/集成：
 
-- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) --- 一款金融与支付应用。OPay使用Kea2对POS机和移动设备进行回归测试。
+- [OPay Business](https://play.google.com/store/apps/details?id=team.opay.pay.merchant.service) — 一款金融支付应用。OPay使用Kea2对POS机和移动设备进行回归测试。
 
-- [微信iExplorer]() --- 微信内部测试平台
+- [微信iExplorer]() — 微信内部测试平台
 
-- [字节跳动的Fastbot](https://github.com/bytedance/Fastbot_Android)
+- [字节跳动Fastbot](https://github.com/bytedance/Fastbot_Android)
 
 如果你也在使用Kea2，欢迎联系我们并反馈你的意见和问题。
 
@@ -93,9 +93,15 @@ python3 -m pip install kea2-python
 kea2 -h
 ```
 
-如果之前已安装Kea2，升级到最新版本：
+如果你之前已安装Kea2，升级到最新版本：
 ```bash
 python3 -m pip install -U kea2-python
+```
+> 如果你使用清华、USTC等镜像站，升级可能失败，因为它们可能没有最新版本。此时可以尝试指定版本安装，或者直接使用pypi.org：`pip install kea2-python -i https://pypi.org/simple`。
+
+升级到指定版本（例如0.3.6）：
+```bash
+python3 -m pip install -U kea2-python==0.3.6
 ```
 
 ## 快速测试
@@ -222,9 +228,9 @@ Kea2支持在运行Fastbot时自动断言，用以发现*逻辑错误*（即*非
 
 ## 测试报告
 
-Kea2在每次测试结束后自动生成详尽的HTML测试报告。
+Kea2会在每次测试结束后自动生成详尽的HTML测试报告。
 
-报告支持单次测试运行及多次测试会话的合并分析，方便跟踪测试进度及定位问题。
+报告支持单次测试运行及多次测试会话的合并分析，方便跟踪测试进度和定位问题。
 
 - [查看详细测试报告文档](docs/test_report_introduction.md)
 
@@ -236,8 +242,8 @@ Kea2在每次测试结束后自动生成详尽的HTML测试报告。
 - 如何运行Kea2及命令行选项；
 - 如何发现并理解Kea2的测试结果；
 - 如何在模糊测试过程中将特定Activity、UI控件和UI区域加入[白名单或黑名单](docs/blacklisting.md)；
-- [Kea2和基于性质测试的常见问题解答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)；
-- [Kea2 101（Kea2从0到1的入门教程与最佳实践，建议新手阅读）](https://sy8pzmhmun.feishu.cn/wiki/EwaWwPCitiUJoBkIgALcHtglnDK?from=from_copylink)；
+- [Kea2和基于性质测试（PBT）的常见问题与解答](https://sy8pzmhmun.feishu.cn/wiki/SLGwwqgzIiEuC3kwmV8cSZY0nTg?from=from_copylink)；
+- [Kea2 101（从0到1的入门教程与最佳实践，建议新手阅读）](https://sy8pzmhmun.feishu.cn/wiki/EwaWwPCitiUJoBkIgALcHtglnDK?from=from_copylink)；
 - [Kea2分享交流会（2025.09，bilibili录播）](https://www.bilibili.com/video/BV1CZYNz9Ei5/?vd_source=ab7968b8d764666d85d24af49d9b8891)。
 
 部分Kea/Kea2相关博客（中文）：
@@ -245,7 +251,7 @@ Kea2在每次测试结束后自动生成详尽的HTML测试报告。
 - [别再苦哈哈写测试脚本了，生成它们吧！(二)](https://mp.weixin.qq.com/s/s4WkdstNcKupu9OP8jeOXw)
 - [别再苦哈哈写测试脚本了，生成它们吧！(三)](https://mp.weixin.qq.com/s/BjXyo-xJRmPB_sCc4pmh8g)
 - [2025 Let’s GoSSIP 软件安全暑期学校预告第一弹——Kea2](https://mp.weixin.qq.com/s/8_0_GNNin8E5BqTbJU33wg)
-- [功能性质驱动的测试技术：下一代GUI自动化测试技术](https://appw8oh6ysg4044.xet.citv.cn/p/course/video/v_6882fa14e4b0694ca0ec0a1b) --- 视频回放&PPT@MTSC 2025
+- [功能性质驱动的测试技术：下一代GUI自动化测试技术](https://appw8oh6ysg4044.xet.citv.cn/p/course/video/v_6882fa14e4b0694ca0ec0a1b) — 视频回放&PPT@MTSC 2025
 
 工业界对Kea2的理解和评价（点击箭头查看详情）：
 
@@ -276,7 +282,7 @@ kea2的核心作用：
 
     提供了条件触发器。 在FB跑路的时候，会不停遍历条件触发器，一旦触发，挂起FB，开始执行触发器指定的 ui test 及 assert。执行完毕，继续切回FB跑路。
 
-hea2做了什么：
+kea2做了什么：
 
     替换了FB的条件触发功能。
     替换了FB的黑名单，黑控件功能。
@@ -309,7 +315,7 @@ Kea2由[ecnusse](https://github.com/ecnusse)团队积极开发与维护：
 
 - [Xixian Liang](https://xixianliang.github.io/resume/) ([@XixianLiang][])
 - [Bo Ma](https://github.com/majuzi123) ([@majuzi123][])
-- [Chen Peng](https://github.com/Drifterpc) ([@Drifterpc][])
+- [Cheng Peng](https://github.com/Drifterpc) ([@Drifterpc][])
 - [Ting Su](https://tingsu.github.io/) ([@tingsu][])
 
 [@XixianLiang]: https://github.com/XixianLiang
