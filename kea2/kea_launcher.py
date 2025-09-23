@@ -196,8 +196,6 @@ def _sanitize_args(args):
             unittest_args = args.extra[unittest_index+1:]
             setattr(args, "unittest_args", unittest_args)
             args.extra = args.extra[:unittest_index]
-    else:
-        setattr(args, "unittest_args", [])  # 设置unittest_args默认值为空列表
 
 def run(args=None):
     if args is None:
