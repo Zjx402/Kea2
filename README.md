@@ -100,6 +100,12 @@ Upgrade Kea2 to its latest version if you already installed Kea2 before:
 ```bash
 python3 -m pip install -U kea2-python
 ```
+> If you're using mirror sites like Tsinghua or USTC, you may fail to upgrade. Because these sites may not have the latest version yet. In this case, you can try to install Kea2 by specifying the latest version manually, or use `pypi.org` directly by `pip install kea2-python -i https://pypi.org/simple`.
+ 
+Upgrade Kea2 to the specifc latest version (e.g., 0.3.6) if you already installed Kea2 before:
+```bash
+python3 -m pip install -U kea2-python==0.3.6
+```
 
 ## Quick Test
 
