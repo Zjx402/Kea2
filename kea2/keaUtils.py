@@ -140,8 +140,7 @@ class Options:
     extra_args: List[str] = None
 
     def __setattr__(self, name, value):
-        # Allow setting None for driverName in native mode
-        if value is None and name != 'driverName':
+        if value is None:
             return
         super().__setattr__(name, value)
 
